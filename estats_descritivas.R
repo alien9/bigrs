@@ -28,3 +28,8 @@ agregados <- aggregate(list("mortos"=resultados$mortos, "feridos" = resultados$f
 plot(as.Date(paste(agregados$y,mestring(agregados$m),"01",sep="-"), format= "%Y-%m-%d"),agregados$feridos,pch=20,col="blue",ylab="Feridos em vias c/alter", xlab="meses")
 
 plot(as.Date(paste(agregados$y,mestring(agregados$m),"01",sep="-"), format= "%Y-%m-%d"), agregados$mortos,pch=20, col="red",ylab="Mortos em vias c/ alter", xlab="meses")
+
+
+dbClearResult(rs)
+
+dbDisconnect(con)
