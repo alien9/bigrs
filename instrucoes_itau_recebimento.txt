@@ -1,0 +1,38 @@
+15:35:43 Bruna: Seja bem-vindo(a) Tiago, em que posso ajudar?
+15:36:11 Tiago: boa tarde. Preciso receber um pagamento de uma entidade de New York
+15:37:12 Tiago: euforneci a eles s números (IBAN, etc) conform providos pela te da minha conta. Que outras providências devo tomar?
+15:37:29 Tiago: * providos pela gerente
+15:38:02 Bruna: Tiago, eles já realizaram o envio para você?
+15:38:46 Tiago: penso que sim. Você consegue verificar?
+15:42:09 Bruna: Tiago, importante que verifique com o remente a data do envio pois o prazo para chegar ao Brasil é de 2 à 5 dias uteis.
+15:42:33 Bruna: Verifiquei e no seu CPF não consta nenhum valor recebido do exterior.
+15:42:44 Tiago: OK. Então pode ser que esteja dentro do prazo pois a data prevista era 10/09.
+15:43:28 Tiago: Se tivesse sido fieta (a remessa) você detectaria?
+15:45:03 Bruna: Não, só quando o valor chegar no Itaú que é dentro este prazo a pós o envio.
+15:46:06 Tiago: OK. Então vou verificar com eles. Obrigado.
+15:46:31 Bruna: Imagina, qualquer duvida estamos á disposição!
+15:47:09 Tiago: Eiste alguma autorização do Banco Central que seja necessária?
+15:50:25 Bruna: Tiago, o valor chega em moeda estrangeira e deve e o cliente tem que converter para reais em conta.
+
+Qual seria o motivo do recebimento e o valor?
+15:51:21 Tiago: é uma consultoria e o valor de apropximadamente USD3 000
+15:55:07 Bruna: Tiago segue os procedimento com fechamento quando o valor chegar.
+15:55:39 Bruna: Segue instruções:
+
+Operação fechada até 16 horas, é analisadas no mesmo dia até 19 horas. Depois das 16 horas será analisada no próximo dia útil.
+*Horário de São Paulo – capital
+
+• Tarifa do banco R$ 100,00.
+
+• Cotação da moeda – sugerida no momento pelo site.
+
+• IOF – 0,38%.
+
+Vou lhe passar a rota para fechamento pelo site, se tiver alguma dúvida por favor me procure por e-mail ou telefone 4004-4536.
+
+Recebimento:
+Acesse sua conta > Transferências/DOC/TED > Receber Recurso do Exterior > Digite seu i-Token > Confira se seus dados cadastrais como Telefone e E-mail estão atualizados > Selecione a Ordem e “Saldo Total da Ordem” > Informe o Motivo do Recebimento > Clique em “Concordo” >Confirme a Cotação > Clique em “Concordo com Assinatura Automática do contrato de Câmbio > Digite sua senha > Continuar e Confirmar.
+
+* Para valores abaixo de USD 3.000,00 não é necessário enviar documentos
+
+** Documentos podem ser anexado no site, ou envie para cambioonline-financeiro@itau-unibanco.com.br // No assunto informar FC – nome completo – CPF

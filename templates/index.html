@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="/css/ol.css" type="text/css">
+    <script src="/js/ol.js"></script>
+    <title>BIGRS</title>
+  </head>
+  <body>
+  <div id="map" class="map" style="height:400px;background:lime;"></div>
+  </body>
+    <script type="text/javascript">
+    var tiled = new ol.layer.Tile({
+        visible: true,
+        source: new ol.source.TileWMS({
+          url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
+          params: {'FORMAT': 'image/png',
+                   'VERSION': '1.1.1',
+                   tiled: true,
+                STYLES: '',
+                LAYERS: 'BIGRS:SIRGAS_SHP_quadraviaria_',
+             tilesOrigin: -46.83525376879412 + "," + -24.012624936562503
+          }
+        })
+      });
+      var projection = new ol.proj.Projection({
+          code: 'EPSG:4326',
+          units: 'degrees',
+          axisOrientation: 'neu'
+      });
+
+
+      var map = new ol.Map({
+        target: 'map',
+        layers: [
+          new ol.layer.Tile({
+            source: new ol.source.OSM()
+          }),
+          tiled
+        ],
+        view: new ol.View({
+          center: ol.proj.fromLonLat([-46.5, -23.5]),
+          zoom: 10
+        })
+      });
+    </script>
+</html>
