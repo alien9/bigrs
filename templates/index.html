@@ -74,6 +74,10 @@
       .ol-popup-closer:after {
         content: "✖";
       }
+      .legend_color{
+        width:2em;
+        height:2em;
+      }
     </style>
     <title>BIGRS</title>
   </head>
@@ -82,6 +86,65 @@
   <div id="header" style="height:88px;background-image:url(/images/bloomberg_logo.png);background-repeat:no-repeat;background-size:162px 56px;background-position: 20px 10px">
       <div id="mobilab_logo"></div>
   </div>
+    <div style="background-color:white;float:right;width:25%;padding:0.6em" id="right_column" >
+        <div>
+            <p>Divisões</p>
+              <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
+              <label><input type="radio" name="adm" value="subprefeituras">Subprefeituras</label><br>
+              <label><input type="radio" name="adm" value="heatmap" checked="true">Mapa de Calor</label>
+        </div>
+        <div>
+            <p>Dados</p>
+              <label><input type="radio" name="tipo" value="vitimas" checked=true>Vítimas</label><br>
+              <label><input type="radio" name="tipo" value="feridos">Feridos</label><br>
+              <label><input type="radio" name="tipo" value="mortos">Mortos</label>
+        </div>
+        <div>
+            <p>Período</p>
+              <label><input type="radio" name="periodo" value="mes" checked=true>Mês</label><br>
+              <label><input type="radio" name="periodo" value="ano">Ano</label><br>
+        </div>
+        <div>
+            <p>Contagem</p>
+              <label><input type="radio" name="contagem" value="absolute" checked=true>Absoluta</label><br>
+              <label><input type="radio" name="contagem" value="cem_mil">Por cem mil </label><br>
+        </div>
+        <div>
+            <p>Tipo de Veículo</p>
+            <!--
+            A - AU - Auto
+M - MO - Moto
+O - ON - Ônibus
+C - CA - Caminhão
+B - BI - Bicicleta
+X - MT - Moto Táxi
+F - OF - Ônibus Fretado/Internmunicipal
+R - OU - Ônibus Urbano
+N - MC - Microônibus
+V - VA - Van
+U - VC - Vuc
+H - CM - Caminhonete/Camioneta
+T - CR - Carreta
+J - JI - Jipe
+S - OT - Outros
+I - SI - Sem Informação
+Y - CO - Carroça -->
+              <label><input type="checkbox" name="tipo_veiculo" value="AU,CM,JI,VA,VC" checked=true>Carro</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="ON,OF,OU" checked=true>Ônibus</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="BI" checked=true>Bicicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CA,CR" checked=true>Caminhão</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
+        </div>
+        <div>
+            <input name="mes" size="2" value="{{mes}}"><input name="ano" size="4" value="{{ano}}">
+        </div>
+        <div>
+            <table id="table_legenda">
+
+            </table>
+        </div>
+    </div>
   <div id="left_column" style="width:70%;position:relative;">
     <div id="mapa" class="mapa" style="width:100%;height:600px;background:#ccc;">
         <div id="popup" class="ol-popup">
@@ -93,14 +156,31 @@
     <div style="background-color:#eee;overflow:hidden;width:100%" id="search_results"></div>
     </div>
   </div>
+
   <div id="popup_template" style="display:none">
       <p class="titulo">$name</p>
       <p><a href="javascript:void(0);" class="marker_remove">remover</a></p>
+      <p><a href="javascript:void(0);" class="marker_history">relatório</a></p>
   </div>
 
   </body>
     <script type="text/javascript">
+    var size=7;
+    var colors=new Array(size);
+    //colors[0]='64c800';
+    //colors[size-1]='c86400';
+    colors[0]='FFFFFF';
+    colors[size-1]='FF0000';
+    var c0=[parseInt(colors[0].substr(0,2),16),parseInt(colors[0].substr(2,2),16),parseInt(colors[0].substr(4,2),16)];
+    var c1=[parseInt(colors[size-1].substr(0,2),16),parseInt(colors[size-1].substr(2,2),16),parseInt(colors[size-1].substr(4,2),16)];
+    var interval=[(c1[0]-c0[0])/size,(c1[1]-c0[1])/size,(c1[2]-c0[2])/size];
+    console.debug(interval);
+    for(var i=1;i<colors.length-1;i++){
+        colors[i]=lpad(Math.round(c0[0]+i*interval[0]).toString(16))+lpad(Math.round(c0[1]+i*interval[1]).toString(16))+lpad(Math.round(c0[2]+i*interval[2]).toString(16));
+    }
+    console.debug(colors);
     var hash=[];
+    var layers={};
     var diacriticsMap = {
   '\u00C0': 'A',  // À => A
   '\u00C1': 'A',   // Á => A
@@ -177,6 +257,10 @@
   '\uFB05': 'ft', // ﬅ => ft
   '\uFB06': 'st'  // ﬆ => st
 };
+function lpad(t){
+    while(t.length<2) t='0'+t;
+    return t;
+}
 function replaceDiacritics(str) {
   var returnStr = '';
   if(str) {
@@ -227,7 +311,7 @@ var vectorSource;
           }
         })
       });
-      var untiled = new ol.layer.Image({
+      layers['heatmap'] = new ol.layer.Image({
         source: new ol.source.ImageWMS({
           ratio: 1,
           url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
@@ -238,6 +322,116 @@ var vectorSource;
           }
         })
       });
+
+      function getQuantile(value,quantiles){
+        for(var i=0;i<quantiles.length;i++){
+            if(value<quantiles[i]) return i-1;
+        }
+        return i-1;
+      }
+      function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? 'rgba('+parseInt(result[1], 16)+','+parseInt(result[2], 16)+','+parseInt(result[3], 16)+',0.5)': null;
+      }
+      function getForm(){
+        return {
+            adm:$('input[name=adm]:checked').val(),
+            tipo:$('input[name=tipo]:checked').val(),
+            periodo:$('input[name=periodo]:checked').val(),
+            mes:$('input[name=mes]').val(),
+            ano:$('input[name=ano]').val(),
+            contagem:$('input[name=contagem]:checked').val(),
+            'tipo_veiculo':$('input[name=tipo_veiculo]:checked').map(function(){
+                return $(this).val();
+            }).get()
+        };
+      }
+
+
+      function loadTheme(){
+        var h=getForm();
+        console.debug(h);
+        if(h.adm=='heatmap')return;
+        $.ajax('/theme',{dataType:'json','data':h,success:function(j){
+            var theme={};
+            for(var i=0;i<j.items.length;i++){
+                console.debug(j.items[i]);
+                var k=getQuantile(j.items[i][1],j.percentiles);
+                theme[j.items[i][0]]=hexToRgb(colors[k]);
+            }
+            var f=layers[h.adm].getSource().getFeatures();
+            for(var i=0;i<f.length;i++){
+                f[i].color=theme[f[i].get('gid')];
+            }
+            layers[h.adm].getSource().clear();
+            layers[h.adm].getSource().addFeatures(f);
+            $("table#table_legenda").html('');
+            for(var i=1;i<j.percentiles.length;i++){
+                var tr=$('<tr></tr>');
+                var td=$('<td></td>').addClass('legend_color').css('background-color','#'+colors[i-1]);
+                tr.append(td);
+                tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
+                $("table#table_legenda").append(tr);
+            }
+
+        }});
+      }
+
+      function getStyles(feature, resolution){
+        var nome=$('input[name=adm]:checked').val();
+        switch(nome){
+            case 'distritos':
+                return new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: 'gray',
+                    width: 1
+                  }),
+                  fill: new ol.style.Fill({
+                    color: (feature.color)?feature.color:hexToRgb('#'+colors[0])
+                  }),
+                  text: (resolution<20)?new ol.style.Text({
+                    font: '10px Verdana, sans-serif',
+                    text: feature.get('ds_nome')+':'+feature.get('gid'),
+                    fill: new ol.style.Fill({color: 'black'}),
+                    stroke: new ol.style.Stroke({color: 'white', width: 0.5})
+                  }):null
+                });
+             break;
+             case 'subprefeituras':
+                return new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: 'gray',
+                    width: 1
+                  }),
+                  fill: new ol.style.Fill({
+                    color: (feature.color)?feature.color:hexToRgb('#'+colors[0])
+                  }),
+                  text: (resolution<100)?new ol.style.Text({
+                    font: '10px Verdana, sans-serif',
+                    text: feature.get('sp_nome'),
+                    fill: new ol.style.Fill({color: 'black'}),
+                    stroke: new ol.style.Stroke({color: 'white', width: 0.5})
+                  }):null
+                });
+             break;
+         }
+      }
+
+      function addVector(g,nome){
+          var source = new ol.source.Vector({
+            features: (new ol.format.GeoJSON()).readFeatures(g)
+          });
+          var distritos = new ol.layer.Vector({
+            source: source,
+            style: getStyles
+          });
+          map.addLayer(distritos);
+          return distritos;
+      }
+
+
+
+
       var projection = new ol.proj.Projection({
           code: 'EPSG:4326',
           units: 'degrees',
@@ -246,7 +440,6 @@ var vectorSource;
       var map;
       var selected=0;
       $(document).ready(function(){
-
         var iconFeature = new ol.Feature({
             geometry: new ol.geom.Point(ol.proj.transform([-46.5, -23.5], projection, 'EPSG:3857')),
         });
@@ -296,7 +489,9 @@ var vectorSource;
             overlays:[popup],
             view: new ol.View({
               'center': center,
-              'zoom': zoom
+              'zoom': zoom,
+              minZoom: 10,
+              maxZoom: 19
             })
         });
 
@@ -313,7 +508,6 @@ var vectorSource;
         map.on("click", function(e){
             var isFeature=false;
             var coordinate=e.coordinate;
-            console.debug(coordinate);
             var f;
             map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
                 f=feature;
@@ -322,24 +516,41 @@ var vectorSource;
             if(isFeature){
                 var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
                 var html=$('#popup_template').html();
-                html=html.replace(/\$name/,f.getProperties().name);
-                content.innerHTML = html;
+                if(f.getProperties().sp_id){ // subprefeitura
+                    html=html.replace(/\$name/,f.getProperties().sp_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }else if(f.getProperties().ds_nome){ // distrito
+                    html=html.replace(/\$name/,f.getProperties().ds_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }else if(f.getProperties().name){ //logradouro
+                    html=html.replace(/\$name/,f.getProperties().name);
+                    selected_marker=f;
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').show();
+                }
+
                 popup.setPosition(coordinate);
-                selected_marker=f;
+
                 $(content).find('a.marker_remove').click(function(){
                     if(selected_marker)vectorSource.removeFeature(selected_marker);
                     selected_marker=null;
                     popup.setPosition(undefined);
                     closer.blur();
                 });
-                $.ajax('/report',{data:{codlog:f.getProperties().codlog},success:function(r){
-                    console.debug(r)
-                }});
+                $(content).find('a.marker_history').click(function(){
+                    $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
+alert(h);
+                    }});
+                });
+//                $.ajax('/report',{data:{codlog:f.getProperties()},success:function(r){
+//                    console.debug(r)
+//                }});
                 return;
             }
             var lonlat = ol.proj.toLonLat(map.getCoordinateFromPixel(e.pixel));
             $.ajax('/reverse',{'method':'post',dataType:'json', data:{point:lonlat}, success:function(j){
-                console.debug(j);
                 var featurething = new ol.Feature({
                     name: j.endereco,
                     number: j.numero,
@@ -357,7 +568,7 @@ var vectorSource;
             setZoom(zoom);
             setCenter(center);
         }
-        map.addLayer(untiled);
+        map.addLayer(layers['heatmap']);
         map.addLayer(vectorLayer);
 
         function geocode(){
@@ -429,6 +640,24 @@ var vectorSource;
                     break;
             }
         });
+        $('input[name=adm]').change(function(){
+            var w=$(this).val();
+            for(var k in layers){
+                layers[k].setVisible(false);
+            }
+            if(!layers[w]){
+                $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
+                    layers[w]=addVector(g,w);
+                }});
+            }else{
+                layers[w].setVisible(true);
+            }
+        })
+        $('input[type=radio],input[type=checkbox]').change(function(){
+            loadTheme();
+        });
+
+
       });
     </script>
 </html>
