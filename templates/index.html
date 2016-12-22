@@ -86,7 +86,7 @@
   <div id="header" style="height:88px;background-image:url(/images/bloomberg_logo.png);background-repeat:no-repeat;background-size:162px 56px;background-position: 20px 10px">
       <div id="mobilab_logo"></div>
   </div>
-    <div style="background-color:white;float:right;width:25%;padding:0.6em" id="right_column" >
+    <div style="background-color:white;float:right;width:25%;padding:0.6em" id="right_column" ><input name="feature_id" type="hidden">
         <div>
             <p>Divisões</p>
               <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
@@ -335,6 +335,7 @@ var vectorSource;
       }
       function getForm(){
         return {
+            feature_id:$('input[name=feature_id]').val(),
             adm:$('input[name=adm]:checked').val(),
             tipo:$('input[name=tipo]:checked').val(),
             periodo:$('input[name=periodo]:checked').val(),
@@ -517,14 +518,20 @@ var vectorSource;
                 var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
                 var html=$('#popup_template').html();
                 if(f.getProperties().sp_id){ // subprefeitura
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
                     html=html.replace(/\$name/,f.getProperties().sp_nome);
                     content.innerHTML = html;
                     $(content).find('a.marker_remove').hide();
                 }else if(f.getProperties().ds_nome){ // distrito
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
                     html=html.replace(/\$name/,f.getProperties().ds_nome);
                     content.innerHTML = html;
                     $(content).find('a.marker_remove').hide();
                 }else if(f.getProperties().name){ //logradouro
+                    $('input[name=feature_id]').val(f.getProperties().codlog)
+                    console.debug(f.getProperties());
                     html=html.replace(/\$name/,f.getProperties().name);
                     selected_marker=f;
                     content.innerHTML = html;

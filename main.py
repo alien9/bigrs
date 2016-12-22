@@ -7,6 +7,7 @@ from rpy2.robjects.packages import importr
 import rpy2.robjects as ro
 import pandas.rpy.common as com
 from datetime import date
+import array
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
@@ -123,52 +124,74 @@ def vector():
         data = f.read()
     f.closed
     return data
+def prepare_parameters(request):
+    h={}
+    h['tipo_regiao'] = request.values.get('adm')
+    h['tipo_regiao'] = re.sub("\W", "", h['tipo_regiao'])
+    periodo = request.values.get('periodo')
+    h['veiculos'] = ",".join(request.values.getlist('tipo_veiculo[]')).split(",")
+    if periodo == 'mes':
+        h['data_inicio'] = date(int(request.values.get('ano')), int(request.values.get('mes')), 1)
+        h['data_final'] = date(int(request.values.get('ano')), int(request.values.get('mes')),
+                          calendar.monthrange(int(request.values.get('ano')), int(request.values.get('mes')))[1])
+    else:
+        h['data_inicio'] = date(int(request.values.get('ano')), 1, 1)
+        h['data_final'] = date(int(request.values.get('ano')), 12, 31)
+    h['tipo'] = request.values.get('tipo')
+    h['contagem'] = request.values.get('contagem')
+    return h
+
+def get_query(request):
+    params=prepare_parameters(request)
+    #p = request.values.get('adm')
+    #p = re.sub("\W", "", p)
+    periodo = request.values.get('periodo')
+    #ano = int(request.values.get('ano'))
+    #veiculos = ",".join(request.values.getlist('tipo_veiculo[]')).split(",")
+    #if periodo == 'mes':
+        #data_inicio = date(int(request.values.get('ano')), int(request.values.get('mes')), 1)
+        #data_final = date(int(request.values.get('ano')), int(request.values.get('mes')),
+        #                  calendar.monthrange(int(request.values.get('ano')), int(request.values.get('mes')))[1])
+    #else:
+        #data_inicio = date(int(request.values.get('ano')), 1, 1)
+        #data_final = date(int(request.values.get('ano')), 12, 31)
+    tipo = request.values.get('tipo')
+    contagem = request.values.get('contagem')
+    qtipo = "count(*)"
+    if params['tipo'] == 'mortos':
+        qtipo = "sum(mortos)"
+    if params['tipo'] == 'feridos':
+        qtipo = "sum(feridos)"
+    if params['tipo'] == 'vitimas':
+        qtipo = "sum(mortos+feridos)"
+    if params['tipo_regiao'] == 'distritos':
+        table = "sirgas_shp_distrito_polygon p"
+        popt = "distritos_populacao dp on dp.distrito_gid=s.gid"
+    else:
+        table = "sirgas_shp_subprefeitura p"
+        popt = "subprefeituras_populacao dp on dp.subprefeitura_gid=s.gid"
+    vtipo = ""
+    vwhere = ""
+    if len(params['veiculos']) < 14 and len(params['veiculos']) > 0:
+        vtipo = " join veiculos v on v.id_acidente=i.id_acident"
+        vwhere = "and v.tipo_veiculo in('" + "','".join(params['veiculos']) + "')"
+    if contagem == 'cem_mil':
+        query = "select s.gid,contagem/populacao*100000 from (select p.gid," + qtipo + "::float as contagem from incidentes i join " + table + " on st_contains(p.the_geom, i.geom) = 't' " + vtipo + " where i.data_e_hora between %s and %s " + vwhere + " group by p.gid) s join " + popt + " where dp.ano=%s;"
+        parameters = (params['data_inicio'].strftime('%Y-%m-%d'), params['data_final'].strftime('%Y-%m-%d'), ano)
+    else:
+        query = "select p.gid," + qtipo + " from incidentes i join " + table + " on st_contains(p.the_geom, i.geom) = 't' " + vtipo + " where i.data_e_hora between %s and %s " + vwhere + " group by p.gid;"
+        parameters = (params['data_inicio'].strftime('%Y-%m-%d'), params['data_final'].strftime('%Y-%m-%d'),)
+
+    return query,parameters
+
 
 @app.route('/theme',methods=['GET','POST'])
 def theme():
     r={}
-    p = request.values.get('adm')
-    p = re.sub("\W", "", p)
-    periodo=request.values.get('periodo')
-    ano=int(request.values.get('ano'))
-    veiculos=",".join(request.values.getlist('tipo_veiculo[]')).split(",")
-    print(veiculos)
-    print(",".join(veiculos).split(","))
-    if periodo=='mes':
-        data_inicio = date(int(request.values.get('ano')), int(request.values.get('mes')), 1)
-        data_final = date(int(request.values.get('ano')), int(request.values.get('mes')), calendar.monthrange(int(request.values.get('ano')),int(request.values.get('mes')))[1])
-    else:
-        data_inicio = date(int(request.values.get('ano')), 1, 1)
-        data_final = date(int(request.values.get('ano')),12,31)
     conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
     cur = conn.cursor()
-    tipo = request.values.get('tipo')
-    contagem = request.values.get('contagem')
-    qtipo="count(*)"
-    if tipo=='mortos':
-        qtipo="sum(mortos)"
-    if tipo=='feridos':
-        qtipo="sum(feridos)"
-    if tipo=='vitimas':
-        qtipo="sum(mortos+feridos)"
-    if p=='distritos':
-        table="sirgas_shp_distrito_polygon p"
-        popt="distritos_populacao dp on dp.distrito_gid=s.gid"
-    else:
-        table="sirgas_shp_subprefeitura p"
-        popt="subprefeituras_populacao dp on dp.subprefeitura_gid=s.gid"
-    vtipo=""
-    vwhere=""
-    if len(veiculos)<14 and len(veiculos)>0:
-        vtipo=" join veiculos v on v.id_acidente=i.id_acident"
-        vwhere="and v.tipo_veiculo in('"+"','".join(veiculos)+"')"
-    if contagem == 'cem_mil':
-        query="select s.gid,contagem/populacao*100000 from (select p.gid," + qtipo + "::float as contagem from incidentes i join "+table+" on st_contains(p.the_geom, i.geom) = 't' "+vtipo+" where i.data_e_hora between %s and %s "+vwhere+" group by p.gid) s join "+popt+" where dp.ano=%s;"
-        parameters=(data_inicio.strftime('%Y-%m-%d'), data_final.strftime('%Y-%m-%d'),ano)
-    else:
-        query="select p.gid,"+qtipo+" from incidentes i join "+table+" on st_contains(p.the_geom, i.geom) = 't' "+vtipo+" where i.data_e_hora between %s and %s "+vwhere+" group by p.gid;"
-        parameters=(data_inicio.strftime('%Y-%m-%d'),data_final.strftime('%Y-%m-%d'),)
-    print(cur.mogrify(query,parameters))
+    query,parameters=get_query(request)
+    #print(cur.mogrify(query,parameters))
     cur.execute(query,parameters)
     r['items'] = cur.fetchall()
     values = [x[1] for x in r['items']]
@@ -179,38 +202,82 @@ def theme():
         r['percentiles']=numpy.percentile(values,cuts).tolist()
     return json.dumps(r)
 
+def movingaverage(interval, window_size):
+    window= numpy.ones(int(window_size))/float(window_size)
+    print(window)
+    print(interval)
+    return numpy.convolve(interval, window, 'same')
+def running_mean(l, N):
+    print(l)
+    sum = 0
+    result = list( NaN for x in l)
+    for i in range( 0, N):
+        sum = sum + l[i]
+    for i in range( N, len(l)):
+        result[i - N//2] = sum / N
+        sum = sum - l[i - N] + l[i]
+    result[len(l)-N//2] = sum/N
+    print(result)
+    return result
 @app.route('/history',methods=['GET','POST'])
 def history():
-    r={}
-    tipo = request.values.get('tipo')
-    query="select count(*) as total,sum(vitimas::integer) as vitimas,sum(mortos::integer) as mortos,date_part('year',data_e_hora) as ano,date_part('month',data_e_hora) as mes from incidentes i group by ano,mes order by ano,mes"
-    datasets = importr('datasets')
     conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
     cur = conn.cursor()
-    cur.execute(query)
+    r={}
+    tipo = request.values.get('tipo')
+    params=prepare_parameters(request)
+    #print(params)
+    if params['tipo_regiao']=='subprefeituras':
+        cur.execute("select st_asewkt(st_transform(geom,4326)) from sirgas_shp_subprefeitura where gid=%s",(request.values.get('feature_id'),))
+    elif params['tipo_regiao']=='distritos':
+        cur.execute("select st_asewkt(st_transform(geom,4326)) from sirgas_distritos_polygon where gid=%s",(request.values.get('feature_id'),))
+    else:
+        cur.execute("select st_asewkt(st_transform(st_buffer(geom,50),4326)) from sirgas_shp_logradouro where lg_codlog=%s",(request.values.get('feature_id'),))
+    geometry=cur.fetchone()[0]
+    query="select count(*) as total,sum(feridos::integer) as vitimas,sum(mortos::integer) as mortos,date_part('year',data_e_hora) as ano,date_part('month',data_e_hora) as mes from incidentes i where st_contains(st_geomfromewkt(%s),i.geom)='t' and data_e_hora>'2010-12-31 23:59:59' group by ano,mes order by ano,mes"
+    print(query)
+    datasets = importr('datasets')
+    cur.execute(query,(geometry,))
     ds=numpy.array(cur.fetchall())
     grdevices=importr('grDevices')
     graphics=importr('graphics')
     base = importr("base")
     import rpy2.robjects.numpy2ri
     rpy2.robjects.numpy2ri.activate()
-    grdevices.pdf(file='report.pdf')
+    #grdevices.pdf(file='report.pdf')
+    #grdevices.png(file='report.png')
+
+    graphics.par(mfrow=array.array('i', [2, 1]))
     datas = ds[:, [3,4]]
     x=[date(int(elem[0]),int(elem[1]),1).strftime("%Y-%m-%d") for elem in datas]
     x=rpy2.robjects.StrVector(x)
     #x=[int(elem[0]) for elem in datas]
     print(x)
+    x = base.as_Date(x, format="%Y-%m-%d")
     y=ds[:,[0]]
     #kwargs = {'ylab':"Ocorrências",'xlab':'Meses','xaxt':"n", 'type':"b", 'col':"blue"}
-    kwargs = {'x':base.as_Date(x,format="%Y-%m-%d"),'y':y,'ylab':"Ocorrências",'xlab':'Meses','type':"l", 'col':"blue"}
+    graphics.par(bg='white')
+
+    kwargs = {'x':x,'y':y,'ylab':"Ocorrências",'xlab':'Meses','type':"l", 'col':"blue"}
     graphics.plot(**kwargs)
+    graphics.lines(x,rpy2.robjects.FloatVector(running_mean(y,12)))
     graphics.grid(lty='dashed',col='darkgrey')
-    #kwargs = {'at':list(range(0,len(x))), 'labels':x,'las':3}
-    #graphics.axis(1, **kwargs)
+    y = ds[:, [1]]
+
+    kwargs = {'x': x, 'y': y, 'ylab': "Mortos/Feridos", 'xlab': 'Meses', 'type': "l",
+              'col': "blue"}
+    graphics.plot(**kwargs)
+    graphics.par(new=True)
+    graphics.plot(**{'x':x, 'y':ds[:, [2]], 'type':'l', 'axes':False, 'xlab':'', 'ylab':''})
+    graphics.axis(**{'side':4, 'col':'black', 'las':1})
+    graphics.grid(lty='dashed', col='darkgrey')
+    graphics.par(new=False)
+    grdevices.dev_copy(grdevices.png,'report.png')
     grdevices.dev_off()
+
+    grdevices.dev_print(grdevices.pdf, 'report.pdf')
+    grdevices.graphics_off()
+
     return json.dumps(r)
-
-
-
 
 app.run(host='0.0.0.0',debug=True)
