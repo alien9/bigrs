@@ -10,6 +10,7 @@
     <script src="/js/Chart.bundle.min.js"></script>
     <style type="text/css">
       body{
+      font-family:sans-serif;
       background-color:#000;
       }
       .selected{
@@ -23,7 +24,7 @@
         display:block;
       }
       #header{
-        background-color:rgba(255, 90, 0, 1);
+        background-color:#4a008b;
       }
       #mobilab_logo{
         width:180px;
@@ -78,39 +79,63 @@
         width:2em;
         height:2em;
       }
+      #filters_box
+      {
+        left:200px;top:50%;z-index:99;position:absolute;
+      }
+      #filters_box>div>div{
+        display:none;
+      }
+      #filters_box>div{
+        padding:0.6em;
+        background-color:white;
+        position:relative;
+        display:inline-block;
+        border:1px solid gray;
+        vertical-align:top;
+      }
+      #filters_box a{
+        display:block;
+      }
     </style>
+
     <title>BIGRS</title>
   </head>
   <body style="position:relative">
   <input type="hidden" name="codlog">
-  <div id="header" style="height:88px;background-image:url(/images/bloomberg_logo.png);background-repeat:no-repeat;background-size:162px 56px;background-position: 20px 10px">
+  <div id="header" style="position:relative;height:88px;background-image:url(/images/bloomberg_logo.png);background-repeat:no-repeat;background-size:162px 56px;background-position: 20px 10px">
       <div id="mobilab_logo"></div>
-  </div>
-    <div style="background-color:white;float:right;width:25%;padding:0.6em" id="right_column" ><input name="feature_id" type="hidden">
+      <div style="" id="filters_box" >
+          <input name="feature_id" type="hidden">
         <div>
-            <p>Divisões</p>
+            <a href="javascript:void(0);">Divisões</a>
+            <div>
               <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
               <label><input type="radio" name="adm" value="subprefeituras">Subprefeituras</label><br>
               <label><input type="radio" name="adm" value="heatmap" checked="true">Mapa de Calor</label>
+            </div>
         </div>
         <div>
-            <p>Dados</p>
+            <a href="javascript:void(0);">Dados</a><div>
               <label><input type="radio" name="tipo" value="vitimas" checked=true>Vítimas</label><br>
               <label><input type="radio" name="tipo" value="feridos">Feridos</label><br>
               <label><input type="radio" name="tipo" value="mortos">Mortos</label>
+          </div>
         </div>
         <div>
-            <p>Período</p>
+            <a href="javascript:void(0);">Período</a><div>
               <label><input type="radio" name="periodo" value="mes" checked=true>Mês</label><br>
               <label><input type="radio" name="periodo" value="ano">Ano</label><br>
+          </div>
         </div>
         <div>
-            <p>Contagem</p>
+            <a href="javascript:void(0);">Contagem</a><div>
               <label><input type="radio" name="contagem" value="absolute" checked=true>Absoluta</label><br>
               <label><input type="radio" name="contagem" value="cem_mil">Por cem mil </label><br>
+          </div>
         </div>
         <div>
-            <p>Tipo de Veículo</p>
+            <a href="javascript:void(0);">Tipo de Veículo</a><div>
             <!--
             A - AU - Auto
 M - MO - Moto
@@ -135,6 +160,7 @@ Y - CO - Carroça -->
               <label><input type="checkbox" name="tipo_veiculo" value="CA,CR" checked=true>Caminhão</label><br>
               <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
               <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
+          </div>
         </div>
         <div>
             <input name="mes" size="2" value="{{mes}}"><input name="ano" size="4" value="{{ano}}">
@@ -144,8 +170,10 @@ Y - CO - Carroça -->
 
             </table>
         </div>
-    </div>
-  <div id="left_column" style="width:70%;position:relative;">
+      </div>
+
+  </div>
+  <div id="left_column" style="width:100%;position:relative;">
     <div id="mapa" class="mapa" style="width:100%;height:600px;background:#ccc;">
         <div id="popup" class="ol-popup">
             <a href="#" id="popup-closer" class="ol-popup-closer"></a>
@@ -294,7 +322,7 @@ var closer = document.getElementById('popup-closer');
 
 var selected_marker;
 
-
+var featurething;
 var zoom;
 var center;
 var vectorSource;
@@ -548,17 +576,22 @@ var vectorSource;
                 });
                 $(content).find('a.marker_history').click(function(){
                     $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
-alert(h);
+                        alert(h);
                     }});
                 });
-//                $.ajax('/report',{data:{codlog:f.getProperties()},success:function(r){
-//                    console.debug(r)
-//                }});
+                //                $.ajax('/report',{data:{codlog:f.getProperties()},success:function(r){
+                //                    console.debug(r)
+                //                }});
                 return;
+            }else{
+                if(featurething && vectorSource){
+                    vectorSource.removeFeature(featurething);
+                    featurething=null;
+                }
             }
             var lonlat = ol.proj.toLonLat(map.getCoordinateFromPixel(e.pixel));
             $.ajax('/reverse',{'method':'post',dataType:'json', data:{point:lonlat}, success:function(j){
-                var featurething = new ol.Feature({
+                featurething = new ol.Feature({
                     name: j.endereco,
                     number: j.numero,
                     codlog: j.codlog,
@@ -663,7 +696,10 @@ alert(h);
         $('input[type=radio],input[type=checkbox]').change(function(){
             loadTheme();
         });
-
+        $('div#filters_box a').click(function(){
+            console.debug(this);
+            $(this).parent().find('div').toggle()
+        });
 
       });
     </script>

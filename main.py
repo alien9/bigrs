@@ -93,6 +93,7 @@ def geocode():
     cur.execute("select bigrs.geocode(%s, %s)", (codlog,numero,))
     r=cur.fetchone()
     return r[0]
+
 @app.route('/reverse', methods=['GET','POST'])
 def reverse():
     p=request.values.getlist('point[]')
@@ -100,7 +101,14 @@ def reverse():
     cur = conn.cursor()
     cur.execute("select bigrs.reverse_geocode(%s, %s)", (p[0],p[1],))
     r=cur.fetchone()
-    return r[0]
+    res=r[0]
+    j={}
+    if res is not None:
+        j=json.loads(res)
+        cur.execute("select st_asgeojson(st_transform(geom,4326)) from sirgas_shp_logradouro where lg_codlog=%s", (j['codlog'],))
+        j['geometry']=cur.fetchall();
+    return json.dumps(j)
+
 @app.route('/report',methods=['GET','POST'])
 def report():
     p=request.values.get('codlog')
