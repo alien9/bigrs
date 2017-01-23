@@ -81,21 +81,27 @@
       }
       #filters_box
       {
-        left:200px;top:50%;z-index:99;position:absolute;
+        left:200px;top:55px;z-index:99;position:absolute;
+        font-size:small;
       }
       #filters_box>div>div{
         display:none;
-      }
+        margin-top:0.8em;
+        }
       #filters_box>div{
         padding:0.6em;
-        background-color:white;
+        width:8em;
+        color:white;
         position:relative;
         display:inline-block;
-        border:1px solid gray;
+        border:1px solid none;
         vertical-align:top;
+        background-color:#4a008b;
       }
       #filters_box a{
         display:block;
+        text-decoration:none;
+        color:white;
       }
     </style>
 
@@ -124,8 +130,25 @@
         </div>
         <div>
             <a href="javascript:void(0);">Período</a><div>
-              <label><input type="radio" name="periodo" value="mes" checked=true>Mês</label><br>
-              <label><input type="radio" name="periodo" value="ano">Ano</label><br>
+              <label><input type="radio" name="periodo" value="mes" checked=true>Por mês</label><br>
+              <label><input type="radio" name="periodo" value="ano">Por ano</label><br>
+            <br>
+            Mês: <select name="mes">
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+            </select><br><br>
+            Ano:
+            <input name="ano" size="4" value="{{ano}}">
           </div>
         </div>
         <div>
@@ -135,9 +158,36 @@
           </div>
         </div>
         <div>
+            <a href="javascript:void(0);">Tipo de Acidente</a><div>
+            <!--
+CO - Colisão
+CF - Colisão frontal
+CT - Colisão traseira
+CL - Colisão lateral
+CV - Colisão transversal
+CP - Capotamento
+TB - Tombamento
+AT - Atropelamento
+AA - Atropelamento de animal
+CH - Choque
+QM - Queda moto/bicicleta
+QV - Queda veículo
+QD - Queda ocupante dentro
+QF - Queda ocupante fora
+OU - Outros
+SI - Sem informações
+            -->
+              <label><input type="checkbox" name="tipo_acidente" value="CO,CF,CT,CL,CV,CH" checked=true>Colisão</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="CP,TB" checked=true>Capotamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="AT,AA" checked=true>Atropelamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="QM,QV,QD,QF" checked=true>Queda</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="OU" checked=true>Outros</label><br>
+          </div>
+        </div>
+<div>
             <a href="javascript:void(0);">Tipo de Veículo</a><div>
             <!--
-            A - AU - Auto
+A - AU - Auto
 M - MO - Moto
 O - ON - Ônibus
 C - CA - Caminhão
@@ -161,14 +211,6 @@ Y - CO - Carroça -->
               <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
               <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
           </div>
-        </div>
-        <div>
-            <input name="mes" size="2" value="{{mes}}"><input name="ano" size="4" value="{{ano}}">
-        </div>
-        <div>
-            <table id="table_legenda">
-
-            </table>
         </div>
       </div>
 
@@ -339,17 +381,21 @@ var vectorSource;
           }
         })
       });
-      layers['heatmap'] = new ol.layer.Image({
-        source: new ol.source.ImageWMS({
-          ratio: 1,
-          url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
-          params: {'FORMAT': 'image/png',
-                   'VERSION': '1.1.1',
-                STYLES: '',
-                LAYERS: 'BIGRS:Incidentes',
-          }
-        })
-      });
+      setHeatMap();
+      function setHeatMap(){
+          var h=getForm();
+          h['FORMAT']='image/png';
+          h['VERSION']='1.1.1';
+          h['STYLES']='';
+          h['LAYERS']='BIGRS:incidentes_params';
+          layers['heatmap'] = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+              ratio: 1,
+              url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
+              params: h
+            })
+          });
+      }
 
       function getQuantile(value,quantiles){
         for(var i=0;i<quantiles.length;i++){
@@ -362,25 +408,49 @@ var vectorSource;
         return result ? 'rgba('+parseInt(result[1], 16)+','+parseInt(result[2], 16)+','+parseInt(result[3], 16)+',0.5)': null;
       }
       function getForm(){
+        var month=$('select[name=mes]').val();
+        var year=$('input[name=ano]').val();
+        if(month>12) month=12;
+        if(month<1) month=1;
+        var p=$('input[name=periodo]:checked').val();
+        var d=new Date(year,month,0);
+        var df=year+'-'+(1+parseInt(d.getMonth()))+'-'+d.getDate();
+        if(p=='ano'){
+            month=1;
+            df=year+'-12-31';
+        }
+        var tipo_acidente=$('input[name=tipo_acidente]:checked').map(function(){
+                return $(this).val();
+            }).get();
+        console.debug(tipo_acidente);
+        var cql_filter="tipo_acide in('"+(tipo_acidente.join(",").split(",").join("','"))+"')";
+        console.debug(cql_filter);
+
         return {
             feature_id:$('input[name=feature_id]').val(),
             adm:$('input[name=adm]:checked').val(),
             tipo:$('input[name=tipo]:checked').val(),
             periodo:$('input[name=periodo]:checked').val(),
-            mes:$('input[name=mes]').val(),
+            mes:$('select[name=mes]').val(),
             ano:$('input[name=ano]').val(),
             contagem:$('input[name=contagem]:checked').val(),
+            viewparams:"data_inicio:"+year+'-'+month+"-01;data_final:"+df,
             'tipo_veiculo':$('input[name=tipo_veiculo]:checked').map(function(){
                 return $(this).val();
-            }).get()
+            }).get(),
+            cql_filter:cql_filter
         };
       }
-
 
       function loadTheme(){
         var h=getForm();
         console.debug(h);
-        if(h.adm=='heatmap')return;
+        if(h.adm=='heatmap'){
+            map.removeLayer(layers['heatmap']);
+            setHeatMap();
+            map.addLayer(layers['heatmap']);
+        }
+
         $.ajax('/theme',{dataType:'json','data':h,success:function(j){
             var theme={};
             for(var i=0;i<j.items.length;i++){
@@ -388,12 +458,15 @@ var vectorSource;
                 var k=getQuantile(j.items[i][1],j.percentiles);
                 theme[j.items[i][0]]=hexToRgb(colors[k]);
             }
-            var f=layers[h.adm].getSource().getFeatures();
-            for(var i=0;i<f.length;i++){
-                f[i].color=theme[f[i].get('gid')];
+            var s=layers[h.adm].getSource();
+            if(s.getFeatures){
+                var f=layers[h.adm].getSource().getFeatures();
+                for(var i=0;i<f.length;i++){
+                    f[i].color=theme[f[i].get('gid')];
+                }
+                layers[h.adm].getSource().clear();
+                layers[h.adm].getSource().addFeatures(f);
             }
-            layers[h.adm].getSource().clear();
-            layers[h.adm].getSource().addFeatures(f);
             $("table#table_legenda").html('');
             for(var i=1;i<j.percentiles.length;i++){
                 var tr=$('<tr></tr>');
@@ -693,14 +766,17 @@ var vectorSource;
                 layers[w].setVisible(true);
             }
         })
-        $('input[type=radio],input[type=checkbox]').change(function(){
+        $('input[type=radio],input[type=checkbox],select,input[type=text]').change(function(){
             loadTheme();
         });
         $('div#filters_box a').click(function(){
-            console.debug(this);
-            $(this).parent().find('div').toggle()
+            $(this).parent().siblings().find('div').hide();
+            $(this).parent().find('div').toggle();
         });
-
+        $('input[name=periodo]').click(function(){
+            $('select[name=mes]').prop('disabled', !($(this).val()=='mes'));
+        });
+        $('select[name=mes]').prop('disabled', !($('input[name=periodo]:checked').val()=='mes'));
       });
     </script>
 </html>

@@ -238,7 +238,7 @@ def history():
     if params['tipo_regiao']=='subprefeituras':
         cur.execute("select st_asewkt(st_transform(geom,4326)) from sirgas_shp_subprefeitura where gid=%s",(request.values.get('feature_id'),))
     elif params['tipo_regiao']=='distritos':
-        cur.execute("select st_asewkt(st_transform(geom,4326)) from sirgas_distritos_polygon where gid=%s",(request.values.get('feature_id'),))
+        cur.execute("select st_asewkt(st_transform(geom,4326)) from sirgas_shp_distrito_polygon where gid=%s",(request.values.get('feature_id'),))
     else:
         cur.execute("select st_asewkt(st_transform(st_buffer(geom,50),4326)) from sirgas_shp_logradouro where lg_codlog=%s",(request.values.get('feature_id'),))
     geometry=cur.fetchone()[0]
