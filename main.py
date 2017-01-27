@@ -12,6 +12,7 @@ import array
 app = Flask(__name__)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
+cstring="dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'"
 
 @app.route('/')
 def index():
@@ -54,7 +55,7 @@ def search():
     if not streets:
         #print("executando query")
         streets={}
-        conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+        conn = psycopg2.connect(cstring)
         cur = conn.cursor()
         cur.execute("select distinct lg_codlog,lg_tipo,lg_titulo,lg_prep,lg_nome from sirgas_shp_logradouro")
         old=""
@@ -97,7 +98,7 @@ def geocode():
 @app.route('/reverse', methods=['GET','POST'])
 def reverse():
     p=request.values.getlist('point[]')
-    conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+    conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     cur.execute("select bigrs.reverse_geocode(%s, %s)", (p[0],p[1],))
     r=cur.fetchone()
@@ -192,6 +193,27 @@ def get_query(request):
 
     return query,parameters
 
+@app.route('/geojson',methods=['GET','POST'])
+def geojson():
+    conn = psycopg2.connect(cstring)
+    cur = conn.cursor()
+    cur.execute("select st_x(geom),st_y(geom),data_e_hora,gid from incidentes")
+    j={
+        'type': 'FeatureCollection',
+        'features': []
+    }
+    for record in cur:
+        j['features'].append({
+            'type': 'Feature',
+            'geometry':{
+                'type': 'Point',
+                'coordinates': [record[0], record[1]],
+                },
+            'properties':{
+                'data_e_hora':record[2]
+            }
+        })
+    return json.dumps(j)
 
 @app.route('/theme',methods=['GET','POST'])
 def theme():

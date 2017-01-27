@@ -148,7 +148,7 @@
                 <option value="12">Dezembro</option>
             </select><br><br>
             Ano:
-            <input name="ano" size="4" value="{{ano}}">
+            <input name="ano" size="4" value="{{ano}}" type="text">
           </div>
         </div>
         <div>
@@ -363,11 +363,12 @@ var content = document.getElementById('popup-content');
 var closer = document.getElementById('popup-closer');
 
 var selected_marker;
-
+var points;
 var featurething;
 var zoom;
 var center;
 var vectorSource;
+
       var tiled = new ol.layer.Tile({
         visible: true,
         source: new ol.source.TileWMS({
@@ -383,18 +384,50 @@ var vectorSource;
       });
       setHeatMap();
       function setHeatMap(){
-          var h=getForm();
-          h['FORMAT']='image/png';
-          h['VERSION']='1.1.1';
-          h['STYLES']='';
-          h['LAYERS']='BIGRS:incidentes_params';
-          layers['heatmap'] = new ol.layer.Image({
+        var h=getForm();
+        h['FORMAT']='image/png';
+        h['VERSION']='1.1.1';
+        h['STYLES']='';
+        h['LAYERS']='BIGRS:incidentes_params';
+        var d=new Date();
+        d.setYear($('input[name=ano]').val());
+        console.debug(d);
+
+        if(points==null){
+            $.ajax('/geojson', {dataType:'json',success:function(j){
+                var geojsonObject = j;
+                var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
+                    featureProjection: 'EPSG:3857'
+                });
+                points = new ol.source.Vector({
+                  'features': features
+                });
+                setHeatMap();
+            }});
+            return;
+        }
+
+        console.debug(points.getFeatures());
+
+        for(var i=0;i<points.getFeatures().length;i++){
+            console.debug(points.getFeatures()[i].get("data_e_hora"));
+        }
+
+        //console.debug(pts[0]);
+        layers['heatmap'] =  new ol.layer.Heatmap({
+            source: points,
+            radius: 2
+        });
+        map.addLayer(layers['heatmap']);
+
+/*
+          layers['heatmap_image'] = new ol.layer.Image({
             source: new ol.source.ImageWMS({
               ratio: 1,
               url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
               params: h
             })
-          });
+          });*/
       }
 
       function getQuantile(value,quantiles){
@@ -422,9 +455,7 @@ var vectorSource;
         var tipo_acidente=$('input[name=tipo_acidente]:checked').map(function(){
                 return $(this).val();
             }).get();
-        console.debug(tipo_acidente);
         var cql_filter="tipo_acide in('"+(tipo_acidente.join(",").split(",").join("','"))+"')";
-        console.debug(cql_filter);
 
         return {
             feature_id:$('input[name=feature_id]').val(),
@@ -444,17 +475,14 @@ var vectorSource;
 
       function loadTheme(){
         var h=getForm();
-        console.debug(h);
         if(h.adm=='heatmap'){
             map.removeLayer(layers['heatmap']);
             setHeatMap();
-            map.addLayer(layers['heatmap']);
         }
 
         $.ajax('/theme',{dataType:'json','data':h,success:function(j){
             var theme={};
             for(var i=0;i<j.items.length;i++){
-                console.debug(j.items[i]);
                 var k=getQuantile(j.items[i][1],j.percentiles);
                 theme[j.items[i][0]]=hexToRgb(colors[k]);
             }
@@ -493,7 +521,7 @@ var vectorSource;
                   }),
                   text: (resolution<20)?new ol.style.Text({
                     font: '10px Verdana, sans-serif',
-                    text: feature.get('ds_nome')+':'+feature.get('gid'),
+                    text: feature.get('ds_nome'),
                     fill: new ol.style.Fill({color: 'black'}),
                     stroke: new ol.style.Stroke({color: 'white', width: 0.5})
                   }):null
@@ -681,7 +709,7 @@ var vectorSource;
             setZoom(zoom);
             setCenter(center);
         }
-        map.addLayer(layers['heatmap']);
+        //map.addLayer(layers['heatmap']);
         map.addLayer(vectorLayer);
 
         function geocode(){
@@ -769,6 +797,10 @@ var vectorSource;
         $('input[type=radio],input[type=checkbox],select,input[type=text]').change(function(){
             loadTheme();
         });
+        $('input[type=text]').keypress(function(k){
+            if(k.keyCode==13) loadTheme();
+        });
+
         $('div#filters_box a').click(function(){
             $(this).parent().siblings().find('div').hide();
             $(this).parent().find('div').toggle();
