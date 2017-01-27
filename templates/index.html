@@ -372,7 +372,7 @@ var vectorSource;
       var tiled = new ol.layer.Tile({
         visible: true,
         source: new ol.source.TileWMS({
-          url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
+          url: '{{geoserver}}/geoserver/BIGRS/wms',
           params: {'FORMAT': 'image/png',
                    'VERSION': '1.1.1',
                    tiled: true,
@@ -389,11 +389,12 @@ var vectorSource;
         h['VERSION']='1.1.1';
         h['STYLES']='';
         h['LAYERS']='BIGRS:incidentes_params';
-        var d=new Date();
-        d.setYear($('input[name=ano]').val());
-        console.debug(d);
+        //var d=new Date();
+        //d.setYear($('input[name=ano]').val());
+        //console.debug(d);
 
         if(points==null){
+            console.debug('points is null');
             $.ajax('/geojson', {dataType:'json',success:function(j){
                 var geojsonObject = j;
                 var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
@@ -402,22 +403,29 @@ var vectorSource;
                 points = new ol.source.Vector({
                   'features': features
                 });
+
                 setHeatMap();
             }});
             return;
         }
+console.debug('points is not null');
 
-        console.debug(points.getFeatures());
+        //console.debug(points.getFeatures());
 
-        for(var i=0;i<points.getFeatures().length;i++){
-            console.debug(points.getFeatures()[i].get("data_e_hora"));
-        }
-
+        //for(var i=0;i<points.getFeatures().length;i++){
+            //console.debug(points.getFeatures()[i].get("data_e_hora"));
+        //}
+console.debug('percorreu');
         //console.debug(pts[0]);
+        if(layers['heatmap']){
+            map.removeLayer(layers['heatmap']);
+            delete(layers['heatmap']);
+        }
         layers['heatmap'] =  new ol.layer.Heatmap({
             source: points,
             radius: 2
         });
+
         map.addLayer(layers['heatmap']);
 
 /*
@@ -476,7 +484,6 @@ var vectorSource;
       function loadTheme(){
         var h=getForm();
         if(h.adm=='heatmap'){
-            map.removeLayer(layers['heatmap']);
             setHeatMap();
         }
 

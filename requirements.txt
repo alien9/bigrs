@@ -1,2 +1,6 @@
 flask
 psycopg2
+python-memcached
+numpy
+scipy
+rpy2

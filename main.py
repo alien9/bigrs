@@ -2,17 +2,15 @@ from flask import Flask,request,render_template, send_from_directory, session, R
 import psycopg2,json,memcache,unicodedata,re,numpy,datetime,calendar
 from numpy import *
 import scipy as sp
-from pandas import *
-from rpy2.robjects.packages import importr
-import rpy2.robjects as ro
-import pandas.rpy.common as com
+from  rpy2.robjects.packages import importr
 from datetime import date
+import time
 import array
+from config import *
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
 app.config['SESSION_TYPE'] = 'filesystem'
-cstring="dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'"
 
 @app.route('/')
 def index():
@@ -20,7 +18,7 @@ def index():
     mes = mc.get('mes')
     ano = mc.get('ano')
     if not mes:
-        conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+        conn = psycopg2.connect(cstring)
         cur = conn.cursor()
         cur.execute("select date_part('year',data_e_hora),date_part('month',data_e_hora) from incidentes order by data_e_hora desc limit 1")
         r=cur.fetchone()
@@ -28,7 +26,7 @@ def index():
         ano=r[0]
         mc.set('mes',mes)
         mc.set('ano',ano)
-    h={'mes':int(mes),'ano':int(ano)}
+    h={'mes':int(mes),'ano':int(ano),'geoserver':geoserver}
     return render_template('index.html',**h)
 
 
@@ -88,7 +86,7 @@ def purge(s):
 def geocode():
     codlog=request.form['codlog']
     numero=request.form['numero']
-    conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+    conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     print(codlog)
     cur.execute("select bigrs.geocode(%s, %s)", (codlog,numero,))
@@ -114,7 +112,7 @@ def reverse():
 def report():
     p=request.values.get('codlog')
     h = {'codlog':p}
-    conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+    conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     cur.execute("select lg_total_length from logradouro_details where lg_codlog=%s", (p,))
     r=cur.fetchone()
@@ -210,7 +208,7 @@ def geojson():
                 'coordinates': [record[0], record[1]],
                 },
             'properties':{
-                'data_e_hora':record[2]
+                'data_e_hora':time.mktime(record[2].timetuple())
             }
         })
     return json.dumps(j)
@@ -218,7 +216,7 @@ def geojson():
 @app.route('/theme',methods=['GET','POST'])
 def theme():
     r={}
-    conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+    conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     query,parameters=get_query(request)
     #print(cur.mogrify(query,parameters))
@@ -251,7 +249,7 @@ def running_mean(l, N):
     return result
 @app.route('/history',methods=['GET','POST'])
 def history():
-    conn = psycopg2.connect("dbname='bigrs' user='bigrs' host='localhost' port='5433' password='bigrs'")
+    conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     r={}
     tipo = request.values.get('tipo')
@@ -310,4 +308,5 @@ def history():
 
     return json.dumps(r)
 
-app.run(host='0.0.0.0',debug=True)
+if __name__ == "__main__":
+    app.run(host='0.0.0.0',debug=True)
