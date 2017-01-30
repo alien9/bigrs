@@ -8,102 +8,7 @@
     <script src="/js/jquery-3.1.1.min.js"></script>
     <script src="/js/ol-debug.js"></script>
     <script src="/js/Chart.bundle.min.js"></script>
-    <style type="text/css">
-      body{
-      font-family:sans-serif;
-      background-color:#000;
-      }
-      .selected{
-        background-color:#00b;
-        color:white;
-      }
-      #search_results{
-        font-family:sans-serif;
-      }
-      #search_results a{
-        display:block;
-      }
-      #header{
-        background-color:#4a008b;
-      }
-      #mobilab_logo{
-        width:180px;
-        height:100%;
-        background-image:url(/images/logo-mobilab.png);
-        float:right;
-        background-repeat:no-repeat;
-        background-position:0 5px
-      }
-      .ol-popup {
-        position: absolute;
-        background-color: white;
-        -webkit-filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-        filter: drop-shadow(0 1px 4px rgba(0,0,0,0.2));
-        padding: 15px;
-        border-radius: 10px;
-        border: 1px solid #cccccc;
-        bottom: 12px;
-        left: -50px;
-      }
-      .ol-popup:after, .ol-popup:before {
-        top: 100%;
-        border: solid transparent;
-        content: " ";
-        height: 0;
-        width: 0;
-        position: absolute;
-        pointer-events: none;
-      }
-      .ol-popup:after {
-        border-top-color: white;
-        border-width: 10px;
-        left: 48px;
-        margin-left: -10px;
-      }
-      .ol-popup:before {
-        border-top-color: #cccccc;
-        border-width: 11px;
-        left: 48px;
-        margin-left: -11px;
-      }
-      .ol-popup-closer {
-        text-decoration: none;
-        position: absolute;
-        top: 2px;
-        right: 8px;
-      }
-      .ol-popup-closer:after {
-        content: "✖";
-      }
-      .legend_color{
-        width:2em;
-        height:2em;
-      }
-      #filters_box
-      {
-        left:200px;top:55px;z-index:99;position:absolute;
-        font-size:small;
-      }
-      #filters_box>div>div{
-        display:none;
-        margin-top:0.8em;
-        }
-      #filters_box>div{
-        padding:0.6em;
-        width:8em;
-        color:white;
-        position:relative;
-        display:inline-block;
-        border:1px solid none;
-        vertical-align:top;
-        background-color:#4a008b;
-      }
-      #filters_box a{
-        display:block;
-        text-decoration:none;
-        color:white;
-      }
-    </style>
+    <link rel="stylesheet" href="/css/main.css" type="text/css">
 
     <title>BIGRS</title>
   </head>
@@ -363,7 +268,7 @@ var content = document.getElementById('popup-content');
 var closer = document.getElementById('popup-closer');
 
 var selected_marker;
-var points;
+var points={};
 var featurething;
 var zoom;
 var center;
@@ -389,40 +294,35 @@ var vectorSource;
         h['VERSION']='1.1.1';
         h['STYLES']='';
         h['LAYERS']='BIGRS:incidentes_params';
-        //var d=new Date();
-        //d.setYear($('input[name=ano]').val());
-        //console.debug(d);
-
-        if(points==null){
-            console.debug('points is null');
-            $.ajax('/geojson', {dataType:'json',success:function(j){
+        var ano=h.ano;
+        if(points[ano]==null){
+            $.ajax('/geojson', {data:h,dataType:'json',success:function(j){
                 var geojsonObject = j;
                 var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
                     featureProjection: 'EPSG:3857'
                 });
-                points = new ol.source.Vector({
-                  'features': features
-                });
-
-                setHeatMap();
+                if(features.length){
+                    console.debug(features);
+                    points[ano] = new ol.source.Vector({
+                      'features': features
+                    });
+                    setHeatMap();
+                }
             }});
             return;
         }
-console.debug('points is not null');
 
         //console.debug(points.getFeatures());
 
         //for(var i=0;i<points.getFeatures().length;i++){
             //console.debug(points.getFeatures()[i].get("data_e_hora"));
         //}
-console.debug('percorreu');
-        //console.debug(pts[0]);
         if(layers['heatmap']){
             map.removeLayer(layers['heatmap']);
             delete(layers['heatmap']);
         }
         layers['heatmap'] =  new ol.layer.Heatmap({
-            source: points,
+            source: points[ano],
             radius: 2
         });
 
@@ -566,9 +466,6 @@ console.debug('percorreu');
           return distritos;
       }
 
-
-
-
       var projection = new ol.proj.Projection({
           code: 'EPSG:4326',
           units: 'degrees',
@@ -684,12 +581,9 @@ console.debug('percorreu');
                 });
                 $(content).find('a.marker_history').click(function(){
                     $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
-                        alert(h);
+                        console.debug(h);
                     }});
                 });
-                //                $.ajax('/report',{data:{codlog:f.getProperties()},success:function(r){
-                //                    console.debug(r)
-                //                }});
                 return;
             }else{
                 if(featurething && vectorSource){

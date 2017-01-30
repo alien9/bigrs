@@ -1,4 +1,5 @@
 from flask import Flask,request,render_template, send_from_directory, session, Response, jsonify
+import flask
 import psycopg2,json,memcache,unicodedata,re,numpy,datetime,calendar
 from numpy import *
 import scipy as sp
@@ -7,6 +8,10 @@ from datetime import date
 import time
 import array
 from config import *
+import httplib2
+#from apiclient import discovery
+from oauth2client import client
+import urllib.request,os
 
 app = Flask(__name__)
 app.secret_key = 'super secret key'
@@ -14,6 +19,17 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 @app.route('/')
 def index():
+    if 'credentials' not in flask.session:
+        return flask.redirect(flask.url_for('oauth2callback'))
+    credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
+    if credentials.access_token_expired:
+        return flask.redirect(flask.url_for('oauth2callback'))
+    else:
+        http_auth = credentials.authorize(httplib2.Http())
+        #drive_service = discovery.build('drive', 'v2', http_auth)
+        #files = drive_service.files().list().execute()
+        #return json.dumps(files)
+    print(flask.session['userinfo'])
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
     mes = mc.get('mes')
     ano = mc.get('ano')
@@ -29,6 +45,42 @@ def index():
     h={'mes':int(mes),'ano':int(ano),'geoserver':geoserver}
     return render_template('index.html',**h)
 
+
+@app.route('/oauth2callback')
+def oauth2callback():
+  flow = client.flow_from_clientsecrets(
+      'client_secrets.json',
+      #scope='https://www.googleapis.com/auth/drive.metadata.readonly',
+      scope='https://www.googleapis.com/auth/userinfo.profile',
+      redirect_uri=flask.url_for('oauth2callback', _external=True)
+  )
+  flow.params['include_granted_scopes'] = 'true'
+  if 'code' not in flask.request.args:
+    auth_uri = flow.step1_get_authorize_url()
+    return flask.redirect(auth_uri)
+  else:
+    auth_code = flask.request.args.get('code')
+    credentials = flow.step2_exchange(auth_code)
+    flask.session['credentials'] = credentials.to_json()
+
+    q = 'https://www.googleapis.com/oauth2/v1/userinfo?access_token=%s'%(credentials.access_token,)
+    j=urllib.request.urlopen(q).read()
+    flask.session['userinfo']=j
+    return flask.redirect(flask.url_for('index'))
+
+@app.route('/logout')
+def logout():
+    if 'credentials' not in flask.session:
+        return flask.redirect(flask.url_for('oauth2callback'))
+    credentials = client.OAuth2Credentials.from_json(flask.session['credentials'])
+    print(flask.session['credentials'])
+    q='https://accounts.google.com/o/oauth2/revoke?token=%s'%(credentials.refresh_token,)
+    try:
+        j=urllib.request.urlopen(q).read()
+    except:
+        print("token invalido")
+    del(flask.session['credentials'])
+    return flask.redirect(flask.url_for('index'))
 
 @app.route('/js/<path:path>')
 def send_js(path):
@@ -195,7 +247,9 @@ def get_query(request):
 def geojson():
     conn = psycopg2.connect(cstring)
     cur = conn.cursor()
-    cur.execute("select st_x(geom),st_y(geom),data_e_hora,gid from incidentes")
+    ano=request.values.get('ano')
+    print(ano)
+    cur.execute("select st_x(geom),st_y(geom),data_e_hora,gid from incidentes where data_e_hora between %s and %s",("%s-01-01 00:00:00"%(ano,),"%s-12-31 23:59:59"%(ano),))
     j={
         'type': 'FeatureCollection',
         'features': []
@@ -300,13 +354,24 @@ def history():
     graphics.axis(**{'side':4, 'col':'black', 'las':1})
     graphics.grid(lty='dashed', col='darkgrey')
     graphics.par(new=False)
-    grdevices.dev_copy(grdevices.png,'report.png')
+
+    rid=get_report_id()
+
+    r['filename']='images/reports/_%s.png'%(rid)
+    grdevices.dev_copy(grdevices.png,r['filename'])
     grdevices.dev_off()
 
     grdevices.dev_print(grdevices.pdf, 'report.pdf')
     grdevices.graphics_off()
 
     return json.dumps(r)
+def get_report_id():
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    rid = mc.get('rid')
+    if rid is None:
+        list=os.listdir('images/reports/')
+    return 1;
+
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',debug=True)
