@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from flask import Flask,request,render_template, send_from_directory, session, Response, jsonify
 import flask
 import psycopg2,json,memcache,unicodedata,re,numpy,datetime,calendar
@@ -42,7 +45,8 @@ def index():
         ano=r[0]
         mc.set('mes',mes)
         mc.set('ano',ano)
-    h={'mes':int(mes),'ano':int(ano),'geoserver':geoserver}
+    print(credentials)
+    h={'mes':int(mes),'ano':int(ano),'geoserver':geoserver,'credentials':credentials}
     return render_template('index.html',**h)
 
 
@@ -177,6 +181,7 @@ def report():
 
 @app.route('/vector',methods=['GET','POST'])
 def vector():
+    print(os.path.dirname(os.path.abspath(__file__)))
     p=request.values.get('layer')
     p=re.sub("\W","",p)
     with open('vector/%s.geojson'%(p,), 'r') as f:
@@ -306,6 +311,7 @@ def history():
     conn = psycopg2.connect(cstring)
     cur = conn.cursor()
     r={}
+    os.environ["DISPLAY"]=DISPLAY
     tipo = request.values.get('tipo')
     params=prepare_parameters(request)
     #print(params)
@@ -356,11 +362,11 @@ def history():
     graphics.par(new=False)
 
     rid=get_report_id()
+    rid+=1
 
     r['filename']='images/reports/_%s.png'%(rid)
     grdevices.dev_copy(grdevices.png,r['filename'])
     grdevices.dev_off()
-
     grdevices.dev_print(grdevices.pdf, 'report.pdf')
     grdevices.graphics_off()
 

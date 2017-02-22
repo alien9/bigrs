@@ -1,0 +1,14 @@
+flask
+psycopg2
+python-memcached
+numpy
+scipy
+rpy2
+werkzeug
+jinja2
+itsdangerous
+apiclient
+oauth2client
+discovery
+django
+uwsgi

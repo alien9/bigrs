@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block contents %}
+<a href="javascript:void(0);" id="nova_contagem">nova...</a>
+<div class="nova_contagem">
+<form action="/nova_contagem" method="post" enctype="multipart/form-data">{% csrf_token %}
+  <input type="text" name="endereco">
+  <input type="file" name="file">
+  <input type="submit" value="Submit">
+</form></div>
+<div class="lista_contagens">
+  {%for c in contagens%}
+  <div class="contagem">
+    <a href="javascript:void(0);">{{c.endereco}}</a>
+  </div>
+  {%endfor%}
+</div>
+{%endblock%}
+{% block scripts %}
+<script type="text/javascript">
+    function start(){
+        console.debug('startando');
+    }
+</script>
+{%endblock%}

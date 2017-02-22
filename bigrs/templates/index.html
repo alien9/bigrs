@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <link rel="stylesheet" href="/static/css/ol.css" type="text/css">
+    <script src="/static/js/jquery-3.1.1.min.js"></script>
+    <script src="/static/js/ol-debug.js"></script>
+    <script src="/static/js/Chart.bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/css/main.css" type="text/css">
+    <title>BIGRS</title>
+  </head>
+  <body style="position:relative">
+  <input type="hidden" name="codlog">
+  <div id="header" style="position:relative;height:88px;background-image:url(/static/images/bloomberg_logo.png);background-repeat:no-repeat;background-size:162px 56px;background-position: 20px 10px">
+      <div id="mobilab_logo"></div>
+      <div class="sair">Logado como {{user}} - <a href="/logout" id="logout">Sair</a></div>
+      <div style="" id="filters_box" >
+          <input name="feature_id" type="hidden">
+        <div>
+            <a href="javascript:void(0);">Divisões</a>
+            <div>
+              <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
+              <label><input type="radio" name="adm" value="subprefeituras">Subprefeituras</label><br>
+              <label><input type="radio" name="adm" value="heatmap" checked="true">Mapa de Calor</label>
+            </div>
+        </div>
+        <div>
+            <a href="javascript:void(0);">Dados</a><div>
+              <label><input type="radio" name="tipo" value="vitimas" checked=true>Vítimas</label><br>
+              <label><input type="radio" name="tipo" value="feridos">Feridos</label><br>
+              <label><input type="radio" name="tipo" value="mortos">Mortos</label>
+          </div>
+        </div>
+        <div>
+            <a href="javascript:void(0);">Período</a><div>
+              <label><input type="radio" name="periodo" value="mes" checked=true>Por mês</label><br>
+              <label><input type="radio" name="periodo" value="ano">Por ano</label><br>
+            <br>
+            Mês: <select name="mes">
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+            </select><br><br>
+            Ano:
+            <input name="ano" size="4" value="{{ano}}" type="text">
+          </div>
+        </div>
+        <div>
+            <a href="javascript:void(0);">Contagem</a><div>
+              <label><input type="radio" name="contagem" value="absolute" checked=true>Absoluta</label><br>
+              <label><input type="radio" name="contagem" value="cem_mil">Por cem mil </label><br>
+          </div>
+        </div>
+        <div>
+            <a href="javascript:void(0);">Tipo de Acidente</a><div>
+            <!--
+CO - Colisão
+CF - Colisão frontal
+CT - Colisão traseira
+CL - Colisão lateral
+CV - Colisão transversal
+CP - Capotamento
+TB - Tombamento
+AT - Atropelamento
+AA - Atropelamento de animal
+CH - Choque
+QM - Queda moto/bicicleta
+QV - Queda veículo
+QD - Queda ocupante dentro
+QF - Queda ocupante fora
+OU - Outros
+SI - Sem informações
+            -->
+              <label><input type="checkbox" name="tipo_acidente" value="CO,CF,CT,CL,CV,CH" checked=true>Colisão</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="CP,TB" checked=true>Capotamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="AT,AA" checked=true>Atropelamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="QM,QV,QD,QF" checked=true>Queda</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="OU" checked=true>Outros</label><br>
+          </div>
+        </div>
+<div>
+            <a href="javascript:void(0);">Tipo de Veículo</a><div>
+            <!--
+A - AU - Auto
+M - MO - Moto
+O - ON - Ônibus
+C - CA - Caminhão
+B - BI - Bicicleta
+X - MT - Moto Táxi
+F - OF - Ônibus Fretado/Internmunicipal
+R - OU - Ônibus Urbano
+N - MC - Microônibus
+V - VA - Van
+U - VC - Vuc
+H - CM - Caminhonete/Camioneta
+T - CR - Carreta
+J - JI - Jipe
+S - OT - Outros
+I - SI - Sem Informação
+Y - CO - Carroça -->
+              <label><input type="checkbox" name="tipo_veiculo" value="AU,CM,JI,VA,VC" checked=true>Carro</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="ON,OF,OU" checked=true>Ônibus</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="BI" checked=true>Bicicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CA,CR" checked=true>Caminhão</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
+          </div>
+        </div>
+      </div>
+
+  </div>
+  <div id="left_column" style="width:100%;position:relative;">
+    <div id="mapa" class="mapa" style="width:100%;height:600px;background:#ccc;">
+        <div id="popup" class="ol-popup">
+            <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+            <div id="popup-content"></div>
+        </div>
+    </div>
+    <div style="position:absolute;top:5px;right:5px;width:200px"><input type="text" name="search">
+    <div style="background-color:#eee;overflow:hidden;width:100%" id="search_results"></div>
+    </div>
+  </div>
+
+  <div id="popup_template" style="display:none">
+      <p class="titulo">$name</p>
+      <p><a href="javascript:void(0);" class="marker_remove">remover</a></p>
+      <p><a href="javascript:void(0);" class="marker_history">relatório</a></p>
+  </div>
+
+  </body>
+    <script type="text/javascript">
+    var size=7;
+    var colors=new Array(size);
+    //colors[0]='64c800';
+    //colors[size-1]='c86400';
+    colors[0]='FFFFFF';
+    colors[size-1]='FF0000';
+    var c0=[parseInt(colors[0].substr(0,2),16),parseInt(colors[0].substr(2,2),16),parseInt(colors[0].substr(4,2),16)];
+    var c1=[parseInt(colors[size-1].substr(0,2),16),parseInt(colors[size-1].substr(2,2),16),parseInt(colors[size-1].substr(4,2),16)];
+    var interval=[(c1[0]-c0[0])/size,(c1[1]-c0[1])/size,(c1[2]-c0[2])/size];
+    console.debug(interval);
+    for(var i=1;i<colors.length-1;i++){
+        colors[i]=lpad(Math.round(c0[0]+i*interval[0]).toString(16))+lpad(Math.round(c0[1]+i*interval[1]).toString(16))+lpad(Math.round(c0[2]+i*interval[2]).toString(16));
+    }
+    console.debug(colors);
+    var hash=[];
+    var layers={};
+    var diacriticsMap = {
+  '\u00C0': 'A',  // À => A
+  '\u00C1': 'A',   // Á => A
+  '\u00C2': 'A',   // Â => A
+  '\u00C3': 'A',   // Ã => A
+  '\u00C4': 'A',   // Ä => A
+  '\u00C5': 'A',   // Å => A
+  '\u00C6': 'AE', // Æ => AE
+  '\u00C7': 'C',   // Ç => C
+  '\u00C8': 'E',   // È => E
+  '\u00C9': 'E',   // É => E
+  '\u00CA': 'E',   // Ê => E
+  '\u00CB': 'E',   // Ë => E
+  '\u00CC': 'I',   // Ì => I
+  '\u00CD': 'I',   // Í => I
+  '\u00CE': 'I',   // Î => I
+  '\u00CF': 'I',   // Ï => I
+  '\u0132': 'IJ', // Ĳ => IJ
+  '\u00D0': 'D',   // Ð => D
+  '\u00D1': 'N',   // Ñ => N
+  '\u00D2': 'O',   // Ò => O
+  '\u00D3': 'O',   // Ó => O
+  '\u00D4': 'O',   // Ô => O
+  '\u00D5': 'O',   // Õ => O
+  '\u00D6': 'O',   // Ö => O
+  '\u00D8': 'O',   // Ø => O
+  '\u0152': 'OE', // Œ => OE
+  '\u00DE': 'TH', // Þ => TH
+  '\u00D9': 'U',   // Ù => U
+  '\u00DA': 'U',   // Ú => U
+  '\u00DB': 'U',   // Û => U
+  '\u00DC': 'U',   // Ü => U
+  '\u00DD': 'Y',   // Ý => Y
+  '\u0178': 'Y',   // Ÿ => Y
+  '\u00E0': 'a',   // à => a
+  '\u00E1': 'a',   // á => a
+  '\u00E2': 'a',   // â => a
+  '\u00E3': 'a',   // ã => a
+  '\u00E4': 'a',   // ä => a
+  '\u00E5': 'a',   // å => a
+  '\u00E6': 'ae', // æ => ae
+  '\u00E7': 'c',   // ç => c
+  '\u00E8': 'e',   // è => e
+  '\u00E9': 'e',   // é => e
+  '\u00EA': 'e',   // ê => e
+  '\u00EB': 'e',   // ë => e
+  '\u00EC': 'i',   // ì => i
+  '\u00ED': 'i',   // í => i
+  '\u00EE': 'i',   // î => i
+  '\u00EF': 'i',   // ï => i
+  '\u0133': 'ij', // ĳ => ij
+  '\u00F0': 'd',   // ð => d
+  '\u00F1': 'n',   // ñ => n
+  '\u00F2': 'o',   // ò => o
+  '\u00F3': 'o',   // ó => o
+  '\u00F4': 'o',   // ô => o
+  '\u00F5': 'o',   // õ => o
+  '\u00F6': 'o',   // ö => o
+  '\u00F8': 'o',   // ø => o
+  '\u0153': 'oe', // œ => oe
+  '\u00DF': 'ss', // ß => ss
+  '\u00FE': 'th', // þ => th
+  '\u00F9': 'u',   // ù => u
+  '\u00FA': 'u',   // ú => u
+  '\u00FB': 'u',   // û => u
+  '\u00FC': 'u',   // ü => u
+  '\u00FD': 'y',   // ý => y
+  '\u00FF': 'y',   // ÿ => y
+  '\uFB00': 'ff', // ﬀ => ff
+  '\uFB01': 'fi',   // ﬁ => fi
+  '\uFB02': 'fl', // ﬂ => fl
+  '\uFB03': 'ffi',  // ﬃ => ffi
+  '\uFB04': 'ffl',  // ﬄ => ffl
+  '\uFB05': 'ft', // ﬅ => ft
+  '\uFB06': 'st'  // ﬆ => st
+};
+function lpad(t){
+    while(t.length<2) t='0'+t;
+    return t;
+}
+function replaceDiacritics(str) {
+  var returnStr = '';
+  if(str) {
+    for (var i = 0; i < str.length; i++) {
+      if (diacriticsMap[str[i]]) {
+        returnStr += diacriticsMap[str[i]];
+      } else {
+        returnStr += str[i];
+      }
+    }
+  }
+  return returnStr;
+}
+function select(i){
+    var j=0;
+    $('#search_results').children('a').each(function () {
+        if(j==i){
+            $(this).addClass('selected');
+        }else{
+            $(this).removeClass('selected');
+        }
+        j++;
+    });
+}
+/**
+ * Elements that make up the popup.
+ */
+var container = document.getElementById('popup');
+var content = document.getElementById('popup-content');
+var closer = document.getElementById('popup-closer');
+
+var selected_marker;
+var points={};
+var featurething;
+var zoom;
+var center;
+var vectorSource;
+
+      var tiled = new ol.layer.Tile({
+        visible: true,
+        source: new ol.source.TileWMS({
+          url: '{{geoserver}}/geoserver/BIGRS/wms',
+          params: {'FORMAT': 'image/png',
+                   'VERSION': '1.1.1',
+                   tiled: true,
+                STYLES: '',
+                LAYERS: 'BIGRS:sirgas_shp_logradouro',
+             tilesOrigin: -46.83525376879412 + "," + -24.012624936562503
+          }
+        })
+      });
+      setHeatMap();
+      function setHeatMap(){
+        var h=getForm();
+        h['FORMAT']='image/png';
+        h['VERSION']='1.1.1';
+        h['STYLES']='';
+        h['LAYERS']='BIGRS:incidentes_params';
+        var ano=h.ano;
+        if(points[ano]==null){
+            $.ajax('/geojson', {data:h,dataType:'json',success:function(j){
+                var geojsonObject = j;
+                var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
+                    featureProjection: 'EPSG:3857'
+                });
+                if(features.length){
+                    console.debug(features);
+                    points[ano] = new ol.source.Vector({
+                      'features': features
+                    });
+                    setHeatMap();
+                }
+            }});
+            return;
+        }
+
+        //console.debug(points.getFeatures());
+
+        //for(var i=0;i<points.getFeatures().length;i++){
+            //console.debug(points.getFeatures()[i].get("data_e_hora"));
+        //}
+        if(layers['heatmap']){
+            map.removeLayer(layers['heatmap']);
+            delete(layers['heatmap']);
+        }
+        layers['heatmap'] =  new ol.layer.Heatmap({
+            source: points[ano],
+            radius: 2
+        });
+
+        map.addLayer(layers['heatmap']);
+
+/*
+          layers['heatmap_image'] = new ol.layer.Image({
+            source: new ol.source.ImageWMS({
+              ratio: 1,
+              url: 'http://192.168.167.8:8080/geoserver/BIGRS/wms',
+              params: h
+            })
+          });*/
+      }
+
+      function getQuantile(value,quantiles){
+        for(var i=0;i<quantiles.length;i++){
+            if(value<quantiles[i]) return i-1;
+        }
+        return i-1;
+      }
+      function hexToRgb(hex) {
+        var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result ? 'rgba('+parseInt(result[1], 16)+','+parseInt(result[2], 16)+','+parseInt(result[3], 16)+',0.5)': null;
+      }
+      function getForm(){
+        var month=$('select[name=mes]').val();
+        var year=$('input[name=ano]').val();
+        if(month>12) month=12;
+        if(month<1) month=1;
+        var p=$('input[name=periodo]:checked').val();
+        var d=new Date(year,month,0);
+        var df=year+'-'+(1+parseInt(d.getMonth()))+'-'+d.getDate();
+        if(p=='ano'){
+            month=1;
+            df=year+'-12-31';
+        }
+        var tipo_acidente=$('input[name=tipo_acidente]:checked').map(function(){
+                return $(this).val();
+            }).get();
+        var cql_filter="tipo_acide in('"+(tipo_acidente.join(",").split(",").join("','"))+"')";
+
+        return {
+            feature_id:$('input[name=feature_id]').val(),
+            adm:$('input[name=adm]:checked').val(),
+            tipo:$('input[name=tipo]:checked').val(),
+            periodo:$('input[name=periodo]:checked').val(),
+            mes:$('select[name=mes]').val(),
+            ano:$('input[name=ano]').val(),
+            contagem:$('input[name=contagem]:checked').val(),
+            viewparams:"data_inicio:"+year+'-'+month+"-01;data_final:"+df,
+            'tipo_veiculo':$('input[name=tipo_veiculo]:checked').map(function(){
+                return $(this).val();
+            }).get(),
+            cql_filter:cql_filter
+        };
+      }
+
+      function loadTheme(){
+        var h=getForm();
+        if(h.adm=='heatmap'){
+            setHeatMap();
+        }
+
+        $.ajax('/theme',{dataType:'json','data':h,success:function(j){
+            var theme={};
+            for(var i=0;i<j.items.length;i++){
+                var k=getQuantile(j.items[i][1],j.percentiles);
+                theme[j.items[i][0]]=hexToRgb(colors[k]);
+            }
+            var l=layers[h.adm];
+            if(!l) return;
+            var s=l.getSource();
+            if(s.getFeatures){
+                var f=layers[h.adm].getSource().getFeatures();
+                for(var i=0;i<f.length;i++){
+                    f[i].color=theme[f[i].get('gid')];
+                }
+                layers[h.adm].getSource().clear();
+                layers[h.adm].getSource().addFeatures(f);
+            }
+            $("table#table_legenda").html('');
+            for(var i=1;i<j.percentiles.length;i++){
+                var tr=$('<tr></tr>');
+                var td=$('<td></td>').addClass('legend_color').css('background-color','#'+colors[i-1]);
+                tr.append(td);
+                tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
+                $("table#table_legenda").append(tr);
+            }
+
+        }});
+      }
+
+      function getStyles(feature, resolution){
+        var nome=$('input[name=adm]:checked').val();
+        switch(nome){
+            case 'distritos':
+                return new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: 'gray',
+                    width: 1
+                  }),
+                  fill: new ol.style.Fill({
+                    color: (feature.color)?feature.color:hexToRgb('#'+colors[0])
+                  }),
+                  text: (resolution<20)?new ol.style.Text({
+                    font: '10px Verdana, sans-serif',
+                    text: feature.get('ds_nome'),
+                    fill: new ol.style.Fill({color: 'black'}),
+                    stroke: new ol.style.Stroke({color: 'white', width: 0.5})
+                  }):null
+                });
+             break;
+             case 'subprefeituras':
+                return new ol.style.Style({
+                  stroke: new ol.style.Stroke({
+                    color: 'gray',
+                    width: 1
+                  }),
+                  fill: new ol.style.Fill({
+                    color: (feature.color)?feature.color:hexToRgb('#'+colors[0])
+                  }),
+                  text: (resolution<100)?new ol.style.Text({
+                    font: '10px Verdana, sans-serif',
+                    text: feature.get('sp_nome'),
+                    fill: new ol.style.Fill({color: 'black'}),
+                    stroke: new ol.style.Stroke({color: 'white', width: 0.5})
+                  }):null
+                });
+             break;
+         }
+      }
+
+      function addVector(g,nome){
+          var source = new ol.source.Vector({
+            features: (new ol.format.GeoJSON()).readFeatures(g)
+          });
+          var distritos = new ol.layer.Vector({
+            source: source,
+            style: getStyles
+          });
+          map.addLayer(distritos);
+          return distritos;
+      }
+
+      var projection = new ol.proj.Projection({
+          code: 'EPSG:4326',
+          units: 'degrees',
+          axisOrientation: 'neu'
+      });
+      var map;
+      var selected=0;
+      $(document).ready(function(){
+        var iconFeature = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([-46.5, -23.5], projection, 'EPSG:3857')),
+        });
+
+        var iconStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+              anchor: [0.5, 32],
+              anchorXUnits: 'fraction',
+              anchorYUnits: 'pixels',
+              src: '/icons/blue.png'
+            })
+        });
+        iconFeature.setStyle(iconStyle);
+        vectorSource = new ol.source.Vector({
+          features: []
+        });
+        var vectorLayer = new ol.layer.Vector({
+            source : vectorSource
+        });
+
+        zoom=12;
+        var c=document.cookie.match(/zoom=(\d+)/);
+        if(c) zoom=parseFloat(c.pop());
+        center=ol.proj.fromLonLat([-46.5, -23.5]);
+        c=document.cookie.match(/center=([^;]+);/);
+        if(c) {
+            c=c.pop().split(/,/);
+            center=[parseFloat(c[0]),parseFloat(c[1])];
+        }
+        popup = new ol.Overlay(/** @type {olx.OverlayOptions} */ ({
+          element: container,
+          autoPan: true,
+          autoPanAnimation: {
+            duration: 250
+          }
+        }));
+        closer.onclick = function() {
+          popup.setPosition(undefined);
+          closer.blur();
+          return false;
+        };
+        map = new ol.Map({
+            target: 'mapa',
+            layers: [
+              tiled
+            ],
+            overlays:[popup],
+            view: new ol.View({
+              'center': center,
+              'zoom': zoom,
+              minZoom: 10,
+              maxZoom: 19
+            })
+        });
+
+        map.on("moveend",function(){
+            document.cookie="center="+map.getView().getCenter();
+            document.cookie="zoom="+map.getView().getZoom();
+        });
+
+        map.on("zoomend",function(){
+            document.cookie="center="+map.getView().getCenter();
+            document.cookie="zoom="+map.getView().getZoom();
+        });
+
+        map.on("click", function(e){
+            var isFeature=false;
+            var coordinate=e.coordinate;
+            var f;
+            map.forEachFeatureAtPixel(e.pixel, function (feature, layer) {
+                f=feature;
+                isFeature=true;
+            })
+            if(isFeature){
+                var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
+                var html=$('#popup_template').html();
+                if(f.getProperties().sp_id){ // subprefeitura
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
+                    html=html.replace(/\$name/,f.getProperties().sp_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }else if(f.getProperties().ds_nome){ // distrito
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
+                    html=html.replace(/\$name/,f.getProperties().ds_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }else if(f.getProperties().name){ //logradouro
+                    $('input[name=feature_id]').val(f.getProperties().codlog)
+                    console.debug(f.getProperties());
+                    html=html.replace(/\$name/,f.getProperties().name);
+                    selected_marker=f;
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').show();
+                }
+
+                popup.setPosition(coordinate);
+
+                $(content).find('a.marker_remove').click(function(){
+                    if(selected_marker)vectorSource.removeFeature(selected_marker);
+                    selected_marker=null;
+                    popup.setPosition(undefined);
+                    closer.blur();
+                });
+                $(content).find('a.marker_history').click(function(){
+                    $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
+                        console.debug(h);
+                    }});
+                });
+                return;
+            }else{
+                if(featurething && vectorSource){
+                    vectorSource.removeFeature(featurething);
+                    featurething=null;
+                }
+            }
+            var lonlat = ol.proj.toLonLat(map.getCoordinateFromPixel(e.pixel));
+            $.ajax('/reverse',{'method':'post',dataType:'json', data:{point:lonlat}, success:function(j){
+                featurething = new ol.Feature({
+                    name: j.endereco,
+                    number: j.numero,
+                    codlog: j.codlog,
+                    geometry: new ol.geom.Point(ol.proj.transform([j.x,j.y], 'EPSG:4326', 'EPSG:3857'))
+                });
+                featurething.setStyle(iconStyle);
+                vectorSource.addFeature( featurething );
+            },error:function(e){
+                alert(e.statusText);
+            }});
+        });
+
+        with(map.getView()){
+            setZoom(zoom);
+            setCenter(center);
+        }
+        //map.addLayer(layers['heatmap']);
+        map.addLayer(vectorLayer);
+
+        function geocode(){
+            var codlog=$("input[name=codlog]").val();
+            var a=$("input[name=search]").val().match(/\d+$/);
+            var numero='0';
+            if(a) numero=a.pop();
+            $.ajax('/geocode', {method:'post',dataType:'json',data:{'numero':numero,'codlog':codlog}, success:function(j){
+                map.getView().setCenter(ol.proj.fromLonLat([j['x'], j['y']]));
+            }});
+        }
+        var term="";
+        var load=function(j){
+            $("#search_results").html('');
+            hash=j;
+            var n=0;
+            for(var i=0;i<j.length;i++){
+                var a=$.extend([],j[i]);
+                var id=a.shift();
+                var t=a.join(" ").replace(/\s+/,' ');
+                if(t.match(new RegExp(replaceDiacritics(term).toUpperCase()))){
+                    $("#search_results").append('<a href="javascript:void(0);" codlog="'+id+'">'+t+"</a>");
+                    n++;
+                    if(n>=20) break;
+                }
+            }
+            select(selected);
+            $('#search_results a').click(function(){
+                selected=0;
+                var a=$(this);
+                $("input[name=search]").val(a.text()+" ");
+                $("input[name=codlog]").val(a.attr('codlog'));
+                $('#search_results').html('');
+                $('input[name=search]').focus();
+            });
+        };
+        $("input[name=search]").keyup(function(e){
+            var text=$("input[name=search]").val();
+            if(text.length==0) $("#search_results").html('');
+            if(term.substr(0,2)==text.substring(0,2)){
+                term=text;
+                load(hash);
+            }else{
+                term=text;
+                if(term.length<2)return;
+                $.ajax('/search',{data:{'term':term},dataType:'json',method:'post',success:load});
+            }
+            switch(e.which){
+                case 38:
+                    selected--;
+                    if(selected<0) selected=$('#search_results').children('a').length-1;
+                    select(selected);
+                break;
+                case 40:
+                    selected++;
+                    if(selected>$('#search_results').children('a').length-1) selected=0;
+                    select(selected);
+                break;
+                case 13:
+                    var ab=$('#search_results').children('a');
+                    if(ab.length>0){
+                        var a=$(ab[selected]);
+                        $("input[name=search]").val(a.text()+" ");
+                        $("input[name=codlog]").val(a.attr('codlog'));
+                        $('#search_results').html('');
+                    }else{
+                        geocode();
+                    }
+                    break;
+            }
+        });
+        $('input[name=adm]').change(function(){
+            var w=$(this).val();
+            for(var k in layers){
+                layers[k].setVisible(false);
+            }
+            if(!layers[w]){
+                $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
+                    layers[w]=addVector(g,w);
+                    loadTheme();
+                }});
+            }else{
+                layers[w].setVisible(true);
+            }
+        })
+        $('input[type=radio],input[type=checkbox],select,input[type=text]').change(function(){
+            loadTheme();
+        });
+        $('input[type=text]').keypress(function(k){
+            if(k.keyCode==13) loadTheme();
+        });
+
+        $('div#filters_box a').click(function(){
+            $(this).parent().siblings().find('div').hide();
+            $(this).parent().find('div').toggle();
+        });
+        $('input[name=periodo]').click(function(){
+            $('select[name=mes]').prop('disabled', !($(this).val()=='mes'));
+        });
+        $('select[name=mes]').prop('disabled', !($('input[name=periodo]:checked').val()=='mes'));
+      });
+    </script>
+</html>

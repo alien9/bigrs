@@ -1,5 +1,8 @@
+#!/usr/bin/env bash
 
 
-#ssh bigrs.alien9.net -t "rm -rf works/bigrs;mkdir works/bigrs"
-rsync -rCv ../bigrs/* bigrs.alien9.net:works/bigrs/
-scp config.production.py bigrs.alien9.net:works/bigrs/config.py
+ssh bigrs.alien9.net -t "sudo chown -R tiago.tiago works/bigrs_django"
+rsync -rCv bigrs bigrs.alien9.net:works/bigrs_django/
+rsync -rCv vector bigrs.alien9.net:works/bigrs_django/
+scp bigrs/bigrs/settings.production.py bigrs.alien9.net:works/bigrs_django/bigrs/bigrs/settings.py
+ssh bigrs.alien9.net -t "sudo chown -R www-data:www-data works/bigrs_django;touch reload"
