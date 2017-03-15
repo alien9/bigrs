@@ -1,11 +1,16 @@
 <html>
-<head><title>BIGRS contador de mobilidade</title>
-<script type="text/javascript">
-    $(document).ready(function(){
-        if(start) start();
-    });
-</script>
-
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+<link rel="stylesheet" href="/static/css/ol.css" type="text/css">
+<script src="/static/js/jquery-3.1.1.min.js"></script>
+<script src="/static/js/ol-debug.js"></script>
+<script src="/static/js/Chart.bundle.min.js"></script>
+<script src="/static/js/diacritics.js"></script>
+    {%block css%}{%endblock%}
+    {%block scripts%}{%endblock%}
+<title>BIGRS</title>
 </head>
 <body>
 {% block contents %}

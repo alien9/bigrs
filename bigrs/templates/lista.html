@@ -1,22 +1,33 @@
 {% extends 'base.html' %}
+{% block css %}{% endblock %}
 {% block contents %}
 <a href="javascript:void(0);" id="nova_contagem">nova...</a>
 <div class="nova_contagem">
+
 <form action="/nova_contagem" method="post" enctype="multipart/form-data">{% csrf_token %}
-  <input type="text" name="endereco">
-  <input type="file" name="file">
-  <input type="submit" value="Submit">
-</form></div>
+  <table>
+      <tr><td>Local:</td><td><input type="text" name="endereco"></td></tr>
+      <tr><td>Vídeo:</td><td><input type="file" name="file"></td></tr>
+  <tr><td colspan="2"><input type="submit" value="Submit">
+  </td></tr>
+  </table>
+</form>
+    </div>
 <div class="lista_contagens">
   {%for c in contagens%}
   <div class="contagem">
-    <a href="javascript:void(0);">{{c.endereco}}</a>
+    <a href="/contador/{{c.id}}" contagem="{{c.id}}">{{c.data_e_hora_inicio}} {{c.endereco}} {{c.nome_do_arquivo}}</a>
   </div>
   {%endfor%}
 </div>
 {%endblock%}
 {% block scripts %}
 <script type="text/javascript">
+$(document).ready(function(){
+    $(".lista_contagens a").click(function(){
+        //alert($(this).attr('contagem'));
+    });
+});
     function start(){
         console.debug('startando');
     }

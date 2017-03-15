@@ -25,7 +25,7 @@ SECRET_KEY = '!0$-#hm0-i*&z+uk!1+7&+4xa_09lry*etganx429$j(i*-hyz'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*','bigrs.alien9.net']
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -38,6 +38,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'maps',
+    'social_django',
+    'social.apps.django_app.default',
 ]
 
 MIDDLEWARE = [
@@ -48,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'social.apps.django_app.middleware.SocialAuthExceptionMiddleware',
 ]
 
 ROOT_URLCONF = 'bigrs.urls'
@@ -59,10 +62,12 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'social.apps.django_app.context_processors.backends',
+                'social.apps.django_app.context_processors.login_redirect',
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
             ],
         },
     },
@@ -70,10 +75,32 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'bigrs.wsgi.application'
 
+SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['me@foo.com', 'you@bar.com', 'barufi@gmail.com', 'tiago@bigrs.org']
 
-
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
+SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '853484359918-tvh363pm7jt4oo21u34fb4v08u9r55bm.apps.googleusercontent.com'
+SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '53O4A1t2OBtDoIwOiIPHWyUO'
+SOCIAL_AUTH_AUTHENTICATION_BACKENDS = (
+    'social_core.backends.open_id.OpenIdAuth',
+    'social_core.backends.google.GoogleOpenId',
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.google.GoogleOAuth',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.yahoo.YahooOpenId',
+    'django.contrib.auth.backends.ModelBackend',
+)
+AUTHENTICATION_BACKENDS = (
+    'social_core.backends.open_id.OpenIdAuth',
+    'social_core.backends.google.GoogleOpenId',
+    'social_core.backends.google.GoogleOAuth2',
+    'social_core.backends.google.GoogleOAuth',
+    'social_core.backends.twitter.TwitterOAuth',
+    'social_core.backends.yahoo.YahooOpenId',
+    'django.contrib.auth.backends.ModelBackend',
+)
+SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile'
+]
 
 DATABASES = {
     'default': {
@@ -126,6 +153,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS=[ os.path.join(os.path.dirname(BASE_DIR), 'static') ]
 geoserver="http://bigrs.alien9.net:8080"
+#STATIC_ROOT=os.path.join(os.path.dirname(BASE_DIR), 'static')
+
+VIDEO_FILES_ROOT='static/video'
+#'/var/www/html/video'
+VIDEO_URL_ROOT='http://localhost:81/video/'
 #STATIC_ROOT=os.path.join(os.path.dirname(BASE_DIR), 'static')
 
 if DEBUG:

@@ -10,3 +10,4 @@ itsdangerous
 apiclient
 oauth2client
 discovery
+python-social-auth
