@@ -41,6 +41,7 @@ var vectorSource;
 //setHeatMap();
 function setHeatMap(){
     var h=getForm();
+    console.debug(h);
     h['FORMAT']='image/png';
     h['VERSION']='1.1.1';
     h['STYLES']='';
@@ -127,8 +128,8 @@ function loadTheme(){
     var h=getForm();
     if(h.adm=='heatmap'){
         setHeatMap();
+        return;
     }
-
     $.ajax('/theme',{dataType:'json','data':h,success:function(j){
         var theme={};
         for(var i=0;i<j.items.length;i++){
@@ -449,10 +450,12 @@ function start(){
             layers[k].setVisible(false);
         }
         if(!layers[w]){
-            $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
-                layers[w]=addVector(g,w);
-                loadTheme();
-            }});
+            if(w!='adm'){}
+                $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
+                    layers[w]=addVector(g,w);
+                    loadTheme();
+                }});
+            }
         }else{
             layers[w].setVisible(true);
         }
@@ -472,4 +475,5 @@ function start(){
         $('select[name=mes]').prop('disabled', !($(this).val()=='mes'));
     });
     $('select[name=mes]').prop('disabled', !($('input[name=periodo]:checked').val()=='mes'));
+    setHeatMap();
 }
