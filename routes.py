@@ -62,11 +62,11 @@ for d in r:
     #cursor.execute("update od_2007_v2d set o_geom=st_transform(st_geomfromewkt('SRID=22523;POINT('||co_o_x||' '||co_o_y||')'),31983),d_geom=st_transform(st_geomfromewkt('SRID=22523;POINT('||co_d_x||' '||co_d_y||')'),31983)")
     #geocodifica
     cursor.execute(
-        "select gid,source,target,st_linemerge(geom) from sirgas_shp_logradouro order by geom <-> ST_GeomFromWKb(%s::geometry) limit 1",
+        "select gid,source,target,st_linemerge(geom) from segmento_viario order by geom <-> ST_GeomFromWKb(%s::geometry) limit 1",
         (d[0],))
     origem = cursor.fetchone()
     print(origem)
-    cursor.execute("select gid,source,target,st_linemerge(geom) from sirgas_shp_logradouro order by geom <-> ST_GeomFromWKb(%s::geometry) limit 1",(d[1],))
+    cursor.execute("select gid,source,target,st_linemerge(geom) from segmento_viario order by geom <-> ST_GeomFromWKb(%s::geometry) limit 1",(d[1],))
     destino=cursor.fetchone()
     print(destino)
     cursor.execute(
@@ -85,7 +85,7 @@ for d in r:
         print(str(d[2])+": "+str(origem[1])+" to "+str(destino[2]))
         #roteiriza
         cursor.execute(
-            "select * from pgr_dijkstra('SELECT gid as id,source, target, st_length(geom) as cost, st_length(geom) as reverse_cost FROM sirgas_shp_logradouro', %s,%s)",
+            "select * from pgr_dijkstra('SELECT gid as id,source, target, st_length(geom) as cost, st_length(geom) as reverse_cost FROM segmento_viario', %s,%s)",
             (origem[1],destino[2],)
         )
         res=cursor.fetchall();
@@ -93,11 +93,11 @@ for d in r:
         for ru in res:
             print("part")
             if ru[3]>0:
-                cursor.execute("insert into od_logradouro(logradouro_gid,od_gid) VALUES (%s,%s)",(ru[3],d[2],))
+                cursor.execute("insert into od_segmento(segmento_gid,od_gid) VALUES (%s,%s)",(ru[3],d[2],))
             print(ru[3])
             if ru[3]>0 and ru[3]!=origem[0] and ru[3]!=destino[0]:
                 print("grande")
-                cursor.execute("update od_2007_v2d set geom=case when geom is null then (select geom from sirgas_shp_logradouro where gid=%s) else st_multi(bigrs.joinlinestrings(st_linemerge(geom),(select st_linemerge(geom) from sirgas_shp_logradouro where gid=%s))) end where gid=%s", (ru[3],ru[3],d[2]))
+                cursor.execute("update od_2007_v2d set geom=case when geom is null then (select geom from segmento_viario where gid=%s) else st_multi(bigrs.joinlinestrings(st_linemerge(geom),(select st_linemerge(geom) from segmento_viario where gid=%s))) end where gid=%s", (ru[3],ru[3],d[2]))
         if len(res) < 3:
             print("cria nova geometria")
             if len(res) < 2:

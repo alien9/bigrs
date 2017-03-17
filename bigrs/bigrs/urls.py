@@ -32,7 +32,7 @@ urlpatterns = [
     url(r'^reverse', views.reverse),
     url(r'^search', views.search),
     url(r'^geocode', views.geocode),
-
+    url(r'^socialauth-error', views.social_error),
     url('', include('social.apps.django_app.urls', namespace='social')),
 ]
 urlpatterns += staticfiles_urlpatterns()

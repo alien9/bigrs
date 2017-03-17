@@ -9,8 +9,8 @@
 <script src="/static/js/contador.js"></script>
 {% endblock %}
 {%block contents%}
-<body>
-<div class="main">
+<body>{{root}}{{arq}}
+<div class="main">{{root}}{{arq}}
 <div class="subcontainer" style="float: left;width:800px;">
     <video id="my-video" class="video-js" controls preload="metadata" width="800" height="480"
            poster="MY_VIDEO_POSTER.jpg" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2, 3, 4] }'>

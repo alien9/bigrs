@@ -23,9 +23,9 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = '!0$-#hm0-i*&z+uk!1+7&+4xa_09lry*etganx429$j(i*-hyz'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.gis',
     'maps',
     'social_django',
     'social.apps.django_app.default',
@@ -74,8 +75,10 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'bigrs.wsgi.application'
+SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_DOMAINS = ['bigrs.org','cetsp.com.br']
+#SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['me@foo.com', 'you@bar.com', '*@bigrs.org']
+SOCIAL_AUTH_LOGIN_ERROR_URL = '/socialauth-error'
 
-SOCIAL_AUTH_GOOGLE_OAUTH2_WHITELISTED_EMAILS = ['me@foo.com', 'you@bar.com', 'barufi@gmail.com', 'tiago@bigrs.org']
 
 SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = '853484359918-tvh363pm7jt4oo21u34fb4v08u9r55bm.apps.googleusercontent.com'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = '53O4A1t2OBtDoIwOiIPHWyUO'
@@ -106,7 +109,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',
         'NAME': "bigrs",
         'PASSWORD':'bigrs',
         'HOST':'localhost',
@@ -159,7 +162,7 @@ geoserver="http://bigrs.alien9.net:8080"
 
 VIDEO_FILES_ROOT='static/video'
 #'/var/www/html/video'
-VIDEO_URL_ROOT='http://localhost:81/video/'
+VIDEO_URL_ROOT='http://localhost:81/'
 #STATIC_ROOT=os.path.join(os.path.dirname(BASE_DIR), 'static')
 
 if DEBUG:

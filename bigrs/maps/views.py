@@ -167,9 +167,6 @@ def lista_contagens(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
     contagens=Contagem.objects.all()
-    for c in contagens:
-        print(c)
-        print(os.stat(VIDEO_FILES_ROOT+'/'+c.nome_do_arquivo))
     return render(request,'lista.html',{'contagens':contagens})
 
 def nova_contagem(request):
@@ -202,13 +199,14 @@ def auth(request):
     print(user)
     if user is not None:
         login(request, user)
-        return redirect(contador)
+        return redirect(index)
     else:
         return render(request,'login.html')
 
+
 def log_out(request):
     logout(request)
-    return render(request,'login.html')
+    return redirect(index)
 
 def purge(s):
     return ''.join((c for c in unicodedata.normalize('NFD', s) if unicodedata.category(c) != 'Mn'))
@@ -255,3 +253,6 @@ def geocode(request):
     cur.execute("select bigrs.geocode(%s, %s)", (codlog,numero,))
     r=cur.fetchone()
     return JsonResponse(json.loads(r[0]),safe=False)
+
+def social_error(request):
+    return render(request,'socialauth-error.html')
