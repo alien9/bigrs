@@ -450,7 +450,7 @@ function start(){
             layers[k].setVisible(false);
         }
         if(!layers[w]){
-            if(w!='adm'){}
+            if(w!='adm'){
                 $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
                     layers[w]=addVector(g,w);
                     loadTheme();
