@@ -1,19 +1,18 @@
 {% extends 'base.html' %}
 {% block css %}
 <link href="http://vjs.zencdn.net/5.16.0/video-js.css" rel="stylesheet">
-<link href="/static/css/contador.css" rel="stylesheet">
+<link href="/static/css/contador.css?k={{timestamp}}" rel="stylesheet">
 {% endblock %}
 {%block scripts%}
 <script src="/static/js/video.min.js"></script>
 <script src="/static/js/timecode.js"></script>
-<script src="/static/js/contador.js"></script>
+<script src="/static/js/contador.js?k={{timestamp}}"></script>
 {% endblock %}
 {%block contents%}
-<body>{{root}}{{arq}}
-<div class="main">{{root}}{{arq}}
-<div class="subcontainer" style="float: left;width:800px;">
-    <video id="my-video" class="video-js" controls preload="metadata" width="800" height="480"
-           poster="MY_VIDEO_POSTER.jpg" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2, 3, 4] }'>
+<body>
+<div class="main">
+<div class="subcontainer" style="background-color:yellow;width:70%">
+    <video id="my-video" class="video-js" controls preload="metadata" width="1000px" height="100%" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2, 3, 4] }'>
         <source src="{{root}}{{arq}}" type='video/mpeg'>
         <source src="{{root}}{{arq}}" type='video/mp4'>
         <p class="vjs-no-js">
@@ -25,8 +24,9 @@
         <a href="javascript:void(0);" class="control"></a>
     </div>
 </div>
-<div class="subcontainer" style="width:400px">
-    <div id="map"/>
+<div class="subcontainer" style="width:20%;background-color:red;">
+    <div id="map" style="width:200px;height:200px;">
+    </div>
 </div>
 </div>
 <script type="text/javascript">

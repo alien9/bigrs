@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 import json,time,memcache,re,calendar,os,numpy,unicodedata
-from datetime import date
+from datetime import date,datetime
 from bigrs.settings import *
 from django.core.files.storage import FileSystemStorage
 from maps.models import *
@@ -158,7 +158,7 @@ def contador(request,contador_id):
     if request.user.is_authenticated:
         filename=Contagem.objects.get(pk=contador_id).movie.url
         print(filename)
-        return render(request,'contador.html', {'arq':filename, 'root':VIDEO_URL_ROOT,'geoserver':geoserver})
+        return render(request,'contador.html', {'arq':filename, 'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
     else:
         print("nao autenticado")
         return render(request,'login.html')
