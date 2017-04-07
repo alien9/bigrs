@@ -150,15 +150,26 @@ def reverse(request):
         j['geometry']=cur.fetchall();
     return JsonResponse(j)
 
+def reverse_geocode(request):
+    lat = request.POST.get('latitude')
+    lon = request.POST.get('longitude')
+    conn = connection.cursor().connection
+    cur = conn.cursor()
+    cur.execute("select bigrs.logradouro_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
+    j={
+        'nome':cur.fetchone()
+    }
+    return JsonResponse(j)
+
 def conta(request):
     j={'result':'ok'}
     return JsonResponse(j)
 
 def contador(request,contador_id):
     if request.user.is_authenticated:
-        filename=Contagem.objects.get(pk=contador_id).movie.url
-        print(filename)
-        return render(request,'contador.html', {'arq':filename, 'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
+        contagem=Contagem.objects.get(pk=contador_id)
+        print(contagem.location)
+        return render(request,'contador.html', {'contagem':contagem, 'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
     else:
         print("nao autenticado")
         return render(request,'login.html')
@@ -184,7 +195,6 @@ def nova_contagem(request):
         )
         contagem.save()
     return redirect(lista_contagens)
-
 
 def auth(request):
     if request.POST:

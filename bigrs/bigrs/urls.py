@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^lista', views.lista_contagens),
     url(r'^nova_contagem', views.nova_contagem),
     url(r'^logout', views.log_out),
+    url(r'^reverse_geocode', views.reverse_geocode),
     url(r'^reverse', views.reverse),
     url(r'^search', views.search),
     url(r'^geocode', views.geocode),

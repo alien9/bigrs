@@ -17,4 +17,9 @@ class Contado(models.Model):
     tipo=models.TextField(max_length=100)
     data_e_hora_final = models.DateTimeField(auto_now_add=True, blank=True)
 
+class Spot(models.Model):
+    contagem=models.ForeignKey(Contagem)
+    location = gis_models.PointField(srid=4326)
+    endereco = models.TextField(max_length=100)
+    alias = models.TextField(max_length=10)
 

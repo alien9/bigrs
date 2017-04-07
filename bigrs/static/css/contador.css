@@ -8,7 +8,7 @@
 .main{
     padding:0;
     margin:0;
-    background-color:purple;
+    background-color:black;
     overflow: hidden;
     vertical-align:middle;
 }
@@ -25,10 +25,91 @@ html,body{
     margin:0;
     padding:0;
 }
+body{
+    font-family:sans-serif;
+}
 .my-video-dimensions{
     height:100%;
-    background-color:orange;
 }
 video{
     width:1200px;
+    padding:20px;
+}
+
+#control_panel a{
+    width:60px;
+    height:75px;
+    text-decoration:none;
+    display:block;
+    background-size: 60px 75px;
+    background-repeat: no-repeat;
+}
+.sub_panel{
+    float:left;
+    width:50%;
+}
+#teclado_numerico{
+    position: relative;
+    background-color:yellow;
+    padding:0;
+}
+
+.aspect-ratio {
+  position:relative;
+  width: 100%;
+  height: auto;
+  clear:all;
+}
+.content {
+    background-color:green;
+    position: absolute;
+    width: 100%;
+    top: 0; left: 0;
+    display:none;
+}
+#map{
+    background-color:white;
+}
+
+a.bici{
+    background-image:url(/static/images/icons/bici.png);
+}
+a.brt{
+    background-image:url(/static/images/icons/brt.png);
+}
+a.cadeirante{
+    background-image:url(/static/images/icons/cadeirante.png);
+}
+a.caminhao{
+    background-image:url(/static/images/icons/caminhao.png);
+}
+a.carro{
+    background-image:url(/static/images/icons/carro.png);
+}
+a.microonibus{
+    background-image:url(/static/images/icons/microonibus.png);
+}
+a.moto{
+    background-image:url(/static/images/icons/moto.png);
+}
+a.onibus{
+    background-image:url(/static/images/icons/onibus.png);
+}
+a.pedestre{
+    background-image:url(/static/images/icons/pedestre.png);
+}
+a.taxi{
+    background-image:url(/static/images/icons/taxi.png);
+}
+a.triciclo{
+    background-image:url(/static/images/icons/triciclo.png);
+}
+a.vlt{
+    background-image:url(/static/images/icons/vlt.png);
+}
+a.brt{
+    background-image:url(/static/images/icons/brt.png);
+}
+a.vuc{
+    background-image:url(/static/images/icons/vuc.png);
 }
