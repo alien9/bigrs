@@ -4,6 +4,9 @@ from django.contrib.gis.admin.options import GeoModelAdmin
 # Register your models here.
 from maps.models import *
 
+class SpotInline(admin.TabularInline):
+    model=Spot
+
 class ContagemAdmin(GeoModelAdmin):
     list_display = ('endereco',)
     default_lon = -46.5
@@ -14,4 +17,6 @@ class ContagemAdmin(GeoModelAdmin):
     default_zoom = 16
     units=True
     num_zoom = 18
+    inlines=[SpotInline]
+
 admin.site.register(Contagem,ContagemAdmin)

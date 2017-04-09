@@ -19,7 +19,8 @@ class Contado(models.Model):
 
 class Spot(models.Model):
     contagem=models.ForeignKey(Contagem)
-    location = gis_models.PointField(srid=4326)
     endereco = models.TextField(max_length=100)
     alias = models.TextField(max_length=10)
+    x=models.DecimalField(decimal_places=10,max_digits=30)
+    y=models.DecimalField(decimal_places=10,max_digits=30)
 
