@@ -56,8 +56,15 @@
 <script type="text/javascript">
 var map,featureOverlay,features;
 var pontos=[];
+{% autoescape on %}
+{% for spot in spots%}
+pontos.push([{{spot.x}},{{spot.y}},'{{spot.endereco}}','{{spot.alias}}']);
+{% endfor %}
+{% endautoescape %}
     GEOSERVER='{{geoserver}}';
     {%if contagem.location != None %}
+
+
     MAP_CENTER=[{{contagem.location.x}},{{contagem.location.y}}];
     {%endif%}
     $(document).ready(function(){

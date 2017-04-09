@@ -39,7 +39,7 @@ function start(){
             url: 'http://bigrs.alien9.net:8080/geoserver/BIGRS/wms',
             params: {'FORMAT': format,
                    'VERSION': '1.1.1',
-                STYLES: '',
+                STYLES: 'logradouros labels small',
                 LAYERS: 'BIGRS:labels',
             }
         })
@@ -72,17 +72,26 @@ function start(){
     });
     //var
     features = new ol.Collection();
+    var vectorSource=new ol.source.Vector({features: features});
     //var
     featureOverlay = new ol.layer.Vector({
-        source: new ol.source.Vector({features: features}),
+        source: vectorSource,
         style: drawtext
     });
     featureOverlay.setMap(map);
+    for(var i=0;i<pontos.length;i++){
+        var thing = new ol.geom.Point([pontos[i][0],pontos[i][1]]);
+        var featurething = new ol.Feature({
+            label: pontos[i][3],
+            geometry: thing
+        });
+        vectorSource.addFeature( featurething );
+    }
+
+
+    /*
     var modify = new ol.interaction.Modify({
         features: features,
-        // the SHIFT key must be pressed to delete vertices, so
-        // that new vertices can be drawn at the same position
-        // of existing vertices
         deleteCondition: function(event) {
           return ol.events.condition.shiftKeyOnly(event) &&
               ol.events.condition.singleClick(event);
@@ -120,11 +129,9 @@ function start(){
     if (dragPan) {
       map.removeInteraction(dragPan);
     }
-    /**
-    * Handle change event.
     */
 
-    addInteraction();
+    //addInteraction();
 
     if(typeof MAP_CENTER != "undefined"){
         map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
@@ -176,17 +183,18 @@ function drawtext(e){
                 width: 2
             }),
             image: new ol.style.Circle({
-                radius: 7,
+                radius: 10,
                 fill: new ol.style.Fill({
                   color: '#ffcc33'
                 })
             })
         }),new ol.style.Style({
             text: new ol.style.Text({
-                text: ""+e.label,
+                text: ""+e.getProperties().label,
                 fill: new ol.style.Fill({
-                    color: '#fff'
-                })
+                    color: '#000'
+                }),
+                scale:1.6
             })
     })];
 

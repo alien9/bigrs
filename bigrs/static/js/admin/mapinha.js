@@ -49,6 +49,15 @@ map.isValidZoomLevel = function(zoomLevel) {
         var g=e.feature.geometry;
         map.setCenter(new OpenLayers.LonLat(g.x,g.y).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), 17);
     });
+
+    layer = new OpenLayers.Layer.WMS( "OpenLayers WMS",
+                    "http://vmap0.tiles.osgeo.org/wms/vmap0",
+                    {
+                        layers: 'BIGRS:labels',
+                        styles: 'logradouros labels small'
+                    } );
+    map.addLayer(layer);
+
     vectors = new OpenLayers.Layer.Vector("Points", {
             styleMap: new OpenLayers.StyleMap({'default':{
                 fillOpacity: 0.5,
@@ -66,7 +75,7 @@ map.isValidZoomLevel = function(zoomLevel) {
         });
     map.addLayer(vectors);
     var i=0;
-    var features=[];
+    features=[];
     while($("#spot_set-"+i).length){
         if($("#id_spot_set-"+i+"-x").val()!=""){
              features.push(new OpenLayers.Feature.Vector(
@@ -81,7 +90,6 @@ map.isValidZoomLevel = function(zoomLevel) {
          }
         i++;
     }
-    console.debug(features);
     vectors.addFeatures(features);
 
     dc=new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Point);
@@ -111,5 +119,12 @@ map.isValidZoomLevel = function(zoomLevel) {
             i++;
         }
     });
+    $("#undo").click(function(){
+        var fu=features.pop();
+        vectors.removeFeatures(fu);
+        var i=fu.attributes.name-1;
+        $("#id_spot_set-"+i+"-DELETE").prop('checked', true);
+    });
+
 });
 })(django.jQuery);
