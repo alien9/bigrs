@@ -168,8 +168,7 @@ def conta(request):
 def contador(request,contador_id):
     if request.user.is_authenticated:
         contagem=Contagem.objects.get(pk=contador_id)
-        print(contagem.location)
-        return render(request,'contador.html', {'contagem':contagem, 'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
+        return render(request,'contador.html', {'contagem':contagem, 'spots':contagem.spot_set.all(),'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
     else:
         print("nao autenticado")
         return render(request,'login.html')

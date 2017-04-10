@@ -39,7 +39,7 @@ function start(){
             url: 'http://bigrs.alien9.net:8080/geoserver/BIGRS/wms',
             params: {'FORMAT': format,
                    'VERSION': '1.1.1',
-                STYLES: '',
+                STYLES: 'logradouros labels small',
                 LAYERS: 'BIGRS:labels',
             }
         })
@@ -72,60 +72,21 @@ function start(){
     });
     //var
     features = new ol.Collection();
+    var vectorSource=new ol.source.Vector({features: features});
     //var
     featureOverlay = new ol.layer.Vector({
-        source: new ol.source.Vector({features: features}),
+        source: vectorSource,
         style: drawtext
     });
     featureOverlay.setMap(map);
-    var modify = new ol.interaction.Modify({
-        features: features,
-        // the SHIFT key must be pressed to delete vertices, so
-        // that new vertices can be drawn at the same position
-        // of existing vertices
-        deleteCondition: function(event) {
-          return ol.events.condition.shiftKeyOnly(event) &&
-              ol.events.condition.singleClick(event);
-        }
-    });
-
-    features.on("add", function (e) {
-        e.element.label=""+(features.getLength());
-        collectpoints();
-    });
-
-
-    map.addInteraction(modify);
-    modify.on('modifyend', function(e) {
-        collectpoints();
-    });
-
-
-    var draw; // global so we can remove it later
-
-    function addInteraction() {
-        draw = new ol.interaction.Draw({
-          features: features,
-          type: "Point"
+    for(var i=0;i<pontos.length;i++){
+        var thing = new ol.geom.Point([pontos[i][0],pontos[i][1]]);
+        var featurething = new ol.Feature({
+            label: pontos[i][3],
+            geometry: thing
         });
-        map.addInteraction(draw);
+        vectorSource.addFeature( featurething );
     }
-
-    var dragPan;
-    map.getInteractions().forEach(function(interaction) {
-      if (interaction instanceof ol.interaction.DragPan) {
-        dragPan = interaction;
-      }
-    }, this);
-    if (dragPan) {
-      map.removeInteraction(dragPan);
-    }
-    /**
-    * Handle change event.
-    */
-
-    addInteraction();
-
     if(typeof MAP_CENTER != "undefined"){
         map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
         map.getView().setZoom(18);
@@ -176,17 +137,18 @@ function drawtext(e){
                 width: 2
             }),
             image: new ol.style.Circle({
-                radius: 7,
+                radius: 10,
                 fill: new ol.style.Fill({
                   color: '#ffcc33'
                 })
             })
         }),new ol.style.Style({
             text: new ol.style.Text({
-                text: ""+e.label,
+                text: ""+e.getProperties().label,
                 fill: new ol.style.Fill({
-                    color: '#fff'
-                })
+                    color: '#000'
+                }),
+                scale:1.6
             })
     })];
 
@@ -200,12 +162,74 @@ function keyup(e){
 
         console.log(n);
     }else if((e.keyCode==189)||(e.keyCode==187)){
-$("#od").text($("#od").text()+"→");
+        $("#od").text($("#od").text()+"→");
     }
-
+    var k;
     switch(e.keyCode){
+        case 33:
+        case 105:
+        //9
+        k=9;
+        break;
+        case 38:
+        case 104:
+        //8
+        k=8;
+        break;
+        case 36:
+        case 103:
+        //7
+        k=7;
+        break;
+        case 39:
+        case 102:
+        //6
+        k=6;
+        break;
+        case 12:
+        case 101:
+        //5
+        k=5;
+        break;
+        case 37:
+        case 100:
+        //4
+        k=4;
+        break;
+        case 34:
+        case 99:
+        //3
+        k=3;
+        break;
+        case 40:
+        case 98:
+        //2
+        k=2;
+        break;
+        case 35:
+        case 97:
+        //1
+        k=1;
+        break;
+        case 45:
+        case 96:
+        //0
+        k='0';
+        break;
+        case 46:
+        case 108:
+        //.
+        k='_';
+        break;
+
         default:
         break;
+    }
+    if(k!=null){
+        $('.t'+k).css({'backgroundColor':'white'});
+        $('.t'+k).stop().animate( {'backgroundColor':'#ccc'}, 500);
+        var p = videojs('my-video');
+
     }
 }
 function getOd(){

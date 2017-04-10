@@ -13,3 +13,4 @@ discovery
 django
 uwsgi
 social-auth-app-django
+exifread

@@ -5,6 +5,7 @@
 
 {% endblock %}
 {%block scripts%}
+<script src="/static/js/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
 <script src="/static/js/video.min.js"></script>
 <script src="/static/js/timecode.js"></script>
 <script src="/static/js/contador.js?k={{timestamp}}"></script>
@@ -41,8 +42,17 @@
             </div>
         </div>
         <div id="teclado_numerico">
-           <img class="aspect-ratio" src="/static/images/teclado-numerico.jpg" height="auto" />
-           <div class="content">Content</div>
+            <div class="tecla t7"><div class="subtecla moto">7<div class="tecla_detalhe">Home</div></div></div>
+            <div class="tecla t8"><div class="subtecla pedestre">8<div class="tecla_detalhe">↑</div></div></div>
+            <div class="tecla t9"><div class="subtecla bici">9<div class="tecla_detalhe">PgUp</div></div></div>
+            <div class="tecla t4"><div class="subtecla microonibus">4<div class="tecla_detalhe">←</div></div></div>
+            <div class="tecla t5"><div class="subtecla onibus">5<div class="tecla_detalhe"></div></div></div>
+            <div class="tecla t6"><div class="subtecla brt">6<div class="tecla_detalhe">→</div></div></div>
+            <div class="tecla t1"><div class="subtecla vuc">1<div class="tecla_detalhe">End</div></div></div>
+            <div class="tecla t2"><div class="subtecla caminhao">2<div class="tecla_detalhe">↓</div></div></div>
+            <div class="tecla t3"><div class="subtecla">3<div class="tecla_detalhe">PgDn</div></div></div>
+            <div class="tecla t0" style="width:184px;"><div class="subtecla carro">0<div class="tecla_detalhe">Ins</div></div></div>
+            <div class="tecla t_"><div class="subtecla">.<div class="tecla_detalhe">Del</div></div></div>
         </div>
         <div id="listagem_pontos">
             <form name="points">{% csrf_token %}
@@ -56,8 +66,15 @@
 <script type="text/javascript">
 var map,featureOverlay,features;
 var pontos=[];
+{% autoescape on %}
+{% for spot in spots%}
+pontos.push([{{spot.x}},{{spot.y}},'{{spot.endereco}}','{{spot.alias}}']);
+{% endfor %}
+{% endautoescape %}
     GEOSERVER='{{geoserver}}';
     {%if contagem.location != None %}
+
+
     MAP_CENTER=[{{contagem.location.x}},{{contagem.location.y}}];
     {%endif%}
     $(document).ready(function(){
