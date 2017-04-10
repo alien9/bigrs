@@ -155,7 +155,7 @@ def reverse_geocode(request):
     lon = request.POST.get('longitude')
     conn = connection.cursor().connection
     cur = conn.cursor()
-    cur.execute("select bigrs.logradouro_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
+    cur.execute("select bigrs.get_segmento_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
     j={
         'nome':cur.fetchone()
     }
