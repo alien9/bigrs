@@ -122,7 +122,10 @@ function reverse_geocode(p,tr){
         $(tr).find('[name=latitude]').val(p[1]);
         $(tr).find('[name=longitude]').val(p[0]);
         $.ajax('/reverse_geocode',{dataType:'json',method:'post', data:{latitude:p[1],longitude:p[0],csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()}, success:function(h){
-            $(tr).find('td.nome').text(h.nome);
+            if(h.nome.length>0)
+                $(tr).find('td.nome').text(h.nome);
+            else
+                $(tr).find('td.nome').text(" * ");
         }});
     }
 }

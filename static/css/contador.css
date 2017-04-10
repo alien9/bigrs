@@ -1,14 +1,137 @@
 .subcontainer{
-    background-color:lime;
+    background-color:gray;
     display:inline-block;
-    width:50%;
-    min-height:300px;
+    height:100%;
     padding:0;
     margin:0;
 }
 .main{
     padding:0;
     margin:0;
-    background-color:purple;
+    background-color:black;
     overflow: hidden;
+    vertical-align:middle;
+}
+#map {
+    clear: both;
+    position: relative;
+    width: 638px;
+    height: 768px;
+    border: 1px solid black;
+}
+html,body{
+    width:100%;
+    height:100%;
+    margin:0;
+    padding:0;
+}
+body{
+    font-family:sans-serif;
+}
+.my-video-dimensions{
+    height:100%;
+}
+video{
+    width:1200px;
+    padding:20px;
+}
+
+#control_panel a{
+    width:60px;
+    height:75px;
+    text-decoration:none;
+    display:block;
+    background-size: 60px 75px;
+    background-repeat: no-repeat;
+}
+.sub_panel{
+    float:left;
+    width:50%;
+}
+#teclado_numerico{
+    position: relative;
+    background-color:white;
+    padding:0;
+}
+
+.aspect-ratio {
+  position:relative;
+  width: 100%;
+  height: auto;
+  clear:all;
+}
+.content {
+    background-color:gray;
+    position: absolute;
+    width: 100%;
+    top: 0; left: 0;
+    display:none;
+}
+#map{
+    background-color:white;
+}
+
+.bici{
+    background-image:url(/static/images/icons/bici.png);
+}
+.brt{
+    background-image:url(/static/images/icons/brt.png);
+}
+.caminhao{
+    background-image:url(/static/images/icons/caminhao.png);
+}
+.carro{
+    background-image:url(/static/images/icons/carro.png);
+}
+.microonibus{
+    background-image:url(/static/images/icons/microonibus.png);
+}
+.moto{
+    background-image:url(/static/images/icons/moto.png);
+}
+.onibus{
+    background-image:url(/static/images/icons/onibus.png);
+}
+.pedestre{
+    background-image:url(/static/images/icons/pedestre.png);
+}
+.taxi{
+    background-image:url(/static/images/icons/taxi.png);
+}
+.triciclo{
+    background-image:url(/static/images/icons/triciclo.png);
+}
+.vlt{
+    background-image:url(/static/images/icons/vlt.png);
+}
+.vuc{
+    background-image:url(/static/images/icons/vuc.png);
+}
+.tecla{
+    width:84px;
+    float:left;
+    height:84px;
+    margin:6px;
+    border-radius: 15px;
+    border-width: 2px;
+    border-style: solid;
+    background-color:lightgray;
+    background-repeat: no-repeat;
+    background-size:50px;
+    background-position:center;
+}
+.subtecla{
+    margin: 6px;
+    height:74px;
+    position:relative;
+    background-repeat: no-repeat;
+    background-size:50px;
+    background-position:center 10px;
+}
+.tecla_detalhe{
+    position:absolute;
+    bottom:0;
+}
+.acesa{
+background-color:white !important;
 }

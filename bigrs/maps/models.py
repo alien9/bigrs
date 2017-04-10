@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
-import exifread
+import exifread,ffmpy,re,os
+from django.core.files.base import File
 
 class Contagem(models.Model):
     class Meta:
@@ -12,10 +13,16 @@ class Contagem(models.Model):
     movie = models.FileField(upload_to='static/video', null=True)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
     def save(self):
-        f = open(self.movie.path, 'rb')
-        tags = exifread.process_file(f)
-        f.close()
+        p = re.compile('\.ASF$')
         super(Contagem,self).save()
+        if p.search(self.movie.path):
+            old_path=self.movie.path
+            new_path=re.sub(p,'.mp4',self.movie.path)
+            ff = ffmpy.FFmpeg(inputs={old_path:None},outputs={new_path:None})
+            ff.run()
+            self.movie.save(os.path.basename(new_path), File(open(new_path ,"rb")), save=True)
+            os.remove(old_path)
+            self.save()
 
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')

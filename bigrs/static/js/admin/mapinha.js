@@ -3,7 +3,16 @@
 function reverse_geocode(p,tr){
 console.debug(tr);
     $.ajax('/reverse_geocode',{dataType:'json',method:'post', data:{latitude:p.lat,longitude:p.lon,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()}, success:function(h){
-        $(tr).val(h.nome);
+        console.debug("GEOCODED");
+        console.debug(h);
+        if(h.nome.length){
+            if(h.nome[0].length)
+                $(tr).val(h.nome[0]);
+            else
+                $(tr).val(' * ');
+        }else{
+            $(tr).val(' * ');
+        }
     }});
 }
 $(document).ready(function(){
@@ -99,11 +108,9 @@ map.isValidZoomLevel = function(zoomLevel) {
         latlng=[-23,5486,-46,6392];
     map.setCenter(new OpenLayers.LonLat(latlng[1],latlng[2]).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), zoom);
     vectors.events.register("beforefeatureadded", vectors, function(e){
-        console.debug("ACK ");
         e.feature.attributes={name:vectors.features.length+1};
     });
     vectors.events.register("featureadded", vectors, function(e){
-        console.debug(e.feature.geometry);
         var i=vectors.features.length-1;
         $('#id_spot_set-'+i+'-x').val(e.feature.geometry.x);
         $('#id_spot_set-'+i+'-y').val(e.feature.geometry.y);
@@ -123,10 +130,13 @@ map.isValidZoomLevel = function(zoomLevel) {
         }
     });
     $("#undo").click(function(){
-        var fu=features.pop();
-        vectors.removeFeatures(fu);
+        var fu=vectors.features.pop();
+        console.debug(fu);
         var i=fu.attributes.name-1;
+        console.debug(i);
+        vectors.removeFeatures(fu);
         $("#id_spot_set-"+i+"-DELETE").prop('checked', true);
+        $("#spot_set-"+i+" .inline-deletelink").click();
     });
 
 });
