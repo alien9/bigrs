@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
+import exifread
 
 class Contagem(models.Model):
     class Meta:
@@ -7,9 +8,14 @@ class Contagem(models.Model):
     author = models.ForeignKey('auth.User')
     data_e_hora_inicio=models.DateTimeField(auto_now_add=True, blank=True)
     endereco=models.TextField(max_length = 100)
-    data_e_hora_final = models.DateTimeField(null=True)
+    data_e_hora_final = models.DateTimeField(null=True, blank=True)
     movie = models.FileField(upload_to='static/video', null=True)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
+    def save(self):
+        f = open(self.movie.path, 'rb')
+        tags = exifread.process_file(f)
+        f.close()
+        super(Contagem,self).save()
 
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')

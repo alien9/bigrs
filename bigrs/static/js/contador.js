@@ -87,52 +87,6 @@ function start(){
         });
         vectorSource.addFeature( featurething );
     }
-
-
-    /*
-    var modify = new ol.interaction.Modify({
-        features: features,
-        deleteCondition: function(event) {
-          return ol.events.condition.shiftKeyOnly(event) &&
-              ol.events.condition.singleClick(event);
-        }
-    });
-
-    features.on("add", function (e) {
-        e.element.label=""+(features.getLength());
-        collectpoints();
-    });
-
-
-    map.addInteraction(modify);
-    modify.on('modifyend', function(e) {
-        collectpoints();
-    });
-
-
-    var draw; // global so we can remove it later
-
-    function addInteraction() {
-        draw = new ol.interaction.Draw({
-          features: features,
-          type: "Point"
-        });
-        map.addInteraction(draw);
-    }
-
-    var dragPan;
-    map.getInteractions().forEach(function(interaction) {
-      if (interaction instanceof ol.interaction.DragPan) {
-        dragPan = interaction;
-      }
-    }, this);
-    if (dragPan) {
-      map.removeInteraction(dragPan);
-    }
-    */
-
-    //addInteraction();
-
     if(typeof MAP_CENTER != "undefined"){
         map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
         map.getView().setZoom(18);
@@ -208,12 +162,74 @@ function keyup(e){
 
         console.log(n);
     }else if((e.keyCode==189)||(e.keyCode==187)){
-$("#od").text($("#od").text()+"→");
+        $("#od").text($("#od").text()+"→");
     }
-
+    var k;
     switch(e.keyCode){
+        case 33:
+        case 105:
+        //9
+        k=9;
+        break;
+        case 38:
+        case 104:
+        //8
+        k=8;
+        break;
+        case 36:
+        case 103:
+        //7
+        k=7;
+        break;
+        case 39:
+        case 102:
+        //6
+        k=6;
+        break;
+        case 12:
+        case 101:
+        //5
+        k=5;
+        break;
+        case 37:
+        case 100:
+        //4
+        k=4;
+        break;
+        case 34:
+        case 99:
+        //3
+        k=3;
+        break;
+        case 40:
+        case 98:
+        //2
+        k=2;
+        break;
+        case 35:
+        case 97:
+        //1
+        k=1;
+        break;
+        case 45:
+        case 96:
+        //0
+        k='0';
+        break;
+        case 46:
+        case 108:
+        //.
+        k='_';
+        break;
+
         default:
         break;
+    }
+    if(k!=null){
+        $('.t'+k).css({'backgroundColor':'white'});
+        $('.t'+k).stop().animate( {'backgroundColor':'#ccc'}, 500);
+        var p = videojs('my-video');
+
     }
 }
 function getOd(){

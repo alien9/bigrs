@@ -95,8 +95,11 @@ map.isValidZoomLevel = function(zoomLevel) {
     dc=new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Point);
     map.addControl(dc);
     dc.activate();
+    if(!latlng)
+        latlng=[-23,5486,-46,6392];
     map.setCenter(new OpenLayers.LonLat(latlng[1],latlng[2]).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), zoom);
     vectors.events.register("beforefeatureadded", vectors, function(e){
+        console.debug("ACK ");
         e.feature.attributes={name:vectors.features.length+1};
     });
     vectors.events.register("featureadded", vectors, function(e){

@@ -1,5 +1,5 @@
 .subcontainer{
-    background-color:lime;
+    background-color:gray;
     display:inline-block;
     height:100%;
     padding:0;
@@ -50,7 +50,7 @@ video{
 }
 #teclado_numerico{
     position: relative;
-    background-color:yellow;
+    background-color:white;
     padding:0;
 }
 
@@ -61,7 +61,7 @@ video{
   clear:all;
 }
 .content {
-    background-color:green;
+    background-color:gray;
     position: absolute;
     width: 100%;
     top: 0; left: 0;
@@ -71,45 +71,67 @@ video{
     background-color:white;
 }
 
-a.bici{
+.bici{
     background-image:url(/static/images/icons/bici.png);
 }
-a.brt{
+.brt{
     background-image:url(/static/images/icons/brt.png);
 }
-a.cadeirante{
-    background-image:url(/static/images/icons/cadeirante.png);
-}
-a.caminhao{
+.caminhao{
     background-image:url(/static/images/icons/caminhao.png);
 }
-a.carro{
+.carro{
     background-image:url(/static/images/icons/carro.png);
 }
-a.microonibus{
+.microonibus{
     background-image:url(/static/images/icons/microonibus.png);
 }
-a.moto{
+.moto{
     background-image:url(/static/images/icons/moto.png);
 }
-a.onibus{
+.onibus{
     background-image:url(/static/images/icons/onibus.png);
 }
-a.pedestre{
+.pedestre{
     background-image:url(/static/images/icons/pedestre.png);
 }
-a.taxi{
+.taxi{
     background-image:url(/static/images/icons/taxi.png);
 }
-a.triciclo{
+.triciclo{
     background-image:url(/static/images/icons/triciclo.png);
 }
-a.vlt{
+.vlt{
     background-image:url(/static/images/icons/vlt.png);
 }
-a.brt{
-    background-image:url(/static/images/icons/brt.png);
-}
-a.vuc{
+.vuc{
     background-image:url(/static/images/icons/vuc.png);
+}
+.tecla{
+    width:84px;
+    float:left;
+    height:84px;
+    margin:6px;
+    border-radius: 15px;
+    border-width: 2px;
+    border-style: solid;
+    background-color:lightgray;
+    background-repeat: no-repeat;
+    background-size:50px;
+    background-position:center;
+}
+.subtecla{
+    margin: 6px;
+    height:74px;
+    position:relative;
+    background-repeat: no-repeat;
+    background-size:50px;
+    background-position:center 10px;
+}
+.tecla_detalhe{
+    position:absolute;
+    bottom:0;
+}
+.acesa{
+background-color:white !important;
 }
