@@ -28,6 +28,7 @@ urlpatterns = [
     url(r'^contador/(?P<contador_id>\d+)/$',views.contador),
     url(r'^lista', views.lista_contagens),
     url(r'^nova_contagem', views.nova_contagem),
+    url(r'^conta', views.conta),
     url(r'^logout', views.log_out),
     url(r'^reverse_geocode', views.reverse_geocode),
     url(r'^reverse', views.reverse),

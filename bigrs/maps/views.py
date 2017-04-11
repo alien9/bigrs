@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
 import json,time,memcache,re,calendar,os,numpy,unicodedata
-from datetime import date,datetime
+from datetime import date,datetime,timedelta
 from bigrs.settings import *
 from django.core.files.storage import FileSystemStorage
 from maps.models import *
@@ -161,14 +161,19 @@ def reverse_geocode(request):
     }
     return JsonResponse(j)
 
-def conta(request):
-    j={'result':'ok'}
-    return JsonResponse(j)
-
 def contador(request,contador_id):
     if request.user.is_authenticated:
         contagem=Contagem.objects.get(pk=contador_id)
-        return render(request,'contador.html', {'contagem':contagem, 'spots':contagem.spot_set.all(),'root':VIDEO_URL_ROOT,'geoserver':geoserver,'timestamp':datetime.now().timestamp()})
+        tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
+        return render(request,'contador.html', {
+            'contagem':contagem,
+            'spots':contagem.spot_set.all(),
+            'contados':contagem.contado_set.all(),
+            'tipos':tipos,'json_tipos':json.dumps(tipos),
+            'root':VIDEO_URL_ROOT,
+            'geoserver':geoserver,
+            'timestamp':datetime.now().timestamp()
+        })
     else:
         print("nao autenticado")
         return render(request,'login.html')
@@ -186,7 +191,6 @@ def nova_contagem(request):
         myfile = request.FILES['file']
         fs = FileSystemStorage()
         filename = fs.save(VIDEO_FILES_ROOT+'/'+myfile.name, myfile)
-        uploaded_file_url = fs.url(filename)
         contagem=Contagem(
             author = request.user,
             nome_do_arquivo = myfile.name,
@@ -194,6 +198,29 @@ def nova_contagem(request):
         )
         contagem.save()
     return redirect(lista_contagens)
+
+def conta(request):
+    if not request.user.is_authenticated:
+        return render(request, 'login.html')
+    res = {}
+    if request.is_ajax():
+        if request.method == 'POST':
+            jake=json.loads(request.POST.get('fila'))
+            for k, veiculo in jake.items():
+                print(veiculo)
+                contagem=Contagem.objects.get(pk=veiculo['contagem_id'])
+                c=Contado(
+                    author=request.user,
+                    contagem=contagem,
+                    tipo=veiculo['tipo'],
+                    data_e_hora=contagem.data_e_hora+timedelta(seconds=veiculo['ts']),
+                    origem=Spot.objects.get(pk=veiculo['origem']),
+                    destino=Spot.objects.get(pk=veiculo['destino']),
+                )
+                c.save()
+                res[veiculo['local_id']]=True
+    return JsonResponse(res);
+
 
 def auth(request):
     if request.POST:

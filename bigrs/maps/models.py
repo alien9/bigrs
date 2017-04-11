@@ -9,7 +9,7 @@ class Contagem(models.Model):
     author = models.ForeignKey('auth.User')
     data_e_hora_inicio=models.DateTimeField(auto_now_add=True, blank=True)
     endereco=models.TextField(max_length = 100)
-    data_e_hora_final = models.DateTimeField(null=True, blank=True)
+    data_e_hora = models.DateTimeField()
     movie = models.FileField(upload_to='static/video', null=True)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
     def save(self):
@@ -28,7 +28,10 @@ class Contado(models.Model):
     author = models.ForeignKey('auth.User')
     contagem=models.ForeignKey(Contagem)
     tipo=models.TextField(max_length=100)
-    data_e_hora_final = models.DateTimeField(auto_now_add=True, blank=True)
+    data_e_hora = models.DateTimeField()
+    origem = models.ForeignKey("Spot",related_name='origem')
+    destino = models.ForeignKey("Spot",related_name='destino')
+
 
 class Spot(models.Model):
     contagem=models.ForeignKey(Contagem)
@@ -36,4 +39,3 @@ class Spot(models.Model):
     alias = models.TextField(max_length=10)
     x=models.DecimalField(decimal_places=10,max_digits=30)
     y=models.DecimalField(decimal_places=10,max_digits=30)
-

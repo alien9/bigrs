@@ -1,5 +1,10 @@
 var k;
 var rasta;
+var travels;
+var CURRENT_DIRECTION=0;
+var pressing=false;
+var fila={};
+var local_id=1;
 function start(){
     fixHeight();
     $( window ).resize(fixHeight);
@@ -88,12 +93,30 @@ function start(){
         vectorSource.addFeature( featurething );
     }
     if(typeof MAP_CENTER != "undefined"){
+        map.getView().setZoom(17);
         map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
-        map.getView().setZoom(18);
     }else{
         map.getView().fit(bounds, map.getSize());
     }
     $('body').keyup(keyup);
+    travels=[];
+    for(var i=0;i<pontos.length;i++){
+        for(var j=0;j<pontos.length;j++){
+            if (i!=j){
+                var h={
+                    'origin':pontos[i],
+                    'destin':pontos[j],
+                };
+                console.debug(h);
+                travels.push({
+                    'origin':pontos[i],
+                    'destin':pontos[j]
+                });
+            }
+        }
+    }
+    setTravel(travels[CURRENT_DIRECTION]);
+    setKeyboard();
 }
 
 function fixHeight(){
@@ -225,14 +248,56 @@ function keyup(e){
         k='_';
         break;
 
+        case 75:
+            if($("#teclado_numerico").is(":visible"))
+                $("#teclado_numerico").fadeOut();
+            else
+                $("#teclado_numerico").fadeIn();
+        break;
+
+        case 90:
+            CURRENT_DIRECTION--;
+            if(CURRENT_DIRECTION<0)
+                CURRENT_DIRECTION=travels.length-1;
+            setTravel(travels[CURRENT_DIRECTION]);
+        break;
+        case 88:
+            CURRENT_DIRECTION++;
+            if(CURRENT_DIRECTION>=travels.length)
+                CURRENT_DIRECTION=0;
+            setTravel(travels[CURRENT_DIRECTION]);
+        break;
         default:
         break;
     }
     if(k!=null){
+        if(pressing)
+            return;
+        pressing=true;
         $('.t'+k).css({'backgroundColor':'white'});
-        $('.t'+k).stop().animate( {'backgroundColor':'#ccc'}, 500);
+        $('.t'+k).stop().animate({'backgroundColor':'#aaa'}, {
+            duration:100,
+            complete:function(){
+                pressing=false;
+            }
+        });
         var p = videojs('my-video');
-
+        var t;
+        if(t=$(".t"+k).attr('tipo')){
+            if(!contado[t])contado[t]=0;
+            var veiculo={
+                ts:p.currentTime(),
+                origem:travels[CURRENT_DIRECTION].origin[4],
+                destino:travels[CURRENT_DIRECTION].destin[4],
+                tipo:t,
+                local_id:local_id,
+                contagem_id:contagem_id
+            };
+            contado[t]++;
+            fila[local_id]=veiculo;
+            local_id++;
+            setContagem();
+        }
     }
 }
 function getOd(){
@@ -240,4 +305,30 @@ function getOd(){
     if(a=$("#od").text().split(/\s*→\s*/))
         return a;
     return null;
+}
+
+function setTravel(p){
+    var t=p.origin[3]+" → "+p.destin[3];
+    $("#od").text(t);
+}
+function setKeyboard(){
+    $(".subtecla").css("class","subtecla");
+    $(".tecla").removeAttr('tipo');
+    for(var k in tipos){
+        $(".t"+k+" .subtecla").addClass(tipos[k]);
+        $(".t"+k).attr('tipo',tipos[k]);
+    }
+}
+function setContagem(){
+    for(var tipo in contado){
+        $("#contagem-"+tipo).text(contado[tipo]);
+    }
+}
+function upload(){
+    $.ajax('/conta',{method:'POST',data:{fila:JSON.stringify(fila),csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+        for(var local_id in h){
+            delete(fila[local_id]);
+        }
+        setTimeout(upload,3000);
+    }});
 }

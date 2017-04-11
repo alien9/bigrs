@@ -28,30 +28,17 @@
     </div>
     <div class="subcontainer" style="width:300px;float:right;">
         <div id="map" style="width:300px;height:300px;"></div>
-        <div id="control_panel" style="background-color:red;display:none">
-            <div class="sub_panel">
-                <div><a href="javascript:void(0);" class="pedestre">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="bici">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="moto">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="onibus">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="brt">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="microonibus">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="vuc">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="caminhao">&nbsp;</a></div>
-                <div><a href="javascript:void(0);" class="carro">&nbsp;</a></div>
-            </div>
-        </div>
         <div id="teclado_numerico">
-            <div class="tecla t7"><div class="subtecla moto">7<div class="tecla_detalhe">Home</div></div></div>
-            <div class="tecla t8"><div class="subtecla pedestre">8<div class="tecla_detalhe">↑</div></div></div>
-            <div class="tecla t9"><div class="subtecla bici">9<div class="tecla_detalhe">PgUp</div></div></div>
-            <div class="tecla t4"><div class="subtecla microonibus">4<div class="tecla_detalhe">←</div></div></div>
-            <div class="tecla t5"><div class="subtecla onibus">5<div class="tecla_detalhe"></div></div></div>
-            <div class="tecla t6"><div class="subtecla brt">6<div class="tecla_detalhe">→</div></div></div>
-            <div class="tecla t1"><div class="subtecla vuc">1<div class="tecla_detalhe">End</div></div></div>
-            <div class="tecla t2"><div class="subtecla caminhao">2<div class="tecla_detalhe">↓</div></div></div>
+            <div class="tecla t7"><div class="subtecla">7<div class="tecla_detalhe">Home</div></div></div>
+            <div class="tecla t8"><div class="subtecla">8<div class="tecla_detalhe">↑</div></div></div>
+            <div class="tecla t9"><div class="subtecla">9<div class="tecla_detalhe">PgUp</div></div></div>
+            <div class="tecla t4"><div class="subtecla">4<div class="tecla_detalhe">←</div></div></div>
+            <div class="tecla t5"><div class="subtecla">5<div class="tecla_detalhe"></div></div></div>
+            <div class="tecla t6"><div class="subtecla">6<div class="tecla_detalhe">→</div></div></div>
+            <div class="tecla t1"><div class="subtecla">1<div class="tecla_detalhe">End</div></div></div>
+            <div class="tecla t2"><div class="subtecla">2<div class="tecla_detalhe">↓</div></div></div>
             <div class="tecla t3"><div class="subtecla">3<div class="tecla_detalhe">PgDn</div></div></div>
-            <div class="tecla t0" style="width:184px;"><div class="subtecla carro">0<div class="tecla_detalhe">Ins</div></div></div>
+            <div class="tecla t0" style="width:184px;"><div class="subtecla">0<div class="tecla_detalhe">Ins</div></div></div>
             <div class="tecla t_"><div class="subtecla">.<div class="tecla_detalhe">Del</div></div></div>
         </div>
         <div id="listagem_pontos">
@@ -60,21 +47,35 @@
             </table>
             </form>
         </div>
-        <div id="od"></div>
+        <div id="od">
+
+        </div>
+        <div id="contagem">
+            {%for t,v in tipos.items%}
+            <div class="head {{v}}">
+                <div class="kid"><span id="contagem-{{v}}">0</span></div>
+            </div>
+            {%endfor%}
+        </div>
     </div>
 </div>
 <script type="text/javascript">
 var map,featureOverlay,features;
+var tipos={{json_tipos|safe}};
 var pontos=[];
+var contado={};
+{% for contado in contados %}
+if(!contado['{{contado.tipo}}'])contado['{{contado.tipo}}']=0;
+contado['{{contado.tipo}}']++;
+{% endfor %}
+var contagem_id={{contagem.id}};
 {% autoescape on %}
 {% for spot in spots%}
-pontos.push([{{spot.x}},{{spot.y}},'{{spot.endereco}}','{{spot.alias}}']);
+pontos.push([{{spot.x}},{{spot.y}},'{{spot.endereco}}','{{spot.alias}}','{{spot.id}}']);
 {% endfor %}
 {% endautoescape %}
     GEOSERVER='{{geoserver}}';
     {%if contagem.location != None %}
-
-
     MAP_CENTER=[{{contagem.location.x}},{{contagem.location.y}}];
     {%endif%}
     $(document).ready(function(){
