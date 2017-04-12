@@ -5,7 +5,132 @@ var CURRENT_DIRECTION=0;
 var pressing=false;
 var fila={};
 var local_id=1;
+var map;
 function start(){
+
+    if(typeof MAP_CENTER != "undefined"){
+        //map.getView().setZoom(17);
+        //map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
+    }else{
+        //map.getView().fit(bounds, map.getSize());
+    }
+    console.debug(MAP_CENTER);
+    latlng=MAP_CENTER;
+    var format = 'image/png';
+    get_url=function(bounds){
+        var res = this.map.getResolution();
+        var x = Math.round((bounds.left - this.maxExtent.left) / (res * this.tileSize.w));
+        var z=this.map.getZoom();
+        var y = -1+Math.pow(2,z)+Math.round((bounds.top - this.maxExtent.top) / (res * this.tileSize.h));
+        c=this.serviceVersion+"/"+this.layername+"/"+z+"/"+x+"/"+y+"."+this.type;
+        return this.url+c;
+    }
+    var tiled = new OpenLayers.Layer.TMS( "TMS", "http://bigrs.alien9.net:8080/geoserver/gwc/service/tms/",
+        {
+            layername:'BIGRS%3Aquadras_e_logradouros@3857@png',
+            type:'png',
+            maxZoomLevel:22,
+            minZoomLevel:17,
+            getURL:get_url
+        }
+    );
+    map = new OpenLayers.Map( {
+        div:'map',
+        projection:"EPSG:900913",
+        displayProjection:"EPSG:4326",
+        resolutions:[
+            1.194328566789627,
+            0.5971642833948135,
+            0.29858214169740677,
+            0.14929107084870338
+        ]
+    });
+    map.isValidZoomLevel = function(zoomLevel) {
+       return ( (zoomLevel != null) &&
+          (zoomLevel >= 17) && // set min level here, could read from property
+          (zoomLevel < 22 ));
+    }
+    map.addLayer(tiled);
+    zoom=17;
+
+
+
+    var labellayer = new OpenLayers.Layer.WMS( "Labels",
+                    "http://bigrs.alien9.net:8080/geoserver/BIGRS/wms",
+                    {
+                        'FORMAT': 'image/png',
+                        'VERSION': '1.1.1',
+                        STYLES: 'logradouros labels small',
+                        LAYERS: 'BIGRS:labels',
+                    isBaselayer: false, transparent: true});
+    map.addLayer(labellayer);
+    map.setCenter(new OpenLayers.LonLat(MAP_CENTER).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), 17);
+    vectors = new OpenLayers.Layer.Vector("Travels", {
+            styleMap: new OpenLayers.StyleMap({'default':{
+                fillOpacity: 0.5,
+                pointRadius: 8,
+                label : "${name}",
+                fontSize: "12px",
+                fontFamily: "Courier New, monospace",
+                fontWeight: "bold",
+                labelAlign: "center",
+                labelXOffset: "${xOffset}",
+                labelYOffset: "${yOffset}",
+                labelOutlineColor: "white",
+                labelOutlineWidth: 3
+            }})
+        });
+    map.addLayer(vectors);
+    var arrowheads = new OpenLayers.Layer.Vector( "Heads" );
+    map.addLayer(arrowheads);
+    var i=0;
+    features=[];
+    vectors.events.register("beforefeatureadded", vectors, function(e){
+        e.feature.attributes={name:"_"+(vectors.features.length+1)};
+    });
+    for(var j=0;j<linhas.length;j++){
+        if(linhas[j].geometry!=""){
+            var r=linhas[j].geometry;
+            var g;
+            if(g=r.match(/\((.*)\)/)){
+                var pts=g[1].split(/,/);
+                if(pts.length>1){
+                    var k=0;
+                    var points=[];
+                    while(k<pts.length){
+                        xy=pts[k].split(" ");
+                        points.push(new OpenLayers.Geometry.Point(xy[0],xy[1]));
+                        k++;
+                    }
+                    var line = new OpenLayers.Geometry.LineString(points);
+                    console.debug(line);
+                    var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
+                    lineFeature.attributes={name:""+(i+1)};
+                    lineFeature.style = {
+                        fontFamily: "arial, monospace",
+                        fontWeight: "bold",
+                        fontColor: "black",
+                        label : ""+(i+1),
+                        labelAlign: "center",//set to top right
+                        labelOutlineColor: "white",
+                        labelOutlineWidth: 3,
+                        strokeColor:(CURRENT_DIRECTION==i)?'red':'black'
+                    };
+
+                    vectors.addFeatures([lineFeature]);
+                }
+            }
+         }
+        i++;
+    }
+    vectors.addFeatures(features);
+    drawHeads();
+    $('body').keyup(keyup);
+    setKeyboard();
+}
+
+
+function xstart(){
     fixHeight();
     $( window ).resize(fixHeight);
     k=$('.control').offset().left;
@@ -78,19 +203,63 @@ function start(){
     //var
     features = new ol.Collection();
     var vectorSource=new ol.source.Vector({features: features});
-    //var
-    featureOverlay = new ol.layer.Vector({
+    var featureOverlay = new ol.layer.Vector({
         source: vectorSource,
-        style: drawtext
+        style: new ol.style.Style({
+            fill: new ol.style.Fill({
+                color: 'rgba(255, 255, 255, 0.2)'
+            }),
+            stroke: new ol.style.Stroke({
+                color: '#000000',
+                width: 2
+            }),
+            image: new ol.style.Circle({
+                radius: 10,
+                fill: new ol.style.Fill({
+                  color: '#ffcc33'
+                })
+            })
+        })
     });
     featureOverlay.setMap(map);
-    for(var i=0;i<pontos.length;i++){
-        var thing = new ol.geom.Point([pontos[i][0],pontos[i][1]]);
-        var featurething = new ol.Feature({
-            label: pontos[i][3],
-            geometry: thing
-        });
-        vectorSource.addFeature( featurething );
+
+    var labelfeatures=new ol.Collection();
+    var labelSource=new ol.source.Vector({features: labelfeatures});
+    var labelsOverlay = new ol.layer.Vector({
+        source: labelSource,
+        style: drawtext
+    });
+    labelsOverlay.setMap(map);
+
+    for(var i=0;i<linhas.length;i++){
+        var r=linhas[i].geometry;
+        var g;
+        if(g=r.match(/\((.*)\)/)){
+            var pts=g[1].split(/,/);
+            if(pts.length>1){
+                var k=0;
+                var points=[];
+                while(k<pts.length){
+                    xy=pts[k].split(" ");
+                    points.push(xy);
+                    k++;
+                }
+                console.debug(points);
+                var line = new ol.geom.MultiLineString([points],'XY');
+                console.debug(line);
+                var featurething = new ol.Feature({
+                    name: linhas[i].alias,
+                    geometry: line
+                });
+                vectorSource.addFeature( featurething );
+                var thing = new ol.geom.Point(points[0]);
+                var labelthing = new ol.Feature({
+                    alias: linhas[i].alias,
+                    geometry: thing
+                });
+                labelSource.addFeature( labelthing );
+            }
+        }
     }
     if(typeof MAP_CENTER != "undefined"){
         map.getView().setZoom(17);
@@ -100,6 +269,7 @@ function start(){
     }
     $('body').keyup(keyup);
     travels=[];
+    /*
     for(var i=0;i<pontos.length;i++){
         for(var j=0;j<pontos.length;j++){
             if (i!=j){
@@ -114,9 +284,10 @@ function start(){
                 });
             }
         }
-    }
-    setTravel(travels[CURRENT_DIRECTION]);
+    }*/
+    //setTravel(travels[CURRENT_DIRECTION]);
     setKeyboard();
+    upload();
 }
 
 function fixHeight(){
@@ -152,14 +323,15 @@ function reverse_geocode(p,tr){
         }});
     }
 }
+
+
 function drawtext(e){
-    console.debug(e);
     return [new ol.style.Style({
             fill: new ol.style.Fill({
                 color: 'rgba(255, 255, 255, 0.2)'
             }),
             stroke: new ol.style.Stroke({
-                color: '#ffcc33',
+                color: '#000000',
                 width: 2
             }),
             image: new ol.style.Circle({
@@ -170,7 +342,7 @@ function drawtext(e){
             })
         }),new ol.style.Style({
             text: new ol.style.Text({
-                text: ""+e.getProperties().label,
+                text: ""+e.getProperties().alias,
                 fill: new ol.style.Fill({
                     color: '#000'
                 }),
@@ -182,7 +354,18 @@ function drawtext(e){
 function keyup(e){
     console.log(e.keyCode);
     if(e.keyCode>48 && e.keyCode<58){
-        var n=e.keyCode-48;
+        var n=parseInt(e.keyCode-48);
+        console.debug(n)
+        if(vectors.features[n-1]){
+            for(var i=0;i<vectors.features.length;i++){
+                vectors.features[i].style.strokeColor='black';
+                vectors.redraw();
+            }
+            vectors.features[n-1].style.strokeColor='red';
+            vectors.redraw();
+            CURRENT_DIRECTION=n-1;
+            drawHeads();
+        }
         var od;
         $("#od").text($("#od").text()+n);
 
@@ -287,8 +470,7 @@ function keyup(e){
             if(!contado[t])contado[t]=0;
             var veiculo={
                 ts:p.currentTime(),
-                origem:travels[CURRENT_DIRECTION].origin[4],
-                destino:travels[CURRENT_DIRECTION].destin[4],
+                spot_id:linhas[CURRENT_DIRECTION].id,
                 tipo:t,
                 local_id:local_id,
                 contagem_id:contagem_id
@@ -331,4 +513,45 @@ function upload(){
         }
         setTimeout(upload,3000);
     }});
+}
+
+function drawHeads(){
+    var feat=[];
+    var arrowheads=map.getLayersByName("Heads")[0];
+    arrowheads.destroyFeatures();
+    for(var i=0;i<vectors.features.length;i++){
+        var v=vectors.features[i];
+        if(v.geometry && v.geometry.components && (v.geometry.components.length>1)){
+            var p=[v.geometry.components[v.geometry.components.length-2],v.geometry.components[v.geometry.components.length-1]];
+            var modulus=Math.sqrt(Math.pow(p[1].y-p[0].y,2.0)+Math.pow(p[1].x-p[0].x,2.0));
+            var size=10*map.getResolution();
+            var dx=size*(p[1].x-p[0].x)/modulus;
+            var dy=size*(p[1].y-p[0].y)/modulus;
+            var a=[p[1].x-dx,p[1].y-dy]; //centro da base da cabeça
+            var mu=0.5;
+            var avb=[dy*mu,-1*dx*mu];
+            mu=-0.5;
+            var amb=[dy*mu,-1*dx*mu]
+            var b=[a[0]+amb[0],a[1]+amb[1]];
+            var c=[a[0]+avb[0],a[1]+avb[1]];
+            var linearRing = new OpenLayers.Geometry.LinearRing([
+                new OpenLayers.Geometry.Point(
+                    p[1].x,p[1].y
+                ),
+                new OpenLayers.Geometry.Point(
+                    b[0],b[1]
+                ),
+                new OpenLayers.Geometry.Point(
+                    c[0],c[1]
+                )
+            ]);
+            var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
+            var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, {});
+            if(CURRENT_DIRECTION==i){
+                polygonFeature.style.fillColor='red';
+                polygonFeature.style.strokeColor='red';
+            }
+            arrowheads.addFeatures([polygonFeature]);
+        }
+    }
 }

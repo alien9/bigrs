@@ -60,9 +60,9 @@
     </div>
 </div>
 <script type="text/javascript">
-var map,featureOverlay,features;
+var map,features;
 var tipos={{json_tipos|safe}};
-var pontos=[];
+var linhas=[];
 var contado={};
 {% for contado in contados %}
 if(!contado['{{contado.tipo}}'])contado['{{contado.tipo}}']=0;
@@ -71,7 +71,7 @@ contado['{{contado.tipo}}']++;
 var contagem_id={{contagem.id}};
 {% autoescape on %}
 {% for spot in spots%}
-pontos.push([{{spot.x}},{{spot.y}},'{{spot.endereco}}','{{spot.alias}}','{{spot.id}}']);
+linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'{{spot.alias}}',id:'{{spot.id}}'});
 {% endfor %}
 {% endautoescape %}
     GEOSERVER='{{geoserver}}';

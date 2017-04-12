@@ -1,10 +1,7 @@
 (function($) {
 
 function reverse_geocode(p,tr){
-console.debug(tr);
     $.ajax('/reverse_geocode',{dataType:'json',method:'post', data:{latitude:p.lat,longitude:p.lon,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()}, success:function(h){
-        console.debug("GEOCODED");
-        console.debug(h);
         if(h.nome.length){
             if(h.nome[0].length)
                 $(tr).val(h.nome[0]);
@@ -57,20 +54,24 @@ $(document).ready(function(){
     map.addLayer(tiled);
     zoom=17;
 
+
+
+    var labellayer = new OpenLayers.Layer.WMS( "Labels",
+                    "http://bigrs.alien9.net:8080/geoserver/BIGRS/wms",
+                    {
+                        'FORMAT': 'image/png',
+                        'VERSION': '1.1.1',
+                        STYLES: 'logradouros labels small',
+                        LAYERS: 'BIGRS:labels',
+                    isBaselayer: false, transparent: true});
+    map.addLayer(labellayer);
+
     geodjango_location.layers.vector.events.register("featureadded",geodjango_location.layers.vector, function(e){
         var g=e.feature.geometry;
         map.setCenter(new OpenLayers.LonLat(g.x,g.y).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), 17);
     });
 
-    layer = new OpenLayers.Layer.WMS( "OpenLayers WMS",
-                    "http://vmap0.tiles.osgeo.org/wms/vmap0",
-                    {
-                        layers: 'BIGRS:labels',
-                        styles: 'logradouros labels small'
-                    } );
-    map.addLayer(layer);
-
-    vectors = new OpenLayers.Layer.Vector("Points", {
+    vectors = new OpenLayers.Layer.Vector("Travels", {
             styleMap: new OpenLayers.StyleMap({'default':{
                 fillOpacity: 0.5,
                 pointRadius: 8,
@@ -90,40 +91,95 @@ $(document).ready(function(){
     map.addLayer(arrowheads);
     var i=0;
     features=[];
+    vectors.events.register("beforefeatureadded", vectors, function(e){
+        console.debug("passando");
+        console.debug(vectors.features.length);
+        e.feature.attributes={name:""+(vectors.features.length+1)};
+    });
+    var sty= {
+        fontFamily: "arial, monospace",
+        fontWeight: "bold",
+        fontColor: "black",
+        label : ""+(i+1),
+        labelAlign: "center",//set to top right
+        labelOutlineColor: "white",
+        labelOutlineWidth: 3
+    };
+
     while($("#spot_set-"+i).length){
-        if($("#id_spot_set-"+i+"-x").val()!=""){
-             features.push(new OpenLayers.Feature.Vector(
-                        new OpenLayers.Geometry.Point(
-                            $("#id_spot_set-"+i+"-x").val(),$("#id_spot_set-"+i+"-y").val()
-                        ), {
-                            type: 5 + parseInt(5 * Math.random()),
-                            name:i+1
-                        }
-                    )
-             );
+        if($("#id_spot_set-"+i+"-geometry").val()!=""){
+            var r=$("#id_spot_set-"+i+"-geometry").val();
+            var g;
+            if(g=r.match(/\((.*)\)/)){
+                var pts=g[1].split(/,/);
+                if(pts.length>1){
+                    var k=0;
+                    var points=[];
+                    while(k<pts.length){
+                        xy=pts[k].split(" ");
+                        points.push(new OpenLayers.Geometry.Point(xy[0],xy[1]));
+                        k++;
+                    }
+                    var line = new OpenLayers.Geometry.LineString(points);
+                    console.debug(line);
+                    var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
+                    lineFeature.attributes={name:""+(vectors.features.length+1)};
+                    lineFeature.style = sty;;
+                    vectors.addFeatures([lineFeature]);
+                }
+            }
          }
         i++;
     }
     vectors.addFeatures(features);
-
     dc=new OpenLayers.Control.DrawFeature(vectors, OpenLayers.Handler.Path);
     map.addControl(dc);
     dc.activate();
     if(!latlng)
         latlng=[-23,5486,-46,6392];
     map.setCenter(new OpenLayers.LonLat(latlng[1],latlng[2]).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), zoom);
-    vectors.events.register("beforefeatureadded", vectors, function(e){
-        e.feature.attributes={name:vectors.features.length+1};
+    drawHeads();
+
+    vectors.events.register("featureremoved", vectors, function(e){
+        drawHeads();
     });
     vectors.events.register("featureadded", vectors, function(e){
         var i=vectors.features.length-1;
-        $('#id_spot_set-'+i+'-x').val(e.feature.geometry.x);
-        $('#id_spot_set-'+i+'-y').val(e.feature.geometry.y);
-        $('#spot_set-group table td[colspan=6] a').click();
+        $('#id_spot_set-'+i+'-geometry').val(e.feature.geometry);
         $('#id_spot_set-'+i+'-alias').val(i+1);
         $("#id_spot_set-"+i+"-DELETE").prop('checked', false);
-        reverse_geocode(new OpenLayers.LonLat(e.feature.geometry.x,e.feature.geometry.y).transform(new OpenLayers.Projection("EPSG:900913"),new OpenLayers.Projection("EPSG:4326")),'#id_spot_set-'+i+'-endereco');
-    })
+        if(e.feature.geometry.components && e.feature.geometry.components.length>1){
+            reverse_geocode_line([
+                e.feature.geometry.components[e.feature.geometry.components.length-1],
+                e.feature.geometry.components[0],
+            ],[
+                "#id_spot_set-"+i+"-endereco_destino",
+                "#id_spot_set-"+i+"-endereco_origem"
+            ]);
+        }
+        drawHeads();
+    });
+    var reverse_geocode_line=function(ps,textareas){
+        var p=ps.pop();
+        var field=textareas.pop();
+        p=new OpenLayers.LonLat(p.x,p.y).transform(new OpenLayers.Projection("EPSG:900913"), new OpenLayers.Projection("EPSG:4326"));
+        $.ajax('/reverse_geocode',{dataType:'json',method:'post', data:{latitude:p.lat,longitude:p.lon,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()}, success:function(h){
+            console.debug(h);
+            if(h.nome.length){
+                if(h.nome[0].length)
+                    $(field).val(h.nome[0]);
+                else
+                    $(field).val(' * ');
+            }else{
+                $(field).val(' * ');
+            }
+            if(ps.length){
+                reverse_geocode_line(ps,textareas);
+            }
+        }});
+    };
+
+
     $("#clean_submap").click(function(){
         vectors.destroyFeatures();
         var i=0;
@@ -135,7 +191,8 @@ $(document).ready(function(){
         }
     });
     $("#undo").click(function(){
-        var fu=vectors.features.pop();
+        var fu;
+        if(!(fu=vectors.features.pop())) return;
         console.debug(fu);
         var i=fu.attributes.name-1;
         console.debug(i);
@@ -143,67 +200,45 @@ $(document).ready(function(){
         $("#id_spot_set-"+i+"-DELETE").prop('checked', true);
         $("#spot_set-"+i+" .inline-deletelink").click();
     });
+    map.events.register("zoomend", map, function(e){
+        drawHeads();
+    });
 
 });
 })(django.jQuery);
 function drawHeads(){
     var feat=[];
+    var arrowheads=map.getLayersByName("Heads")[0];
+    arrowheads.destroyFeatures();
     for(var i=0;i<vectors.features.length;i++){
         var v=vectors.features[i];
         if(v.geometry && v.geometry.components && (v.geometry.components.length>1)){
             var p=[v.geometry.components[v.geometry.components.length-2],v.geometry.components[v.geometry.components.length-1]];
-            console.debug(p);
-            var m=(p[1].y-p[0].y)/(p[1].x-p[0].x);
-
-
             var modulus=Math.sqrt(Math.pow(p[1].y-p[0].y,2.0)+Math.pow(p[1].x-p[0].x,2.0));
-            console.debug(modulus);
-
-            var size=10;
-            var dx=10*(p[1].x-p[0].x)/modulus;
-            var dy=10*(p[1].y-p[0].y)/modulus;
-            console.debug(dx);
-            console.debug(dy);
-            var a=[p[1].x-dx,p[1].y-dy];
-            var mu=1
+            var size=10*map.getResolution();
+            var dx=size*(p[1].x-p[0].x)/modulus;
+            var dy=size*(p[1].y-p[0].y)/modulus;
+            var a=[p[1].x-dx,p[1].y-dy]; //centro da base da cabeça
+            var mu=0.5;
             var avb=[dy*mu,-1*dx*mu];
-            mu=-1;
+            mu=-0.5;
             var amb=[dy*mu,-1*dx*mu]
-
             var b=[a[0]+amb[0],a[1]+amb[1]];
             var c=[a[0]+avb[0],a[1]+avb[1]];
-
-
-console.debug([dx,dy]);
-console.debug(avb);
-console.debug(amb);
-
-            feat.push(new OpenLayers.Feature.Vector(
+            var linearRing = new OpenLayers.Geometry.LinearRing([
                 new OpenLayers.Geometry.Point(
-                    p[1].x-dx,p[1].y-dy
-                ), {
-                    type: 5 + parseInt(5 * Math.random()),
-                    name:i+1
-                })
-             );
-             feat.push(new OpenLayers.Feature.Vector(
+                    p[1].x,p[1].y
+                ),
                 new OpenLayers.Geometry.Point(
                     b[0],b[1]
-                ), {
-                    type: 5 + parseInt(5 * Math.random()),
-                    name:i+1
-                })
-             );
-             feat.push(new OpenLayers.Feature.Vector(
+                ),
                 new OpenLayers.Geometry.Point(
                     c[0],c[1]
-                ), {
-                    type: 5 + parseInt(5 * Math.random()),
-                    name:i+1
-                })
-             );
+                )
+            ]);
+            var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
+            var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, {});
+            arrowheads.addFeatures([polygonFeature]);
         }
     }
-    var arrowheads=map.getLayersByName("Heads")[0];
-    arrowheads.addFeatures(feat);
 }

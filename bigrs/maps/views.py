@@ -175,7 +175,6 @@ def contador(request,contador_id):
             'timestamp':datetime.now().timestamp()
         })
     else:
-        print("nao autenticado")
         return render(request,'login.html')
 
 def lista_contagens(request):
@@ -214,8 +213,7 @@ def conta(request):
                     contagem=contagem,
                     tipo=veiculo['tipo'],
                     data_e_hora=contagem.data_e_hora+timedelta(seconds=veiculo['ts']),
-                    origem=Spot.objects.get(pk=veiculo['origem']),
-                    destino=Spot.objects.get(pk=veiculo['destino']),
+                    spot=Spot.objects.get(pk=veiculo['spot_id'])
                 )
                 c.save()
                 res[veiculo['local_id']]=True

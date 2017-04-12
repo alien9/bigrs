@@ -29,13 +29,11 @@ class Contado(models.Model):
     contagem=models.ForeignKey(Contagem)
     tipo=models.TextField(max_length=100)
     data_e_hora = models.DateTimeField()
-    origem = models.ForeignKey("Spot",related_name='origem')
-    destino = models.ForeignKey("Spot",related_name='destino')
-
+    spot=models.ForeignKey("Spot")
 
 class Spot(models.Model):
     contagem=models.ForeignKey(Contagem)
-    endereco = models.TextField(max_length=100)
+    endereco_origem = models.TextField(max_length=100)
+    endereco_destino = models.TextField(max_length=100)
     alias = models.TextField(max_length=10)
-    x=models.DecimalField(decimal_places=10,max_digits=30)
-    y=models.DecimalField(decimal_places=10,max_digits=30)
+    geometry=models.TextField(max_length=2000)
