@@ -14,7 +14,6 @@ function reverse_geocode(p,tr){
 }
 
 
-
 $(document).ready(function(){
     latlng=MAP_CENTER.match(/(-?[\d\.]+) (-?[\d\.]+)/);
     var format = 'image/png';
@@ -203,7 +202,6 @@ $(document).ready(function(){
     map.events.register("zoomend", map, function(e){
         drawHeads();
     });
-
 });
 })(django.jQuery);
 function drawHeads(){

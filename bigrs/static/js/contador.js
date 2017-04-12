@@ -127,168 +127,21 @@ function start(){
     drawHeads();
     $('body').keyup(keyup);
     setKeyboard();
-}
-
-
-function xstart(){
-    fixHeight();
-    $( window ).resize(fixHeight);
-    k=$('.control').offset().left;
-    $('.control').mousedown(function(e){
-        rasta=true;
+    $("#teclado_numerico").focus(function(){
+        $("#teclado_numerico").addClass('focus');
     });
-    $('body').mouseup(function(){
-        rasta=false;
-    });
-    $("body,#slider").mousemove(function(e){
-        if(!rasta) return;
-        var left=e.pageX-$("#slider").offset().left-$('.control').width()/2;
-        if(left<0) left=0;
-        if(left>$("#slider").width()-$('.control').width())left=$("#slider").width()-$('.control').width();
-        $('.control').css('left',left);
-        setSpeed(left/($('#slider').width()-$('.control').width()));
-    });
-    var bounds = [-5213822.973694572, -2738592.792872979,
-                    -5160539.474795484, -2674513.9204534707];
-    var format = 'image/png';
-    var tiled = new ol.layer.Tile({
-    source: new ol.source.TileWMS({
-          url: 'http://bigrs.alien9.net:8080/geoserver/BIGRS/wms',
-          params: {'FORMAT': format,
-                   'VERSION': '1.1.1',
-                   tiled: true,
-                STYLES: '',
-                LAYERS: 'BIGRS:quadras_e_logradouros',
-             tilesOrigin: -5213822.973694572 + "," + -2738592.792872979
-          }
-        })
-    });
-    var untiled = new ol.layer.Image({
-        source: new ol.source.ImageWMS({
-            ratio: 1,
-            url: 'http://bigrs.alien9.net:8080/geoserver/BIGRS/wms',
-            params: {'FORMAT': format,
-                   'VERSION': '1.1.1',
-                STYLES: 'logradouros labels small',
-                LAYERS: 'BIGRS:labels',
-            }
-        })
-    });
-    var projection = new ol.proj.Projection({
-      code: 'EPSG:3857',
-      units: 'm',
-      axisOrientation: 'neu'
+    $("#teclado_numerico").blur(function(){
+        $("#teclado_numerico").removeClass('focus');
     });
 
-    //var
-    map = new ol.Map({
-        controls: [],//.extend([mousePositionControl]),
-        target: 'map',
-        layers: [
-            tiled,untiled
-        ],
-        view: new ol.View({
-            projection: projection
-        }),
-        interaction: ol.interaction.defaults({
-            doubleClickZoom :false,
-            dragAndDrop: false,
-            keyboardPan: false,
-            keyboardZoom: false,
-            mouseWheelZoom: false,
-            pointer: false,
-            select: false
-        })
-    });
-    //var
-    features = new ol.Collection();
-    var vectorSource=new ol.source.Vector({features: features});
-    var featureOverlay = new ol.layer.Vector({
-        source: vectorSource,
-        style: new ol.style.Style({
-            fill: new ol.style.Fill({
-                color: 'rgba(255, 255, 255, 0.2)'
-            }),
-            stroke: new ol.style.Stroke({
-                color: '#000000',
-                width: 2
-            }),
-            image: new ol.style.Circle({
-                radius: 10,
-                fill: new ol.style.Fill({
-                  color: '#ffcc33'
-                })
-            })
-        })
-    });
-    featureOverlay.setMap(map);
-
-    var labelfeatures=new ol.Collection();
-    var labelSource=new ol.source.Vector({features: labelfeatures});
-    var labelsOverlay = new ol.layer.Vector({
-        source: labelSource,
-        style: drawtext
-    });
-    labelsOverlay.setMap(map);
-
-    for(var i=0;i<linhas.length;i++){
-        var r=linhas[i].geometry;
-        var g;
-        if(g=r.match(/\((.*)\)/)){
-            var pts=g[1].split(/,/);
-            if(pts.length>1){
-                var k=0;
-                var points=[];
-                while(k<pts.length){
-                    xy=pts[k].split(" ");
-                    points.push(xy);
-                    k++;
-                }
-                console.debug(points);
-                var line = new ol.geom.MultiLineString([points],'XY');
-                console.debug(line);
-                var featurething = new ol.Feature({
-                    name: linhas[i].alias,
-                    geometry: line
-                });
-                vectorSource.addFeature( featurething );
-                var thing = new ol.geom.Point(points[0]);
-                var labelthing = new ol.Feature({
-                    alias: linhas[i].alias,
-                    geometry: thing
-                });
-                labelSource.addFeature( labelthing );
-            }
-        }
-    }
-    if(typeof MAP_CENTER != "undefined"){
-        map.getView().setZoom(17);
-        map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
-    }else{
-        map.getView().fit(bounds, map.getSize());
-    }
-    $('body').keyup(keyup);
-    travels=[];
-    /*
-    for(var i=0;i<pontos.length;i++){
-        for(var j=0;j<pontos.length;j++){
-            if (i!=j){
-                var h={
-                    'origin':pontos[i],
-                    'destin':pontos[j],
-                };
-                console.debug(h);
-                travels.push({
-                    'origin':pontos[i],
-                    'destin':pontos[j]
-                });
-            }
-        }
-    }*/
-    //setTravel(travels[CURRENT_DIRECTION]);
-    setKeyboard();
+    requestFocus();
     upload();
+
 }
+function requestFocus(){
+$("#teclado_numerico").focus();
+}
+
 
 function fixHeight(){
     var h=$('body').height();

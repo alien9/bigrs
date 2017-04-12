@@ -158,3 +158,10 @@ background-color:white !important;
     position:absolute;
     text-align:center;
 }
+
+focus{
+    border:3px solid red;
+}
+#od{
+    display:none;
+}
