@@ -24,16 +24,15 @@ def index(request):
         ano=r[0]
         mc.set('mes',mes)
         mc.set('ano',ano)
-    return render(request, "index.html",{'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
+    return render(request, "index.html",{'timestamp':datetime.now().timestamp(),'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
 
 def geojson(request):
     conn = connection.cursor().connection #psycopg2.connect(cstring)
     cur = conn.cursor()
-
-    ano = request.GET.get('ano','2015')
-
-    cur.execute("select st_x(geom),st_y(geom),data_e_hora,gid from incidentes where data_e_hora between %s and %s",
-                ("%s-01-01 00:00:00" % (ano,), "%s-12-31 23:59:59" % (ano),))
+    #ano = request.GET.get('ano','2015')
+    cur.execute("select st_x(i.geom),st_y(i.geom),i.data_e_hora,i.tipo_acide,string_agg(v.tipo_veiculo,'|'),i.gid from incidentes i join veiculos v on v.id_acidente=i.id_acident"
+                " group by i.gid,st_x,st_y,i.data_e_hora,i.tipo_acide")# where data_e_hora between %s and %s",
+                #("%s-01-01 00:00:00" % (ano,), "%s-12-31 23:59:59" % (ano),))
     j = {
         'type': 'FeatureCollection',
         'features': []
@@ -46,7 +45,9 @@ def geojson(request):
                 'coordinates': [record[0], record[1]],
             },
             'properties': {
-                'data_e_hora': time.mktime(record[2].timetuple())
+                'data_e_hora': time.mktime(record[2].timetuple()),
+                'tipo_acide':record[3],
+                'tipo_veiculo':record[4]
             }
         })
     return JsonResponse(j)
@@ -138,6 +139,16 @@ def vector(request):
 
 def reverse(request):
     p=request.POST.getlist('point[]')
+    if p is None:
+        lat = request.POST.get('latitude')
+        lon = request.POST.get('longitude')
+        conn = connection.cursor().connection
+        cur = conn.cursor()
+        cur.execute("select bigrs.get_segmento_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
+        j={
+        'nome':cur.fetchone()
+        }
+        return JsonResponse(j)
     conn = connection.cursor().connection
     cur = conn.cursor()
     cur.execute("select bigrs.reverse_geocode(%s, %s)", (p[0],p[1],))

@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% block css %}
-<link rel="stylesheet" href="/static/css/main.css" type="text/css">
+<link rel="stylesheet" href="/static/css/main.css?k={{timestamp}}" type="text/css">
 {% endblock %}
 {%block scripts%}
-<script type="text/javascript" src="/static/js/index.js"></script>
+<script type="text/javascript" src="/static/js/index.js?k={{timestamp}}"></script>
 {%endblock%}
 {%block contents%}
   <body style="position:relative">
@@ -13,7 +13,7 @@
       <div class="sair">Logado como {{user}} - <a href="/logout" id="logout">Sair</a></div>
       <div style="" id="filters_box" >
           <input name="feature_id" type="hidden">
-        <div>
+        <div class="divisoes menu">
             <a href="javascript:void(0);">Divisões</a>
             <div>
               <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
@@ -21,14 +21,14 @@
               <label><input type="radio" name="adm" value="heatmap" checked="true">Mapa de Calor</label>
             </div>
         </div>
-        <div>
+        <div class="dados menu">
             <a href="javascript:void(0);">Dados</a><div>
               <label><input type="radio" name="tipo" value="vitimas" checked=true>Vítimas</label><br>
               <label><input type="radio" name="tipo" value="feridos">Feridos</label><br>
               <label><input type="radio" name="tipo" value="mortos">Mortos</label>
           </div>
         </div>
-        <div>
+        <div class="periodo menu">
             <a href="javascript:void(0);">Período</a><div>
               <label><input type="radio" name="periodo" value="mes" checked=true>Por mês</label><br>
               <label><input type="radio" name="periodo" value="ano">Por ano</label><br>
@@ -51,13 +51,13 @@
             <input name="ano" size="4" value="{{ano}}" type="text">
           </div>
         </div>
-        <div>
+        <div class="contagem menu">
             <a href="javascript:void(0);">Contagem</a><div>
               <label><input type="radio" name="contagem" value="absolute" checked=true>Absoluta</label><br>
               <label><input type="radio" name="contagem" value="cem_mil">Por cem mil </label><br>
           </div>
         </div>
-        <div>
+        <div class="tipo_acidente menu">
             <a href="javascript:void(0);">Tipo de Acidente</a><div>
             <!--
 CO - Colisão
@@ -84,7 +84,7 @@ SI - Sem informações
               <label><input type="checkbox" name="tipo_acidente" value="OU" checked=true>Outros</label><br>
           </div>
         </div>
-<div>
+        <div class="tipo_veiculo menu">
             <a href="javascript:void(0);">Tipo de Veículo</a><div>
             <!--
 A - AU - Auto
@@ -113,7 +113,6 @@ Y - CO - Carroça -->
           </div>
         </div>
       </div>
-
   </div>
   <div id="left_column" style="width:100%;position:relative;">
     <div id="mapa" class="mapa" style="width:100%;height:600px;background:#ccc;">

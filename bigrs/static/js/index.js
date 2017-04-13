@@ -32,30 +32,40 @@ var content;
 var closer;
 
 var selected_marker;
-var points={};
+var points;
 var featurething;
 var zoom;
 var center;
 var vectorSource;
 
+function intersects(a,b){
+    var ta=a.split('|');
+    var i=0;
+    while(i<ta.length){
+        if(ta[i].match(b)) return true;
+        i++;
+    }
+    return false;
+}
+
+
 //setHeatMap();
 function setHeatMap(){
     var h=getForm();
-    console.debug(h);
+    //console.debug(h);
     h['FORMAT']='image/png';
     h['VERSION']='1.1.1';
     h['STYLES']='';
     h['LAYERS']='BIGRS:incidentes_params';
     var ano=h.ano;
-    if(points[ano]==null){
+    if(points==null){
         $.ajax('/geojson', {data:h,dataType:'json',success:function(j){
             var geojsonObject = j;
             var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
                 featureProjection: 'EPSG:3857'
             });
             if(features.length){
-                console.debug(features);
-                points[ano] = new ol.source.Vector({
+                points = new ol.source.Vector({
                   'features': features
                 });
                 setHeatMap();
@@ -64,21 +74,31 @@ function setHeatMap(){
         return;
     }
 
-    //console.debug(points.getFeatures());
-
-    //for(var i=0;i<points.getFeatures().length;i++){
-        //console.debug(points.getFeatures()[i].get("data_e_hora"));
-    //}
     if(layers['heatmap']){
         map.removeLayer(layers['heatmap']);
         delete(layers['heatmap']);
     }
+
+    var features=[];
+    var features = [];
+    points.getFeatures().forEach(function(fu){
+        var p=fu.getProperties();
+        if(p.tipo_acide && p.tipo_acide.match(h.regex_tipo_acide)){
+            if(intersects(p.tipo_veiculo,h.regex_tipo_veiculo)){
+                features.push(fu);
+            }
+        }
+    });
+    var new_points = new ol.source.Vector({
+      'features': features
+    });
     layers['heatmap'] =  new ol.layer.Heatmap({
-        source: points[ano],
+        source: new_points,
         radius: 2
     });
-
     map.addLayer(layers['heatmap']);
+    isLoadingTheme=false;
+    console.debug('huh');
 }
 
 function getQuantile(value,quantiles){
@@ -92,43 +112,53 @@ var result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
 return result ? 'rgba('+parseInt(result[1], 16)+','+parseInt(result[2], 16)+','+parseInt(result[3], 16)+',0.5)': null;
 }
 function getForm(){
-var month=$('select[name=mes]').val();
-var year=$('input[name=ano]').val();
-if(month>12) month=12;
-if(month<1) month=1;
-var p=$('input[name=periodo]:checked').val();
-var d=new Date(year,month,0);
-var df=year+'-'+(1+parseInt(d.getMonth()))+'-'+d.getDate();
-if(p=='ano'){
-    month=1;
-    df=year+'-12-31';
-}
-var tipo_acidente=$('input[name=tipo_acidente]:checked').map(function(){
+    var month=$('select[name=mes]').val();
+    var year=$('input[name=ano]').val();
+    if(month>12) month=12;
+    if(month<1) month=1;
+    var p=$('input[name=periodo]:checked').val();
+    var d=new Date(year,month,0);
+    var df=year+'-'+(1+parseInt(d.getMonth()))+'-'+d.getDate();
+    if(p=='ano'){
+        month=1;
+        df=year+'-12-31';
+    }
+    var tipo_acidente=$('input[name=tipo_acidente]:checked').map(function(){
+            return $(this).val();
+        }).get();
+    var cql_filter="tipo_acide in('"+(tipo_acidente.join(",").split(",").join("','"))+"')";
+    var tipo_veiculo=$('input[name=tipo_veiculo]:checked').map(function(){
         return $(this).val();
     }).get();
-var cql_filter="tipo_acide in('"+(tipo_acidente.join(",").split(",").join("','"))+"')";
+    return {
+        feature_id:$('input[name=feature_id]').val(),
+        adm:$('input[name=adm]:checked').val(),
+        tipo:$('input[name=tipo]:checked').val(),
+        periodo:$('input[name=periodo]:checked').val(),
+        mes:$('select[name=mes]').val(),
+        ano:$('input[name=ano]').val(),
+        contagem:$('input[name=contagem]:checked').val(),
+        viewparams:"data_inicio:"+year+'-'+month+"-01;data_final:"+df,
+        'tipo_veiculo':tipo_veiculo,
 
-return {
-    feature_id:$('input[name=feature_id]').val(),
-    adm:$('input[name=adm]:checked').val(),
-    tipo:$('input[name=tipo]:checked').val(),
-    periodo:$('input[name=periodo]:checked').val(),
-    mes:$('select[name=mes]').val(),
-    ano:$('input[name=ano]').val(),
-    contagem:$('input[name=contagem]:checked').val(),
-    viewparams:"data_inicio:"+year+'-'+month+"-01;data_final:"+df,
-    'tipo_veiculo':$('input[name=tipo_veiculo]:checked').map(function(){
-        return $(this).val();
-    }).get(),
-    cql_filter:cql_filter
-};
+        cql_filter:cql_filter,
+        regex_tipo_acide:new RegExp(tipo_acidente.join("|").replace(/\,/g,'|')),
+        regexp_tipo_veiculo:new RegExp(tipo_veiculo.join('|').replace(/\,/g,'|'))
+    };
 }
-
+var isLoadingTheme=false;
 function loadTheme(){
     var h=getForm();
+    console.debug(h.adm);
+    if(isLoadingTheme) return;
+    isLoadingTheme=true;
     if(h.adm=='heatmap'){
+        $('#filters_box .dados a,#filters_box .periodo a,#filters_box .contagem a').addClass('inactive');
         setHeatMap();
         return;
+    }else{
+        $('#filters_box a').removeClass('inactive');
+
     }
     $.ajax('/theme',{dataType:'json','data':h,success:function(j){
         var theme={};
@@ -137,7 +167,10 @@ function loadTheme(){
             theme[j.items[i][0]]=hexToRgb(colors[k]);
         }
         var l=layers[h.adm];
-        if(!l) return;
+        if(!l) {
+            return;
+            isLoadingTheme=false;
+        }
         var s=l.getSource();
         if(s.getFeatures){
             var f=layers[h.adm].getSource().getFeatures();
@@ -155,7 +188,7 @@ function loadTheme(){
             tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
             $("table#table_legenda").append(tr);
         }
-
+        isLoadingTheme=false;
     }});
 }
 
@@ -217,6 +250,12 @@ var projection = new ol.proj.Projection({
   axisOrientation: 'neu'
 });
 
+function fixHeight(){
+    var h=$('body').height()-$('#header').height();
+    $("#mapa").css('height',h+'px');
+    map.updateSize();
+}
+
 var selected=0;
 function start(){
     var tiled = new ol.layer.Tile({
@@ -244,7 +283,7 @@ function start(){
           anchor: [0.5, 32],
           anchorXUnits: 'fraction',
           anchorYUnits: 'pixels',
-          src: '/icons/blue.png'
+          src: '/static/images/blue.png'
         })
     });
     iconFeature.setStyle(iconStyle);
@@ -289,16 +328,15 @@ function start(){
           maxZoom: 19
         })
     });
-
-    map.on("moveend",function(){
-        document.cookie="center="+map.getView().getCenter();
+    var savecenter=function(){
+        var center=map.getView().getCenter();
+        if(isNaN(center[0]) || isNaN(center[1])) center=ol.proj.fromLonLat([-46.5, -23.5]);
+        document.cookie="center="+center;
         document.cookie="zoom="+map.getView().getZoom();
-    });
+    };
+    map.on("moveend",savecenter);
 
-    map.on("zoomend",function(){
-        document.cookie="center="+map.getView().getCenter();
-        document.cookie="zoom="+map.getView().getZoom();
-    });
+    map.on("zoomend",savecenter);
 
     map.on("click", function(e){
         var isFeature=false;
@@ -367,7 +405,6 @@ function start(){
             alert(e.statusText);
         }});
     });
-
     with(map.getView()){
         setZoom(zoom);
         setCenter(center);
@@ -453,6 +490,7 @@ function start(){
             if(w!='adm'){
                 $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
                     layers[w]=addVector(g,w);
+                    console.debug("carga um");
                     loadTheme();
                 }});
             }
@@ -467,7 +505,8 @@ function start(){
         if(k.keyCode==13) loadTheme();
     });
 
-    $('div#filters_box a').click(function(){
+    $('div#filters_box a').click(function(e){
+        if($(e.target).hasClass('inactive')) return;
         $(this).parent().siblings().find('div').hide();
         $(this).parent().find('div').toggle();
     });
@@ -475,5 +514,7 @@ function start(){
         $('select[name=mes]').prop('disabled', !($(this).val()=='mes'));
     });
     $('select[name=mes]').prop('disabled', !($('input[name=periodo]:checked').val()=='mes'));
-    setHeatMap();
+    fixHeight();
+    loadTheme();
+    $(window).resize(fixHeight);
 }

@@ -1,3 +1,10 @@
+html,body{
+    height:100%;
+    width:100%;
+    margin:0;
+    padding:0;
+}
+
 body{
     font-family:sans-serif;
     background-color:#000;
@@ -96,6 +103,9 @@ body{
     color:white;
 }
 .sair{
-float:right;
-padding-right:20px;
+    float:right;
+    padding-right:20px;
+}
+a.inactive{
+    color:gray !important;
 }
