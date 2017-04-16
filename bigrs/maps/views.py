@@ -246,7 +246,7 @@ def auth(request):
         login(request, user)
         return redirect(index)
     else:
-        return render(request,'login.html')
+        return render(request,'login.html',{'timestamp':datetime.now().timestamp()})
 
 
 def log_out(request):

@@ -251,7 +251,7 @@ var projection = new ol.proj.Projection({
 });
 
 function fixHeight(){
-    var h=$('body').height()-$('#header').height();
+    var h=$('body').height()-$('#cabecalho').height();
     $("#mapa").css('height',h+'px');
     map.updateSize();
 }

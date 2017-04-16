@@ -20,7 +20,9 @@ body{
     display:block;
 }
 #header{
-    background-color:#4a008b;
+    background-color:#e84e0e;
+    position:relative;
+    height:33px;
 }
 #mobilab_logo{
     width:180px;
@@ -30,6 +32,34 @@ body{
     background-repeat:no-repeat;
     background-position:0 5px
 }
+
+#logo_pref{
+    width:290px;
+    height:106px;
+    background-repeat:no-repeat;
+    background-image:url(/static/images/logo_prefeitura.png);
+}
+#logo_bigrs{
+    float:right;
+    width:210px;
+    height:106px;
+    background-repeat:no-repeat;
+    background-image:url(/static/images/logo_bigrs.png);
+}
+#logo_mobilab{
+    float:right;
+    width:149px;
+    height:106px;
+    background-repeat:no-repeat;
+    background-image:url(/static/images/logo_mobilab_menor.png);
+}
+#cabecalho{
+    background-color:white;
+    position:relative;
+    box-shadow: 0px 5px 15px #cccccc;
+}
+
+
 .ol-popup {
     position: absolute;
     background-color: white;
@@ -77,8 +107,9 @@ body{
 }
 #filters_box
 {
-    left:200px;top:55px;z-index:99;position:absolute;
+    left:200px;top:0;z-index:99;
     font-size:small;
+    position:absolute;
 }
 #filters_box>div>div{
     display:none;
@@ -92,7 +123,7 @@ body{
     display:inline-block;
     border:1px solid none;
     vertical-align:top;
-    background-color:#4a008b;
+    background-color:#e84e0e;
 }
 #filters_box a{
     display:block;
@@ -100,11 +131,11 @@ body{
 #filters_box a,.sair, .sair a{
     font-size:small;
     text-decoration:none;
-    color:white;
+    color:black;
 }
 .sair{
-    float:right;
-    padding-right:20px;
+    position:absolute;
+    right:20px;
 }
 a.inactive{
     color:gray !important;
