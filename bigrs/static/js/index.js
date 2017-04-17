@@ -98,7 +98,7 @@ function setHeatMap(){
     });
     map.addLayer(layers['heatmap']);
     isLoadingTheme=false;
-    console.debug('huh');
+    setModal(isLoadingTheme);
 }
 
 function getQuantile(value,quantiles){
@@ -149,9 +149,9 @@ function getForm(){
 var isLoadingTheme=false;
 function loadTheme(){
     var h=getForm();
-    console.debug(h.adm);
     if(isLoadingTheme) return;
     isLoadingTheme=true;
+    setModal(isLoadingTheme);
     if(h.adm=='heatmap'){
         $('#filters_box .dados a,#filters_box .periodo a,#filters_box .contagem a').addClass('inactive');
         setHeatMap();
@@ -189,6 +189,7 @@ function loadTheme(){
             $("table#table_legenda").append(tr);
         }
         isLoadingTheme=false;
+        setModal(isLoadingTheme);
     }});
 }
 
@@ -240,6 +241,11 @@ function addVector(g,nome){
     source: source,
     style: getStyles
   });
+  distritos.getSource().on('change',function(e){
+    if(distritos.getSource().getState()=='ready'){
+        loadTheme();
+    }
+  })
   map.addLayer(distritos);
   return distritos;
 }
@@ -254,6 +260,7 @@ function fixHeight(){
     var h=$('body').height()-$('#cabecalho').height();
     $("#mapa").css('height',h+'px');
     map.updateSize();
+    setModal(isLoadingTheme);
 }
 
 var selected=0;
@@ -334,6 +341,7 @@ function start(){
         document.cookie="center="+center;
         document.cookie="zoom="+map.getView().getZoom();
     };
+
     map.on("moveend",savecenter);
 
     map.on("zoomend",savecenter);
@@ -490,8 +498,6 @@ function start(){
             if(w!='adm'){
                 $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
                     layers[w]=addVector(g,w);
-                    console.debug("carga um");
-                    loadTheme();
                 }});
             }
         }else{
@@ -517,4 +523,11 @@ function start(){
     fixHeight();
     loadTheme();
     $(window).resize(fixHeight);
+}
+function setModal(s){
+    if(s){
+        $('.modal').css('height', ($('body').height()-$('#cabecalho').height()+$('#header').height())+'px');
+    }else{
+        $('.modal').css('height', 0);
+    }
 }

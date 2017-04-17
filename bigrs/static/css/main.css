@@ -131,7 +131,7 @@ body{
 #filters_box a,.sair, .sair a{
     font-size:small;
     text-decoration:none;
-    color:black;
+    color:white;
 }
 .sair{
     position:absolute;
@@ -139,4 +139,12 @@ body{
 }
 a.inactive{
     color:gray !important;
+}
+.modal{
+    opacity:0.2;
+    background:green;
+    position:absolute;
+    height:0;
+    width:100%;
+    z-index:99;
 }
