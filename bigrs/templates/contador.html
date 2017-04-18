@@ -73,6 +73,7 @@ if(!contado['{{contado.tipo}}'])contado['{{contado.tipo}}']=0;
 contado['{{contado.tipo}}']++;
 {% endfor %}
 var contagem_id={{contagem.id}};
+var movie='{{contagem.endereco}}';
 {% autoescape on %}
 {% for spot in spots%}
 linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'{{spot.alias}}',id:'{{spot.id}}'});

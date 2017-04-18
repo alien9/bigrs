@@ -137,6 +137,22 @@ function start(){
     requestFocus();
     upload();
 
+
+    var updatePlayer=function(){
+        var p = videojs('my-video');
+        $.ajax('/set_player', {'method':'POST','dataType':'json','data':{
+            'contagem_id':contagem_id,
+            'ts':p.currentTime(),
+            'movie':movie,
+            'spots':JSON.stringify($.map(linhas,function(l){return {'id':l.id,'alias':l.alias}})),
+            csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+        },'success':function(h){
+            console.debug(h);
+            setTimeout(updatePlayer, 3000);
+        }});
+    };
+    setTimeout(updatePlayer, 3000);
+
 }
 function requestFocus(){
 $("#teclado_numerico").focus();

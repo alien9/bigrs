@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'rolepermissions',
     'maps',
     'social_django',
     'social.apps.django_app.default',
@@ -162,6 +163,8 @@ VIDEO_FILES_ROOT='static/video'
 #'/var/www/html/video'
 VIDEO_URL_ROOT='http://localhost:81/video/'
 #STATIC_ROOT=os.path.join(os.path.dirname(BASE_DIR), 'static')
+
+ROLEPERMISSIONS_MODULE = 'bigrs.roles'
 
 if DEBUG:
     import mimetypes

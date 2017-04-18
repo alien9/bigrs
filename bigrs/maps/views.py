@@ -12,6 +12,12 @@ from maps.models import *
 # Create your views here.
 @login_required(login_url='/auth')
 def index(request):
+    u=request.user
+    try:
+        if u.groups.filter(name='Contadores').exists():
+            return redirect('/lista')
+    except:
+        pass
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
     mes = mc.get('mes')
     ano = mc.get('ano')
@@ -172,27 +178,59 @@ def reverse_geocode(request):
     }
     return JsonResponse(j)
 
-def contador(request,contador_id):
-    if request.user.is_authenticated:
-        contagem=Contagem.objects.get(pk=contador_id)
-        tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
-        return render(request,'contador.html', {
-            'contagem':contagem,
-            'spots':contagem.spot_set.all(),
-            'contados':contagem.contado_set.all(),
-            'tipos':tipos,'json_tipos':json.dumps(tipos),
-            'root':VIDEO_URL_ROOT,
-            'geoserver':geoserver,
-            'timestamp':datetime.now().timestamp()
-        })
-    else:
-        return render(request,'login.html')
+@login_required(login_url='/auth')
+def set_player(request):
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    mc.set('player_%s'%request.user.id, {'movie':request.POST.get('movie'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')})
+    return JsonResponse({'result':True})
 
+@login_required(login_url='/auth')
+def get_player(request):
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    w=mc.get('player_%s'%request.user.id)
+    if w is None:
+        w={}
+    return JsonResponse(w)
+
+@login_required(login_url='/auth')
+def contador(request,contador_id):
+    contagem=Contagem.objects.get(pk=contador_id)
+    tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
+    return render(request,'contador.html', {
+        'contagem':contagem,
+        'spots':contagem.spot_set.all(),
+        'contados':contagem.contado_set.all(),
+        'tipos':tipos,'json_tipos':json.dumps(tipos),
+        'root':VIDEO_URL_ROOT,
+        'geoserver':geoserver,
+        'timestamp':datetime.now().timestamp()
+    })
+
+@login_required(login_url='/auth')
+def teclado(request):
+    teclas = {"7": "moto", "8": "pedestre", "9": "bici", "4": "microonibus", "5": "onibus", "6": "brt", "1": "vuc","2": "caminhao", "0": "carro"}
+    return render(request,'teclado.html',{'teclas':teclas,'timestamp':datetime.now().timestamp(),})
+
+@login_required(login_url='/auth')
 def lista_contagens(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
     contagens=Contagem.objects.all()
     return render(request,'lista.html',{'contagens':contagens})
+
+@login_required(login_url='/auth')
+def update_contagens(request):
+    contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
+    spot=contagem.spot_set.get(pk=request.POST.get('spot_id'))
+
+    r={}
+    #for c in spot.contado_set:
+
+
+    return render(request,'lista.html',{'contagens':r})
+
+
+
 
 def nova_contagem(request):
     if not request.user.is_authenticated:
@@ -209,6 +247,7 @@ def nova_contagem(request):
         contagem.save()
     return redirect(lista_contagens)
 
+@login_required(login_url='/auth')
 def conta(request):
     if not request.user.is_authenticated:
         return render(request, 'login.html')
@@ -223,7 +262,7 @@ def conta(request):
                     author=request.user,
                     contagem=contagem,
                     tipo=veiculo['tipo'],
-                    data_e_hora=contagem.data_e_hora+timedelta(seconds=veiculo['ts']),
+                    data_e_hora=contagem.data_e_hora+timedelta(seconds=float(veiculo['ts'])),
                     spot=Spot.objects.get(pk=veiculo['spot_id'])
                 )
                 c.save()
