@@ -181,8 +181,9 @@ def reverse_geocode(request):
 @login_required(login_url='/auth')
 def set_player(request):
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-    mc.set('player_%s'%request.user.id, {'movie':request.POST.get('movie'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')})
-    return JsonResponse({'result':True})
+    h={'movie':request.POST.get('movie'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')}
+    mc.set('player_%s'%request.user.id, h)
+    return JsonResponse(h)
 
 @login_required(login_url='/auth')
 def get_player(request):
@@ -222,15 +223,12 @@ def lista_contagens(request):
 def update_contagens(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
     spot=contagem.spot_set.get(pk=request.POST.get('spot_id'))
-
     r={}
-    #for c in spot.contado_set:
-
-
-    return render(request,'lista.html',{'contagens':r})
-
-
-
+    for c in spot.contado_set.all():
+        if not c.tipo in r:
+            r[c.tipo]=0;
+        r[c.tipo]+=1
+    return JsonResponse(r)
 
 def nova_contagem(request):
     if not request.user.is_authenticated:

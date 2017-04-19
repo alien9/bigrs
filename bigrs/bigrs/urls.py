@@ -31,6 +31,7 @@ urlpatterns = [
     url(r'^get_player$', views.get_player),
     url(r'^set_player$', views.set_player),
     url(r'^nova_contagem', views.nova_contagem),
+    url(r'^update_contagens$', views.update_contagens),
     url(r'^conta$', views.conta),
     url(r'^logout', views.log_out),
     url(r'^reverse_geocode', views.reverse_geocode),

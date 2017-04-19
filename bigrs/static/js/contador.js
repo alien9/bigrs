@@ -149,6 +149,10 @@ function start(){
         },'success':function(h){
             console.debug(h);
             setTimeout(updatePlayer, 3000);
+        },'error':function(e){
+            console.log('Erro: não foi possível enviar os dados do video.');
+            console.debug(e);
+            setTimeout(updatePlayer, 3000);
         }});
     };
     setTimeout(updatePlayer, 3000);
@@ -189,6 +193,9 @@ function reverse_geocode(p,tr){
                 $(tr).find('td.nome').text(h.nome);
             else
                 $(tr).find('td.nome').text(" * ");
+        },'error':function(e){
+            console.log('Erro: não foi possível obter o endereço.');
+            console.debug(e);
         }});
     }
 }
@@ -381,6 +388,10 @@ function upload(){
             delete(fila[local_id]);
         }
         setTimeout(upload,3000);
+    },'error':function(e){
+            console.log('Erro: não foi possível enviar a contagem.');
+            console.debug(e);
+            setTimeout(upload, 10000);
     }});
 }
 

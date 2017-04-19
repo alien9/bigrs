@@ -12,7 +12,8 @@ $(document).ready(function(){
         }
         var t=$(this).attr('tipo');
         console.debug(t);
-        if(!contado[t])contado[t]=0;
+        if(!contado[s]) contado[s]={};
+        if(!contado[s][t])contado[s][t]=0;
         var veiculo={
             ts:timestamp,
             spot_id:s,
@@ -20,17 +21,25 @@ $(document).ready(function(){
             local_id:local_id,
             contagem_id:contagem_id
         };
-        contado[t]++;
+        contado[s][t]++;
         fila[local_id]=veiculo;
         local_id++;
         setContagem();
     });
-    $('select[name=spot]').change(function(){
-        $.ajax('update_contagem', {dataType:'json',method:'POST',data:{contagem_id:contagem_id,spot_id:$('select[name=spot]').val()},success:function(h){
-            console.debug(h);
-        }})
-    });
 
+    var updateContagens=function(){
+        var spot_id=$('select[name=spot]').val();
+        if(!spot_id) return;
+        $.ajax('/update_contagens', {dataType:'json',method:'POST',data:{contagem_id:contagem_id,'spot_id':spot_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+            contado[spot_id]=h;
+            setContagem();
+        },'error':function(e){
+            console.log('Erro: não foi possível receber os dados.');
+            console.debug(e);
+        }});
+
+    };
+    $('select[name=spot]').change(updateContagens);
 
     var resize=function(){
         $(".main").css('height',($('body').height()-$('.head').height())+'px');
@@ -53,17 +62,25 @@ $(document).ready(function(){
                 $(option).text(spots[i].alias);
                 if(selected==spots[i].id) $(option).attr('selected',true);
                 $('select[name=spot]').append(option);
+                if(!contado[spots[i].id]) contado[spots[i].id]={};
             }
             $('.filename').text(h.movie);
+        },'error':function(e){
+            console.log('Erro: não foi possível encontrar o video.');
+            console.debug(e);
+            setTimeout(updatePlayer, 3000);
         }});
     };
-    setTimeout(updatePlayer, 3000);
+    updatePlayer();
     setTimeout(upload, 10000);
 });
 
 function setContagem(){
-    for(var tipo in contado){
-        $("a[tipo="+tipo+"] .display").text(contado[tipo]);
+    $('.main>a .display').text('');
+    var spot_id=$('select[name=spot]').val();
+    if(!spot_id) return;
+    for(var tipo in contado[spot_id]){
+        $("a[tipo="+tipo+"] .display").text(contado[spot_id][tipo]);
     }
 }
 function upload(){
@@ -71,11 +88,15 @@ function upload(){
     for(var k in fila) size++;
     if(size>0){
     $.ajax('/conta',{method:'POST',data:{fila:JSON.stringify(fila),csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
-        for(var local_id in h){
-            delete(fila[local_id]);
-        }
-        setTimeout(upload,10000);
-    }});
+            for(var local_id in h){
+                delete(fila[local_id]);
+            }
+            setTimeout(upload,10000);
+        },'error':function(e){
+            console.log('Erro: não foi possível enviar a contagem.');
+            console.debug(e);
+            setTimeout(upload, 10000);
+        }});
     }else{
         setTimeout(upload,10000);
     }

@@ -95,14 +95,16 @@ $(document).ready(function(){
         console.debug(vectors.features.length);
         e.feature.attributes={name:""+(vectors.features.length+1)};
     });
-    var sty= {
-        fontFamily: "arial, monospace",
-        fontWeight: "bold",
-        fontColor: "black",
-        label : ""+(i+1),
-        labelAlign: "center",//set to top right
-        labelOutlineColor: "white",
-        labelOutlineWidth: 3
+    var sty=function(i) {
+        return {
+            fontFamily: "arial, monospace",
+            fontWeight: "bold",
+            fontColor: "black",
+            label : ""+(i+1),
+            labelAlign: "center",//set to top right
+            labelOutlineColor: "white",
+            labelOutlineWidth: 3
+        };
     };
 
     while($("#spot_set-"+i).length){
@@ -122,8 +124,8 @@ $(document).ready(function(){
                     var line = new OpenLayers.Geometry.LineString(points);
                     console.debug(line);
                     var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
-                    lineFeature.attributes={name:""+(vectors.features.length+1)};
-                    lineFeature.style = sty;;
+                    lineFeature.attributes={name:""+(vectors.features.length)};
+                    lineFeature.style = sty(vectors.features.length);
                     vectors.addFeatures([lineFeature]);
                 }
             }
