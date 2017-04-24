@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
-    'rolepermissions',
     'maps',
     'social_django',
     'social.apps.django_app.default',

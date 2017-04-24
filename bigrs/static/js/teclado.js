@@ -43,7 +43,23 @@ $(document).ready(function(){
 
     var resize=function(){
         $(".main").css('height',($('body').height()-$('.head').height())+'px');
-        $('.main>a').css('width', Math.floor($('body').width() / $('.main>a').length)+'px');
+
+        if($('body').height()>$('body').width()){ //vertical
+            var w=Math.floor(($('body').height()-$('.head').height()) / $('.main>a').length);
+            $('.main>a').css('width', (w+220)+'px');
+            $('.main>a').css('height', w+'px');
+            $('.main>a').css('display', 'block');
+            $('.main>a').css('background-size', 'auto 100%');
+
+        }else{ //horizontal
+            var w=Math.floor($('body').width() / $('.main>a').length);
+            $('.main>a').css('width', w+'px');
+            $('.main>a').css('height', (w+220)+'px');
+            $('.main>a').css('display', 'inline-block');
+            $('.main>a').css('background-size', '100% auto');
+        }
+
+
     };
     $(window).resize(resize);
     resize();

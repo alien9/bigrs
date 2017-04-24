@@ -18,6 +18,10 @@ def index(request):
             return redirect('/lista')
     except:
         pass
+
+    if 'contador' in request.META['HTTP_HOST']:
+        return redirect('/lista')
+
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
     mes = mc.get('mes')
     ano = mc.get('ano')
@@ -269,6 +273,10 @@ def conta(request):
 
 
 def auth(request):
+    t='login_contador.html'
+    if 'contador' not in request.META['HTTP_HOST']:
+        t='login.html'
+
     if request.POST:
         print("é post")
     else:
@@ -283,7 +291,7 @@ def auth(request):
         login(request, user)
         return redirect(index)
     else:
-        return render(request,'login.html',{'timestamp':datetime.now().timestamp()})
+        return render(request,t,{'timestamp':datetime.now().timestamp()})
 
 
 def log_out(request):

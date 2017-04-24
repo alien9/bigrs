@@ -15,4 +15,3 @@ uwsgi
 social-auth-app-django
 exifread
 ffmpy
-django-role-permissions

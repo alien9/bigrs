@@ -1,18 +1,6 @@
 {% extends 'base.html' %}
 {% block css %}{% endblock %}
 {% block contents %}
-<a href="javascript:void(0);" id="nova_contagem">nova...</a>
-<div class="nova_contagem">
-
-<form action="/nova_contagem" method="post" enctype="multipart/form-data">{% csrf_token %}
-  <table>
-      <tr><td>Local:</td><td><input type="text" name="endereco"></td></tr>
-      <tr><td>Vídeo:</td><td><input type="file" name="file"></td></tr>
-  <tr><td colspan="2"><input type="submit" value="Submit">
-  </td></tr>
-  </table>
-</form>
-    </div>
 <div class="lista_contagens">
   {%for c in contagens%}
   <div class="contagem">
@@ -20,6 +8,7 @@
   </div>
   {%endfor%}
 </div>
+<div class="logout"><a href="/logout">Sair</a></div>
 {%endblock%}
 {% block scripts %}
 <script type="text/javascript">
