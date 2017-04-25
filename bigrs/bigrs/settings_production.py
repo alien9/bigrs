@@ -160,10 +160,8 @@ geoserver="http://bigrs.alien9.net:8080"
 
 VIDEO_FILES_ROOT='static/video'
 #'/var/www/html/video'
-VIDEO_URL_ROOT='http://localhost:81/video/'
+VIDEO_URL_ROOT='http://bigrs.alien9.net:81/video/'
 #STATIC_ROOT=os.path.join(os.path.dirname(BASE_DIR), 'static')
-
-ROLEPERMISSIONS_MODULE = 'bigrs.roles'
 
 if DEBUG:
     import mimetypes

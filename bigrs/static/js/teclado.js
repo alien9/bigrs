@@ -50,6 +50,7 @@ $(document).ready(function(){
             $('.main>a').css('height', w+'px');
             $('.main>a').css('display', 'block');
             $('.main>a').css('background-size', 'auto 100%');
+            $('.main>a').css('text-align','left');
 
         }else{ //horizontal
             var w=Math.floor($('body').width() / $('.main>a').length);
@@ -57,6 +58,7 @@ $(document).ready(function(){
             $('.main>a').css('height', (w+220)+'px');
             $('.main>a').css('display', 'inline-block');
             $('.main>a').css('background-size', '100% auto');
+            $('.main>a').css('text-align','center');
         }
 
 
