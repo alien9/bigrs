@@ -227,11 +227,15 @@ def lista_contagens(request):
 def update_contagens(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
     spot=contagem.spot_set.get(pk=request.POST.get('spot_id'))
+    teclas=spot.keys.all()
+    if len(teclas)==0:
+        teclas=Key.objects.all()
     r={}
+    for l in teclas:
+        r[l.name]=0
     for c in spot.contado_set.all():
-        if not c.tipo in r:
-            r[c.tipo]=0;
-        r[c.tipo]+=1
+        if c.tipo in r:
+            r[c.tipo]+=1
     return JsonResponse(r)
 
 def nova_contagem(request):
