@@ -45,6 +45,7 @@ html,body{
 }
 .head{
     font-size:22px;
+    line-height:60px;
 }
 .filename{
     font-weight:bold;
