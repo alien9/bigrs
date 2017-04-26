@@ -37,3 +37,10 @@ class Spot(models.Model):
     endereco_destino = models.TextField(max_length=100)
     alias = models.TextField(max_length=10)
     geometry=models.TextField(max_length=2000)
+    keys = models.ManyToManyField("Key", blank=True)
+
+class Key(models.Model):
+    def __str__(self):
+        return self.name
+    name=models.TextField(max_length=50)
+    icon=models.TextField(max_length=100)

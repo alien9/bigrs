@@ -1,5 +1,4 @@
-div.main{
-    background-color:#999;
+div.painel{
     position:relative;
 }
 .sair{
@@ -14,14 +13,15 @@ html,body{
     width:100%;
     height:100%;
     font-size:0;
+    overflow:hidden;
 }
 
-.main>a{
+.painel>a{
     display:inline-block;
     position:relative;
     width:100px;
     height:100%;
-    background-color:#999;
+    background-color:#aaa;
     background-position:center center;
     background-repeat:no-repeat;
     background-size: 100% auto;
@@ -29,12 +29,16 @@ html,body{
     margin:0;
     border:0;
     font-size:30px;
-
+    color:white;
+    font-family:sans-serif;
 }
-.main>a:active{
+.painel>a:active{
     background-color:white;
 }
-.main>a .display{
+.painel a{
+    border:2px solid white;
+}
+.painel>a .display{
     position:absolute;
     width:100%;
     bottom:0;
@@ -44,4 +48,13 @@ html,body{
 }
 .filename{
     font-weight:bold;
+}
+body{
+-webkit-user-select: none; /* Chrome/Safari */
+-moz-user-select: none; /* Firefox */
+-ms-user-select: none; /* IE10+ */
+
+/* Rules below not implemented in browsers yet */
+-o-user-select: none;
+user-select: none;
 }

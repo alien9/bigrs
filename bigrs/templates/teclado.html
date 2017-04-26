@@ -8,12 +8,7 @@
 {%block contents%}
 <div class="head">{% csrf_token %}
 Arquivo: <span class="filename"></span>
-Contando: <select name="spot"></select>
-</div>
-<div class="main">
+Pontos: <select name="spot"></select>
 <span class="sair" style="color:gray;z-index:300">Logado como {{user}} - <a  style="color:gray" href="/logout" id="logout">Sair</a></span>
-{%for k,v in teclas.items%}
-    <a style="background-image:url(/static/images/icons/{{v}}.png)" tipo="{{v}}"><div class="display"></div></a>
-{%endfor%}
 </div>
 {%endblock%}
