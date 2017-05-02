@@ -56,10 +56,11 @@ function setHeatMap(){
     h['FORMAT']='image/png';
     h['VERSION']='1.1.1';
     h['STYLES']='';
+    h['csrfmiddlewaretoken']=$('input[name=csrfmiddlewaretoken]').val();
     h['LAYERS']='BIGRS:incidentes_params';
     var ano=h.ano;
     if(points==null){
-        $.ajax('/geojson', {data:h,dataType:'json',success:function(j){
+        $.ajax('/geojson', {data:h,method:'post',dataType:'json',success:function(j){
             var geojsonObject = j;
             var features = new ol.format.GeoJSON().readFeatures(geojsonObject, {
                 featureProjection: 'EPSG:3857'
