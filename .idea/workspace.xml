@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="34c8e8ef-e14c-40b6-8f6d-5dc7702e8022" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bigrs/static/js/index.js" afterPath="$PROJECT_DIR$/bigrs/static/js/index.js" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/bigrs/maps/models.py" afterPath="$PROJECT_DIR$/bigrs/maps/models.py" />
     </list>
     <ignored path="bigrs.iws" />
     <ignored path=".idea/workspace.xml" />

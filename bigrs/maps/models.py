@@ -10,7 +10,7 @@ class Contagem(models.Model):
     data_e_hora_inicio=models.DateTimeField(auto_now_add=True, blank=True)
     endereco=models.TextField(max_length = 100)
     data_e_hora = models.DateTimeField()
-    movie = models.FileField(upload_to='static/video', null=True)
+    movie_clip = models.FileField(upload_to='static/video', null=True)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
     def save(self):
         p = re.compile('\.ASF$')
@@ -23,6 +23,14 @@ class Contagem(models.Model):
             self.movie.save(os.path.basename(new_path), File(open(new_path ,"rb")), save=True)
             os.remove(old_path)
             self.save()
+
+class Movie(models.Model):
+    class Meta:
+        verbose_name_plural = "Vídeos"
+    contagem=models.ForeignKey(Contagem)
+    data_e_hora_inicio = models.DateTimeField(auto_now_add=True, blank=True)
+    movie = models.FileField(upload_to='static/video', null=True)
+
 
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')
