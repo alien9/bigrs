@@ -6,6 +6,8 @@ from maps.models import *
 
 class SpotInline(admin.TabularInline):
     model=Spot
+class MovieInline(admin.TabularInline):
+    model=Movie
 
 class ContagemAdmin(GeoModelAdmin):
     list_display = ('endereco',)
@@ -17,6 +19,6 @@ class ContagemAdmin(GeoModelAdmin):
     default_zoom = 16
     units=True
     num_zoom = 18
-    inlines=[SpotInline]
+    inlines=[SpotInline,MovieInline]
 
 admin.site.register(Contagem,ContagemAdmin)

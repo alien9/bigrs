@@ -2,12 +2,12 @@ var k;
 var rasta;
 var travels;
 var CURRENT_DIRECTION=0;
+var CURRENT_VIDEO=0;
 var pressing=false;
 var fila={};
 var local_id=1;
 var map;
 function start(){
-
     if(typeof MAP_CENTER != "undefined"){
         //map.getView().setZoom(17);
         //map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
@@ -34,7 +34,7 @@ function start(){
             getURL:get_url
         }
     );
-    map = new OpenLayers.Map( {
+    map = new OpenLayers.Map({
         div:'map',
         projection:"EPSG:900913",
         displayProjection:"EPSG:4326",
@@ -52,8 +52,6 @@ function start(){
     }
     map.addLayer(tiled);
     zoom=17;
-
-
 
     var labellayer = new OpenLayers.Layer.WMS( "Labels",
                     "http://bigrs.alien9.net:8080/geoserver/BIGRS/wms",
@@ -137,13 +135,13 @@ function start(){
     requestFocus();
     upload();
 
-
     var updatePlayer=function(){
         var p = videojs('my-video');
         $.ajax('/set_player', {'method':'POST','dataType':'json','data':{
             'contagem_id':contagem_id,
             'ts':p.currentTime(),
             'movie':movie,
+            'movie_id':videos[CURRENT_VIDEO].id,
             'spots':JSON.stringify($.map(linhas,function(l){return {'id':l.id,'alias':l.alias}})),
             csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
         },'success':function(h){
@@ -156,7 +154,42 @@ function start(){
         }});
     };
     setTimeout(updatePlayer, 3000);
+    videojs('my-video').src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
 
+    videojs('my-video').on('ended', function() {
+        if(CURRENT_VIDEO<videos.length-1){
+            CURRENT_VIDEO++;
+            videojs('my-video').src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+            videojs('my-video').load();
+            videojs('my-video').play();
+        }
+    });
+
+    $('.player-button').click(function(){
+        var p = videojs('my-video');
+        switch($(this).attr('what')){
+            case 'play':
+                p.play();
+            break;
+            case 'rew':
+                p.pause();
+                if((CURRENT_VIDEO>0)&&(p.currentTime()==0)){
+                    CURRENT_VIDEO--;
+                    p.src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+                }else{
+                    p.currentTime(0);
+                }
+            break;
+            case 'ffw':
+                p.pause();
+                if(CURRENT_VIDEO<videos.length-1){
+                    CURRENT_VIDEO++;
+                    p.src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+                }
+            break;
+        }
+    });
+    updateContagemAll();
 }
 function requestFocus(){
 $("#teclado_numerico").focus();
@@ -382,6 +415,18 @@ function setContagem(){
         $("#contagem-"+tipo).text(contado[tipo]);
     }
 }
+
+function updateContagemAll(){
+    $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+        console.debug(h)
+        for(var tipo in h){
+            $("#contagem-"+tipo).text(h[tipo]);
+        }
+    }})
+    setTimeout(updateContagemAll, 3000);
+}
+
+
 function upload(){
     $.ajax('/conta',{method:'POST',data:{fila:JSON.stringify(fila),csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
         for(var local_id in h){

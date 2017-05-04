@@ -27,6 +27,7 @@ html,body{
 }
 body{
     font-family:sans-serif;
+    overflow:hidden;
 }
 .my-video-dimensions{
     height:100%;
@@ -52,6 +53,7 @@ video{
     position: relative;
     background-color:white;
     padding:0;
+    display:none;
 }
 
 .aspect-ratio {
@@ -164,4 +166,22 @@ focus{
 }
 #od{
     display:none;
+}
+#contagem{
+    height:100px;
+}
+
+.player-button{
+    display:inline-block;
+    width:20px;
+    height:20px;
+    background-color:#eee;
+    padding:4px;margin:4px;
+    text-align:center;
+}
+#controles{
+    padding-left:50%;
+}
+#controles>div{
+    margin-left:-75px;
 }

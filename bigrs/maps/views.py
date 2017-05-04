@@ -185,7 +185,7 @@ def reverse_geocode(request):
 @login_required(login_url='/auth')
 def set_player(request):
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-    h={'movie':request.POST.get('movie'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')}
+    h={'movie':request.POST.get('movie'),'movie_id':request.POST.get('movie_id'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')}
     mc.set('player_%s'%request.user.id, h)
     return JsonResponse(h)
 
@@ -208,7 +208,8 @@ def contador(request,contador_id):
         'tipos':tipos,'json_tipos':json.dumps(tipos),
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
-        'timestamp':datetime.now().timestamp()
+        'timestamp':datetime.now().timestamp(),
+        'videos':contagem.movie_set.all()
     })
 
 @login_required(login_url='/auth')
@@ -238,6 +239,24 @@ def update_contagens(request):
             r[c.tipo]+=1
     return JsonResponse(r)
 
+@login_required(login_url='/auth')
+def update_contagem_all(request):
+    contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
+    spots=contagem.spot_set.all()
+    r = {}
+    for spot in spots:
+        teclas=spot.keys.all()
+        if len(teclas)==0:
+            teclas=Key.objects.all()
+
+        for l in teclas:
+            if not l.name in r:
+                r[l.name]=0
+        for c in spot.contado_set.all():
+            if c.tipo in r:
+                r[c.tipo]+=1
+    return JsonResponse(r)
+
 def nova_contagem(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
@@ -257,18 +276,23 @@ def nova_contagem(request):
 def conta(request):
     if not request.user.is_authenticated:
         return render(request, 'login.html')
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    w = mc.get('player_%s' % request.user.id)
+    if w is None:
+        w = {}
     res = {}
     if request.is_ajax():
         if request.method == 'POST':
             jake=json.loads(request.POST.get('fila'))
             for k, veiculo in jake.items():
-                print(veiculo)
+                print(request.POST.get('video_id'))
                 contagem=Contagem.objects.get(pk=veiculo['contagem_id'])
+                movie=contagem.movie_set.get(pk=w['movie_id'])
                 c=Contado(
                     author=request.user,
                     contagem=contagem,
                     tipo=veiculo['tipo'],
-                    data_e_hora=contagem.data_e_hora+timedelta(seconds=float(veiculo['ts'])),
+                    data_e_hora=movie.data_e_hora_inicio+timedelta(seconds=float(veiculo['ts'])),
                     spot=Spot.objects.get(pk=veiculo['spot_id'])
                 )
                 c.save()

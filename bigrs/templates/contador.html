@@ -2,7 +2,7 @@
 {% block css %}
 <link href="http://vjs.zencdn.net/5.16.0/video-js.css" rel="stylesheet">
 <link href="/static/css/contador.css?k={{timestamp}}" rel="stylesheet">
-
+<link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css">
 {% endblock %}
 {% block openlayers %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js"></script>
@@ -61,6 +61,19 @@
             </div>
             {%endfor%}
         </div>
+        <div id="controles">
+            <div>
+                <a class="player-button" href="javascript:void(0);" what="rew">
+                    <i class="fa fa-step-backward" aria-hidden="true"></i>
+                </a>
+                <a class="player-button" href="javascript:void(0);" what="play">
+                    <i class="fa fa-play" aria-hidden="true"></i>
+                </a>
+                <a class="player-button" href="javascript:void(0);" what="ffw">
+                    <i class="fa fa-step-forward" aria-hidden="true"></i>
+                </a>
+            </div>
+        </div>
     </div>
 </div>
 <script type="text/javascript">
@@ -74,10 +87,16 @@ contado['{{contado.tipo}}']++;
 {% endfor %}
 var contagem_id={{contagem.id}};
 var movie='{{contagem.endereco}}';
+var VIDEO_ROOT='{{root}}';
 {% autoescape on %}
 {% for spot in spots%}
 linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'{{spot.alias}}',id:'{{spot.id}}'});
 {% endfor %}
+var videos=[];
+{%for m in videos%}
+videos.push({url:'{{m.movie}}',id:{{m.id}}});
+{%endfor%}
+
 {% endautoescape %}
     GEOSERVER='{{geoserver}}';
     {%if contagem.location != None %}
