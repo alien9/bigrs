@@ -179,6 +179,7 @@ function start(){
                 }else{
                     p.currentTime(0);
                 }
+                destroiContagemVideo();
             break;
             case 'ffw':
                 p.pause();
@@ -195,6 +196,15 @@ function requestFocus(){
 $("#teclado_numerico").focus();
 }
 
+function destroiContagemVideo(){
+    $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+        }, success:function(h){
+            for(var tipo in h){
+                $("#contagem-"+tipo).text(h[tipo]);
+            }
+        }});
+
+}
 
 function fixHeight(){
     var h=$('body').height();
@@ -388,6 +398,8 @@ function keyup(e){
             fila[local_id]=veiculo;
             local_id++;
             setContagem();
+            if(contagem_all_timeout) clearTimeout(contagem_all_timeout);
+            contagem_all_timeout=setTimeout(updateContagemAll,3000);
         }
     }
 }
@@ -416,14 +428,16 @@ function setContagem(){
     }
 }
 
+var contagem_all_timeout;
 function updateContagemAll(){
     $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
         console.debug(h)
         for(var tipo in h){
+            contado[tipo]=h[tipo];
             $("#contagem-"+tipo).text(h[tipo]);
         }
     }})
-    setTimeout(updateContagemAll, 3000);
+    contagem_all_timeout=setTimeout(updateContagemAll, 3000);
 }
 
 

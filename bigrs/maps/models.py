@@ -31,7 +31,9 @@ class Movie(models.Model):
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')
     contagem=models.ForeignKey(Contagem)
+    movie=models.ForeignKey(Movie)
     tipo=models.TextField(max_length=100)
+    timestamp=models.IntegerField()
     data_e_hora = models.DateTimeField()
     spot=models.ForeignKey("Spot")
 

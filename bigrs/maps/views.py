@@ -34,7 +34,7 @@ def index(request):
         ano=r[0]
         mc.set('mes',mes)
         mc.set('ano',ano)
-    return render(request, "index.html",{'timestamp':datetime.now().timestamp(),'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
+    return render(request, "index.html",{'timestamp':DEPLOY_VERSION,'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
 
 def geojson(request):
     conn = connection.cursor().connection #psycopg2.connect(cstring)
@@ -208,14 +208,20 @@ def contador(request,contador_id):
         'tipos':tipos,'json_tipos':json.dumps(tipos),
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
-        'timestamp':datetime.now().timestamp(),
+        'timestamp':DEPLOY_VERSION,
         'videos':contagem.movie_set.all()
     })
 
 @login_required(login_url='/auth')
+def destroy_video_count(request):
+    video=Movie.objects.get(pk=request.POST.get('video_id'))
+    video.contado_set.all().delete()
+    return update_contagem_all(request)
+
+@login_required(login_url='/auth')
 def teclado(request):
     teclas = {"7": "moto", "8": "pedestre", "9": "bici", "4": "microonibus", "5": "onibus", "6": "brt", "1": "vuc","2": "caminhao", "0": "carro"}
-    return render(request,'teclado.html',{'teclas':teclas,'timestamp':datetime.now().timestamp(),})
+    return render(request,'teclado.html',{'teclas':teclas,'timestamp':DEPLOY_VERSION,})
 
 @login_required(login_url='/auth')
 def lista_contagens(request):
@@ -286,6 +292,7 @@ def conta(request):
             jake=json.loads(request.POST.get('fila'))
             for k, veiculo in jake.items():
                 print(request.POST.get('video_id'))
+                print(w['ts'])
                 contagem=Contagem.objects.get(pk=veiculo['contagem_id'])
                 movie=contagem.movie_set.get(pk=w['movie_id'])
                 c=Contado(
@@ -293,7 +300,9 @@ def conta(request):
                     contagem=contagem,
                     tipo=veiculo['tipo'],
                     data_e_hora=movie.data_e_hora_inicio+timedelta(seconds=float(veiculo['ts'])),
-                    spot=Spot.objects.get(pk=veiculo['spot_id'])
+                    spot=Spot.objects.get(pk=veiculo['spot_id']),
+                    timestamp=int(float(w['ts'])),
+                    movie=movie
                 )
                 c.save()
                 res[veiculo['local_id']]=True
@@ -313,7 +322,7 @@ def auth(request):
         login(request, user)
         return redirect(index)
     else:
-        return render(request,t,{'timestamp':datetime.now().timestamp()})
+        return render(request,t,{'timestamp':DEPLOY_VERSION})
 
 
 def log_out(request):
@@ -368,3 +377,4 @@ def geocode(request):
 
 def social_error(request):
     return render(request,'socialauth-error.html')
+

@@ -49,3 +49,7 @@ if DEBUG:
     mimetypes.add_type("video/mp4", ".mp4", True)
     mimetypes.add_type("video/mpeg", ".ASF", True)
     mimetypes.add_type("video/mpeg", ".asf", True)
+
+from time import time
+t = time()
+DEPLOY_VERSION=time()
