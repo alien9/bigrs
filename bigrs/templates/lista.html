@@ -1,5 +1,7 @@
-{% extends 'base.html' %}
-{% block css %}{% endblock %}
+{% extends 'base.html' %}{% block css %}
+<link href="/static/css/lista.css?k={{timestamp}}" rel="stylesheet">
+<link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css">
+{% endblock %}
 {% block contents %}
 <div class="lista_contagens">
   <a href="/teclado">teclado</a>

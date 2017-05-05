@@ -179,9 +179,9 @@ focus{
     padding:4px;margin:4px;
     text-align:center;
 }
-#controles{
+#controles, #voltar{
     padding-left:50%;
 }
-#controles>div{
+#controles>div, #voltar>div{
     margin-left:-75px;
 }

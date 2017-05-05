@@ -191,6 +191,8 @@ function start(){
         }
     });
     updateContagemAll();
+    fixHeight();
+    $(window).resize(fixHeight);
 }
 function requestFocus(){
 $("#teclado_numerico").focus();
@@ -209,7 +211,12 @@ function destroiContagemVideo(){
 function fixHeight(){
     var h=$('body').height();
     $('.main').css('height',h+"px");
-    $('video').css('width',($('body').width()-300)+'px')
+    $('video').css('width',($('body').width()-300)+'px');
+    $('video').attr('width',($('body').width()-300)+'px');
+    $('.vjs-control-bar').css('width',($('body').width()-300)+'px');
+    $('.videocontainer').css('width',($('body').width()-300)+'px');
+
+    $('.my-video-dimensions').css('width',($('body').width()-300)+'px');
 }
 function collectpoints(){
     var i=0;
@@ -400,7 +407,7 @@ function keyup(e){
             setContagem();
             if(contagem_all_timeout) clearTimeout(contagem_all_timeout);
             contagem_all_timeout=setTimeout(updateContagemAll,3000);
-        }
+        }90
     }
 }
 function getOd(){

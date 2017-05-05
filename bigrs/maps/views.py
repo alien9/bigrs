@@ -209,11 +209,12 @@ def contador(request,contador_id):
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
-        'videos':contagem.movie_set.all()
+        'videos':contagem.movie_set.order_by('data_e_hora_inicio')
     })
 
 @login_required(login_url='/auth')
 def destroy_video_count(request):
+    print("destroying %s"%(request.POST.get('video_id')))
     video=Movie.objects.get(pk=request.POST.get('video_id'))
     video.contado_set.all().delete()
     return update_contagem_all(request)
@@ -228,7 +229,7 @@ def lista_contagens(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
     contagens=Contagem.objects.all()
-    return render(request,'lista.html',{'contagens':contagens})
+    return render(request,'lista.html',{'contagens':contagens,'timestamp':DEPLOY_VERSION})
 
 @login_required(login_url='/auth')
 def update_contagens(request):

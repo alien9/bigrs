@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load video_filter %}
 {% block css %}
 <link href="http://vjs.zencdn.net/5.16.0/video-js.css" rel="stylesheet">
 <link href="/static/css/contador.css?k={{timestamp}}" rel="stylesheet">
@@ -17,7 +18,7 @@
 {%block contents%}
 <body>
 <div class="main">
-    <div class="subcontainer" style="background-color:yellow;">
+    <div class="subcontainer videocontainer" style="background-color:yellow;">
         <video id="my-video" class="video-js" controls preload="metadata" width="1300px" height="100%" data-setup='{ "playbackRates": [0.5, 1, 1.5, 2, 3, 4] }'>
             <source src="{{root}}{{contagem.movie.url}}" type='video/mpeg'>
             <source src="{{root}}{{contagem.movie.url}}" type='video/mp4'>
@@ -74,6 +75,7 @@
                 </a>
             </div>
         </div>
+        <div id="voltar"><div><a href="/lista">Voltar</a></div></div>
     </div>
 </div>
 <script type="text/javascript">
@@ -94,7 +96,7 @@ linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'
 {% endfor %}
 var videos=[];
 {%for m in videos%}
-videos.push({url:'{{m.movie}}',id:{{m.id}}});
+videos.push({url:'{{m.movie}}',id:{{m.id}}, date:'{{m.data_e_hora_inicio|datinha}}'});
 {%endfor%}
 
 {% endautoescape %}
