@@ -216,7 +216,7 @@ def contador(request,contador_id):
 def destroy_video_count(request):
     print("destroying %s"%(request.POST.get('video_id')))
     video=Movie.objects.get(pk=request.POST.get('video_id'))
-    video.contado_set.all().delete()
+    #video.contado_set.all().delete()
     return update_contagem_all(request)
 
 @login_required(login_url='/auth')
