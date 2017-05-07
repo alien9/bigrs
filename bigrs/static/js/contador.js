@@ -8,6 +8,7 @@ var fila={};
 var local_id=1;
 var map;
 function start(){
+    presetDisplay();
     if(typeof MAP_CENTER != "undefined"){
         //map.getView().setZoom(17);
         //map.getView().setCenter(ol.proj.transform(MAP_CENTER, 'EPSG:4326', 'EPSG:3857'));
@@ -190,6 +191,7 @@ function start(){
             break;
         }
     });
+
     updateContagemAll();
     fixHeight();
     $(window).resize(fixHeight);
@@ -198,13 +200,22 @@ function requestFocus(){
 $("#teclado_numerico").focus();
 }
 
+function presetDisplay(){
+    for(var i=0;i<tipokeys.length;i++){
+        $('#contagem').append($('<div class="head '+tipokeys[i]+'"><div class="kid"><span id="contagem-'+tipokeys[i]+'"></span></div></div>'));
+    }
+}
+
+
 function destroiContagemVideo(){
-    $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
-        }, success:function(h){
-            for(var tipo in h){
-                $("#contagem-"+tipo).text(h[tipo]);
-            }
+    if(confirm('Desenja apagar as contagens feitas para este vídeo?')){
+        $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            }, success:function(h){
+                for(var tipo in h){
+                    $("#contagem-"+tipo).text(h[tipo]);
+                }
         }});
+    }
 
 }
 
@@ -421,12 +432,35 @@ function setTravel(p){
     var t=p.origin[3]+" → "+p.destin[3];
     $("#od").text(t);
 }
+/*
+Automóvel (utilizar tecla zero)
+Motocicleta
+Van (inclui perua escolar)
+Micro ônibus (inclui: micro, mini, midi ônibus)
+Ônibus (inclui: padrón, articulado, biarticulado)
+Utilitário (inclui VUC)
+Caminhão
+Pedestre
+Bicicleta
+*/
+var tipokeys=[
+    'carro',
+    'moto',
+    'microonibus',
+    'onibus',
+    'brt',
+    'vuc',
+    'caminhao',
+    'pedestre',
+    'bici'
+];
 function setKeyboard(){
     $(".subtecla").css("class","subtecla");
     $(".tecla").removeAttr('tipo');
-    for(var k in tipos){
-        $(".t"+k+" .subtecla").addClass(tipos[k]);
-        $(".t"+k).attr('tipo',tipos[k]);
+
+    for(var i=0;i<tipokeys.length;i++){
+        $(".t"+k+" .subtecla").addClass(tipokeys[i]);
+        $(".t"+k).attr('tipo',tipokeys[i]);
     }
 }
 function setContagem(){
@@ -449,16 +483,20 @@ function updateContagemAll(){
 
 
 function upload(){
-    $.ajax('/conta',{method:'POST',data:{fila:JSON.stringify(fila),csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
-        for(var local_id in h){
-            delete(fila[local_id]);
-        }
+    if(fila.length){
+        $.ajax('/conta',{method:'POST',data:{fila:JSON.stringify(fila),csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+            for(var local_id in h){
+                delete(fila[local_id]);
+            }
+            setTimeout(upload,3000);
+        },'error':function(e){
+                console.log('Erro: não foi possível enviar a contagem.');
+                console.debug(e);
+                setTimeout(upload, 10000);
+        }});
+    }else{
         setTimeout(upload,3000);
-    },'error':function(e){
-            console.log('Erro: não foi possível enviar a contagem.');
-            console.debug(e);
-            setTimeout(upload, 10000);
-    }});
+    }
 }
 
 function drawHeads(){

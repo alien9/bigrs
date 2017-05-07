@@ -59,3 +59,8 @@ body{
 -o-user-select: none;
 user-select: none;
 }
+.capital .display{
+    text-align:center;
+    font-size:69px;
+    font-weight:bold;
+}
