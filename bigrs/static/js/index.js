@@ -181,14 +181,18 @@ function loadTheme(){
             layers[h.adm].getSource().clear();
             layers[h.adm].getSource().addFeatures(f);
         }
+        console.debug(j.percentiles);
         $("table#table_legenda").html('');
+
         for(var i=1;i<j.percentiles.length;i++){
             var tr=$('<tr></tr>');
             var td=$('<td></td>').addClass('legend_color').css('background-color','#'+colors[i-1]);
             tr.append(td);
             tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
             $("table#table_legenda").append(tr);
+
         }
+        $("#legenda").fadeIn();
         isLoadingTheme=false;
         setModal(isLoadingTheme);
     }});
@@ -504,8 +508,20 @@ function start(){
         }else{
             layers[w].setVisible(true);
         }
-    })
-    $('input[type=radio],input[type=checkbox],select,input[type=text]').change(function(){
+    });
+    $('input[value=inverter]').change(function(){
+        console.debug($(this).closest('.menu').find('input[type=checkbox][value!=inverter]'));
+        $(this).closest('.menu').find('input[type=checkbox][value!=inverter]').each(function(){
+            $(this).prop('checked',!$(this).is(':checked'));
+        });
+        loadTheme();
+    });
+    $('input[type=checkbox][name=tipo_veiculo],input[type=checkbox][name=tipo_acidente]').click(function(){
+        loadTheme();
+    });
+
+    $('input[type=radio],select,input[type=text]').change(function(){
+        setCookie($(this).attr('name'),$(this).val());
         loadTheme();
     });
     $('input[type=text]').keypress(function(k){
@@ -524,6 +540,27 @@ function start(){
     fixHeight();
     loadTheme();
     $(window).resize(fixHeight);
+    var isDragging;
+    var offset={};
+    $('#legenda').mousedown(function(e){
+        offset=$('#legenda').offset();
+        offset.left=e.pageX-offset.left;
+        offset.top=e.pageY-offset.top;
+        isDragging='#legenda';
+        $('#drop').show();
+    })
+    $('#legenda, #drop').mouseup(function(){
+        isDragging=null;
+        $('#drop').hide();
+        setCookie('leg_position',JSON.stringify($('#legenda').offset()));
+    })
+    $('#legenda').mousemove(function(e){
+        if(!isDragging) return;
+        console.debug('mi');
+        $(isDragging).css('left', (e.pageX-offset.left)+'px');
+        $(isDragging).css('top', (e.pageY-offset.top)+'px');
+    })
+
 }
 function setModal(s){
     if(s){
@@ -531,4 +568,37 @@ function setModal(s){
     }else{
         $('.modal').css('height', 0);
     }
+}
+function getDescription(){
+    var tipos_de_incidente=[];
+    var tipos_de_veiculo=[];
+    $('input[name=tipo_acidente]').each(function(){
+        if($(this).is(':checked')){
+            tipos_de_incidente.push($(this).parent().text());
+        }
+    });
+    $('input[name=tipo_veiculo]').each(function(){
+        if($(this).is(':checked')){
+            tipos_de_veiculo.push($(this).parent().text());
+        }
+    });
+    return {
+        'Divisão':$('input[name=adm]').val(),
+        'Dados':$('input[name=tipo]').val(),
+        'Período':($('input[name=periodo]').val()=='mes')?$("select[name=mes] option:selected" ).text()+" de "+$('input[name=ano]').val():$('input[name=ano]').val(),
+        'Contagem':$('input[name=contagem]').val(),
+        'Tipo de incidente':tipos_de_incidente.join(', '),
+        'Tipo de veículo':tipos_de_veiculo.join(', ')
+    };
+}
+function setCookie(cookie, value){
+    var now = new Date();
+    var time = now.getTime();
+    var expireTime = time + 1000*36000;
+    now.setTime(expireTime);
+    document.cookie = cookie+'='+value+';expires='+now.toGMTString()+';path=/';
+}
+function getCookie(cookie){
+    var a=document.cookie.match(new RegExp(cookie+"=([^;]*);?"));
+    if(a) return a.pop();
 }

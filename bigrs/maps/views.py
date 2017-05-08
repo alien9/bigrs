@@ -3,7 +3,8 @@ from django.db import connection
 from django.http import JsonResponse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-import json,time,memcache,re,calendar,os,numpy,unicodedata
+import json,memcache,re,calendar,os,numpy,unicodedata
+import time as t_ime
 from datetime import date,datetime,timedelta
 from bigrs.settings import *
 from django.core.files.storage import FileSystemStorage
@@ -55,7 +56,7 @@ def geojson(request):
                 'coordinates': [record[0], record[1]],
             },
             'properties': {
-                'data_e_hora': time.mktime(record[2].timetuple()),
+                'data_e_hora': t_ime.mktime(record[2].timetuple()),
                 'tipo_acide':record[3],
                 'tipo_veiculo':record[4]
             }
@@ -83,7 +84,7 @@ def get_query(request):
     #p = request.values.get('adm')
     #p = re.sub("\W", "", p)
     periodo = request.GET.get('periodo')
-    #ano = int(request.values.get('ano'))
+    ano = int(request.GET.get('ano'))
     #veiculos = ",".join(request.values.getlist('tipo_veiculo[]')).split(",")
     #if periodo == 'mes':
         #data_inicio = date(int(request.values.get('ano')), int(request.values.get('mes')), 1)

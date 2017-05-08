@@ -85,6 +85,7 @@ SI - Sem informações
               <label><input type="checkbox" name="tipo_acidente" value="AT,AA" checked=true>Atropelamento</label><br>
               <label><input type="checkbox" name="tipo_acidente" value="QM,QV,QD,QF" checked=true>Queda</label><br>
               <label><input type="checkbox" name="tipo_acidente" value="OU" checked=true>Outros</label><br>
+              <label><input type="checkbox" value="inverter">Inverter</label>
           </div>
         </div>
         <div class="tipo_veiculo menu">
@@ -113,6 +114,7 @@ Y - CO - Carroça -->
               <label><input type="checkbox" name="tipo_veiculo" value="CA,CR" checked=true>Caminhão</label><br>
               <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
               <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
+              <label><input type="checkbox" value="inverter">Inverter</label>
           </div>
         </div>
       </div>
@@ -130,18 +132,20 @@ Y - CO - Carroça -->
     <div style="background-color:#eee;overflow:hidden;width:100%" id="search_results"></div>
     </div>
   </div>
-
   <div id="popup_template" style="display:none">
       <p class="titulo">$name</p>
       <p><a href="javascript:void(0);" class="marker_remove">remover</a></p>
       <p><a href="javascript:void(0);" class="marker_history">relatório</a></p>
   </div>
-
+  <div id="drop"></div>
+  <div id="legenda">
+      <table id="table_legenda"></table>
+  </div>
   </body>
-    <script type="text/javascript">
-    GEOSERVER='{{geoserver}}';
-    $(document).ready(function(){
-        start();
-    });
-    </script>
+<script type="text/javascript">
+GEOSERVER='{{geoserver}}';
+$(document).ready(function(){
+    start();
+});
+</script>
 {%endblock%}
