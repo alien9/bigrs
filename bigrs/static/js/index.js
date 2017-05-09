@@ -548,19 +548,18 @@ function start(){
         offset.top=e.pageY-offset.top;
         isDragging='#legenda';
         $('#drop').show();
-    })
+    });
     $('#legenda, #drop').mouseup(function(){
         isDragging=null;
         $('#drop').hide();
         setCookie('leg_position',JSON.stringify($('#legenda').offset()));
-    })
+    });
     $('#legenda').mousemove(function(e){
         if(!isDragging) return;
         console.debug('mi');
         $(isDragging).css('left', (e.pageX-offset.left)+'px');
         $(isDragging).css('top', (e.pageY-offset.top)+'px');
-    })
-
+    });
 }
 function setModal(s){
     if(s){
