@@ -6,8 +6,12 @@ var CURRENT_VIDEO=0;
 var pressing=false;
 var fila={};
 var local_id=1;
+var movie_id;
 var map;
+var rate=1;
+var is_playing=false;
 function start(){
+    movie_id=videos[CURRENT_VIDEO].id;
     presetDisplay();
     if(typeof MAP_CENTER != "undefined"){
         //map.getView().setZoom(17);
@@ -15,7 +19,6 @@ function start(){
     }else{
         //map.getView().fit(bounds, map.getSize());
     }
-    console.debug(MAP_CENTER);
     latlng=MAP_CENTER;
     var format = 'image/png';
     get_url=function(bounds){
@@ -85,7 +88,7 @@ function start(){
     var i=0;
     features=[];
     vectors.events.register("beforefeatureadded", vectors, function(e){
-        e.feature.attributes={name:"_"+(vectors.features.length+1)};
+        e.feature.attributes={name:"_"+(vectors.features.length+1),bidirectional:linhas[j].bi};
     });
     for(var j=0;j<linhas.length;j++){
         if(linhas[j].geometry!=""){
@@ -102,7 +105,6 @@ function start(){
                         k++;
                     }
                     var line = new OpenLayers.Geometry.LineString(points);
-                    console.debug(line);
                     var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
                     lineFeature.attributes={name:""+(i+1)};
                     lineFeature.style = {
@@ -113,9 +115,9 @@ function start(){
                         labelAlign: "center",//set to top right
                         labelOutlineColor: "white",
                         labelOutlineWidth: 3,
-                        strokeColor:(CURRENT_DIRECTION==i)?'red':'black'
+                        labelYOffset: -8,
+                        strokeColor:'black' //(CURRENT_DIRECTION==i)?'red':'black'
                     };
-
                     vectors.addFeatures([lineFeature]);
                 }
             }
@@ -138,6 +140,9 @@ function start(){
 
     var updatePlayer=function(){
         var p = videojs('my-video');
+        movie_id=videos[CURRENT_VIDEO].id;
+        rate=p.playbackRate();
+        is_playing=!p.paused();
         $.ajax('/set_player', {'method':'POST','dataType':'json','data':{
             'contagem_id':contagem_id,
             'ts':p.currentTime(),
@@ -146,11 +151,9 @@ function start(){
             'spots':JSON.stringify($.map(linhas,function(l){return {'id':l.id,'alias':l.alias}})),
             csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
         },'success':function(h){
-            console.debug(h);
             setTimeout(updatePlayer, 3000);
         },'error':function(e){
             console.log('Erro: não foi possível enviar os dados do video.');
-            console.debug(e);
             setTimeout(updatePlayer, 3000);
         }});
     };
@@ -163,7 +166,22 @@ function start(){
             videojs('my-video').src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
             videojs('my-video').load();
             videojs('my-video').play();
+            $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
         }
+    });
+    $("#data_e_hora").change(function(){
+        var cu=CURRENT_VIDEO;
+        var dt=$("#data_e_hora").val();
+        $.ajax('/set_data_e_hora', {method:'post',dataType:'json', data:{
+                csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+                'movie_id':movie_id,
+                'data_e_hora':dt
+            },success:function(h){
+                console.debug(h)
+                if(h.result){
+                    videos[cu].date=dt
+                }
+            }});
     });
 
     $('.player-button').click(function(){
@@ -171,23 +189,35 @@ function start(){
         switch($(this).attr('what')){
             case 'play':
                 p.play();
+                $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
+                is_playing=true;
             break;
             case 'rew':
                 p.pause();
                 if((CURRENT_VIDEO>0)&&(p.currentTime()==0)){
+                    resetCounterDisplay();
                     CURRENT_VIDEO--;
                     p.src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+                    $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
+                    p.playbackRate(rate);
+                    if(is_playing) p.play();
                 }else{
                     p.currentTime(0);
                 }
-                destroiContagemVideo();
             break;
             case 'ffw':
                 p.pause();
                 if(CURRENT_VIDEO<videos.length-1){
+                    resetCounterDisplay();
                     CURRENT_VIDEO++;
                     p.src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+                    $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
+                    p.playbackRate(rate);
+                    if(is_playing) p.play();
                 }
+            break;
+            case 'eject':
+                destroiContagemVideo();
             break;
         }
     });
@@ -195,6 +225,7 @@ function start(){
     updateContagemAll();
     fixHeight();
     $(window).resize(fixHeight);
+    $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
 }
 function requestFocus(){
 $("#teclado_numerico").focus();
@@ -204,15 +235,24 @@ function presetDisplay(){
     for(var i=0;i<tipokeys.length;i++){
         $('#contagem').append($('<div class="head '+tipokeys[i]+'"><div class="kid"><span id="contagem-'+tipokeys[i]+'"></span></div></div>'));
     }
+    for(var i=0;i<tipokeys.length;i++){
+        $('#total').append($('<div class="head '+tipokeys[i]+'"><div class="kid"><span id="total-'+tipokeys[i]+'"></span></div></div>'));
+    }
 }
 
 
 function destroiContagemVideo(){
-    if(confirm('Desenja apagar as contagens feitas para este vídeo?')){
+    if(confirm('Deseja apagar as contagens feitas para este vídeo?')){
+
         $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             }, success:function(h){
-                for(var tipo in h){
-                    $("#contagem-"+tipo).text(h[tipo]);
+                for(var tipo in h['local']){
+                    contado[tipo]=h['local'][tipo];
+                    $("#contagem-"+tipo).text(h['local'][tipo]);
+                }
+                for(var tipo in h['total']){
+                    contado[tipo]=h['total'][tipo];
+                    $("#total-"+tipo).text(h['total'][tipo]);
                 }
         }});
     }
@@ -256,7 +296,6 @@ function reverse_geocode(p,tr){
                 $(tr).find('td.nome').text(" * ");
         },'error':function(e){
             console.log('Erro: não foi possível obter o endereço.');
-            console.debug(e);
         }});
     }
 }
@@ -292,14 +331,13 @@ function keyup(e){
     console.log(e.keyCode);
     if(e.keyCode>48 && e.keyCode<58){
         var n=parseInt(e.keyCode-48);
-        console.debug(n)
         if(vectors.features[n-1]){
             for(var i=0;i<vectors.features.length;i++){
                 vectors.features[i].style.strokeColor='black';
                 vectors.redraw();
             }
-            vectors.features[n-1].style.strokeColor='red';
-            vectors.redraw();
+            //vectors.features[n-1].style.strokeColor='red';
+            //vectors.redraw();
             CURRENT_DIRECTION=n-1;
             drawHeads();
         }
@@ -418,8 +456,13 @@ function keyup(e){
             setContagem();
             if(contagem_all_timeout) clearTimeout(contagem_all_timeout);
             contagem_all_timeout=setTimeout(updateContagemAll,3000);
-        }90
+        }
     }
+}
+function resetCounterDisplay(){
+    $("#contagem span").text('');
+    $("#total span").text('');
+
 }
 function getOd(){
     var a;
@@ -457,7 +500,6 @@ var tipokeys=[
 function setKeyboard(){
     $(".subtecla").css("class","subtecla");
     $(".tecla").removeAttr('tipo');
-
     for(var i=0;i<tipokeys.length;i++){
         $(".t"+k+" .subtecla").addClass(tipokeys[i]);
         $(".t"+k).attr('tipo',tipokeys[i]);
@@ -471,11 +513,14 @@ function setContagem(){
 
 var contagem_all_timeout;
 function updateContagemAll(){
-    $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
-        console.debug(h)
-        for(var tipo in h){
-            contado[tipo]=h[tipo];
-            $("#contagem-"+tipo).text(h[tipo]);
+    $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+        for(var tipo in h['local']){
+            contado[tipo]=h['local'][tipo];
+            $("#contagem-"+tipo).text(h['local'][tipo]);
+        }
+        for(var tipo in h['total']){
+            contado[tipo]=h['total'][tipo];
+            $("#total-"+tipo).text(h['total'][tipo]);
         }
     }})
     contagem_all_timeout=setTimeout(updateContagemAll, 3000);
@@ -491,7 +536,6 @@ function upload(){
             setTimeout(upload,3000);
         },'error':function(e){
                 console.log('Erro: não foi possível enviar a contagem.');
-                console.debug(e);
                 setTimeout(upload, 10000);
         }});
     }else{
@@ -505,37 +549,51 @@ function drawHeads(){
     arrowheads.destroyFeatures();
     for(var i=0;i<vectors.features.length;i++){
         var v=vectors.features[i];
+        console.debug(v.attributes);
         if(v.geometry && v.geometry.components && (v.geometry.components.length>1)){
             var p=[v.geometry.components[v.geometry.components.length-2],v.geometry.components[v.geometry.components.length-1]];
-            var modulus=Math.sqrt(Math.pow(p[1].y-p[0].y,2.0)+Math.pow(p[1].x-p[0].x,2.0));
-            var size=10*map.getResolution();
-            var dx=size*(p[1].x-p[0].x)/modulus;
-            var dy=size*(p[1].y-p[0].y)/modulus;
-            var a=[p[1].x-dx,p[1].y-dy]; //centro da base da cabeça
-            var mu=0.5;
-            var avb=[dy*mu,-1*dx*mu];
-            mu=-0.5;
-            var amb=[dy*mu,-1*dx*mu]
-            var b=[a[0]+amb[0],a[1]+amb[1]];
-            var c=[a[0]+avb[0],a[1]+avb[1]];
-            var linearRing = new OpenLayers.Geometry.LinearRing([
-                new OpenLayers.Geometry.Point(
-                    p[1].x,p[1].y
-                ),
-                new OpenLayers.Geometry.Point(
-                    b[0],b[1]
-                ),
-                new OpenLayers.Geometry.Point(
-                    c[0],c[1]
-                )
-            ]);
-            var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
-            var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, {});
-            if(CURRENT_DIRECTION==i){
-                polygonFeature.style.fillColor='red';
-                polygonFeature.style.strokeColor='red';
+            arrowheads.addFeatures(pontaDeFlecha(p));
+            if(v.attributes.bidirectional){
+                arrowheads.addFeatures(pontaDeFlecha([
+                    v.geometry.components[1],v.geometry.components[0]
+                ]));
+
+                console.debug("desenha o rrabo");
             }
-            arrowheads.addFeatures([polygonFeature]);
+            //if(CURRENT_DIRECTION==i){
+            //    polygonFeature.style.fillColor='red';
+            //    polygonFeature.style.strokeColor='red';
+            //}
+
+
         }
     }
+}
+
+function pontaDeFlecha(p){ // p é um array com dois pontos
+    var modulus=Math.sqrt(Math.pow(p[1].y-p[0].y,2.0)+Math.pow(p[1].x-p[0].x,2.0));
+    var size=10*map.getResolution();
+    var dx=size*(p[1].x-p[0].x)/modulus;
+    var dy=size*(p[1].y-p[0].y)/modulus;
+    var a=[p[1].x-dx,p[1].y-dy]; //centro da base da cabeça
+    var mu=0.5;
+    var avb=[dy*mu,-1*dx*mu];
+    mu=-0.5;
+    var amb=[dy*mu,-1*dx*mu]
+    var b=[a[0]+amb[0],a[1]+amb[1]];
+    var c=[a[0]+avb[0],a[1]+avb[1]];
+    var linearRing = new OpenLayers.Geometry.LinearRing([
+        new OpenLayers.Geometry.Point(
+            p[1].x,p[1].y
+        ),
+        new OpenLayers.Geometry.Point(
+            b[0],b[1]
+        ),
+        new OpenLayers.Geometry.Point(
+            c[0],c[1]
+        )
+    ]);
+    var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
+    var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, {});
+    return polygonFeature;
 }

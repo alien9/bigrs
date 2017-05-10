@@ -55,7 +55,16 @@
         <div id="od">
 
         </div>
+        <div>
+            Neste Filme
+        </div>
         <div id="contagem">
+
+        </div>
+        <div>
+            Totais
+        </div>
+        <div id="total">
 
         </div>
         <div id="controles">
@@ -69,10 +78,20 @@
                 <a class="player-button" href="javascript:void(0);" what="ffw">
                     <i class="fa fa-step-forward" aria-hidden="true"></i>
                 </a>
+
+                <a class="player-button" href="javascript:void(0);" what="eject">
+                    <i class="fa fa-eject" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
+
         <div id="voltar"><div><a href="/lista">Voltar</a></div></div>
+        <div>
+            <input type="text" name="data_e_hora" id="data_e_hora">
+
+        </div>
     </div>
+
 </div>
 <script type="text/javascript">
 var map,features;
@@ -88,7 +107,7 @@ var movie='{{contagem.endereco}}';
 var VIDEO_ROOT='{{root}}';
 {% autoescape on %}
 {% for spot in spots%}
-linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'{{spot.alias}}',id:'{{spot.id}}'});
+linhas.push({'geometry':'{{spot.geometry}}',endereco:'{{spot.endereco}}',alias:'{{spot.alias}}',id:'{{spot.id}}',bi:{% if spot.bi %}true{%else%}false{%endif%}});
 {% endfor %}
 var videos=[];
 {%for m in videos%}

@@ -210,7 +210,7 @@ def contador(request,contador_id):
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
-        'videos':contagem.movie_set.order_by('data_e_hora_inicio')
+        'videos':contagem.movie_set.filter(is_contado=False).order_by('data_e_hora_inicio')
     })
 
 @login_required(login_url='/auth')
@@ -247,23 +247,46 @@ def update_contagens(request):
             r[c.tipo]+=1
     return JsonResponse(r)
 
-@login_required(login_url='/auth')
-def update_contagem_all(request):
-    contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
-    spots=contagem.spot_set.all()
+def contamovie(movie):
+    teclas=Key.objects.all()
+    r={}
+    for l in teclas:
+        if not l.name in r:
+            r[l.name]=0
+    for c in movie.contado_set.all():
+        if c.tipo in r:
+            r[c.tipo]+=1
+    return r
+
+def contaspots(spots):
     r = {}
     for spot in spots:
         teclas=spot.keys.all()
         if len(teclas)==0:
             teclas=Key.objects.all()
-
         for l in teclas:
             if not l.name in r:
                 r[l.name]=0
         for c in spot.contado_set.all():
             if c.tipo in r:
                 r[c.tipo]+=1
+    return r
+
+@login_required(login_url='/auth')
+def update_contagem_all(request):
+    contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
+    total_spots=contaspots(contagem.spot_set.all())
+    movie=Movie.objects.get(pk=request.POST.get('movie_id'))
+    local_spots=contamovie(movie)
+    r={'total':total_spots,'local':local_spots}
     return JsonResponse(r)
+
+@login_required(login_url='/auth')
+def set_data_e_hora(request):
+    movie = Movie.objects.get(pk=request.POST.get('movie_id'))
+    movie.data_e_hora_inicio=request.POST.get('data_e_hora')
+    movie.save()
+    return JsonResponse({'result':'OK'})
 
 def nova_contagem(request):
     if not request.user.is_authenticated:

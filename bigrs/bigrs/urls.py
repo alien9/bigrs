@@ -34,6 +34,7 @@ urlpatterns = [
     url(r'^update_contagens$', views.update_contagens),
     url(r'^update_contagem_all$', views.update_contagem_all),
     url(r'^destroy_video_count$',views.destroy_video_count),
+    url(r'^set_data_e_hora$',views.set_data_e_hora),
     url(r'^conta$', views.conta),
     url(r'^logout', views.log_out),
     url(r'^reverse_geocode', views.reverse_geocode),

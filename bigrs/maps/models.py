@@ -27,6 +27,7 @@ class Movie(models.Model):
     contagem=models.ForeignKey(Contagem)
     data_e_hora_inicio = models.DateTimeField(auto_now_add=True, blank=True)
     movie = models.FileField(upload_to='static/video', null=True)
+    is_contado=models.BooleanField(default=False)
 
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')
@@ -43,6 +44,7 @@ class Spot(models.Model):
     endereco_destino = models.TextField(max_length=100)
     alias = models.TextField(max_length=10)
     geometry=models.TextField(max_length=2000)
+    bi=models.BooleanField(default=False)
     keys = models.ManyToManyField("Key", blank=True)
 
 class Key(models.Model):
