@@ -81,12 +81,38 @@ function setHeatMap(){
     }
 
     var features=[];
-    var features = [];
+    var d=[new Date(),new Date()];
+    d[0].setYear(h.ano);
+    d[0].setMonth(0);
+    d[0].setDate(1);
+    d[0].setHours(0);
+    d[0].setMinutes(0);
+    d[0].setSeconds(0);
+    d[1].setYear(h.ano);
+    d[1].setMonth(0);
+    d[1].setDate(1);
+    d[1].setHours(0);
+    d[1].setMinutes(0);
+    d[1].setSeconds(0);
+    if(h.periodo=='mes'){
+        d[1].setMonth(d[1].getMonth()+1);
+    }
+    if(h.periodo=='ano'){
+        d[1].setYear(d[1].getFullYear()+1);
+    }
+    console.debug(d);
+    var t=[
+        d[0].getTime()/1000,
+        d[1].getTime()/1000
+    ];
+    console.debug(t);
     points.getFeatures().forEach(function(fu){
         var p=fu.getProperties();
         if(p.tipo_acide && p.tipo_acide.match(h.regex_tipo_acide)){
             if(intersects(p.tipo_veiculo,h.regex_tipo_veiculo)){
-                features.push(fu);
+                if((p.data_e_hora>t[0])&&(p.data_e_hora<t[1])){
+                    features.push(fu);
+                }
             }
         }
     });
@@ -153,13 +179,36 @@ function loadTheme(){
     if(isLoadingTheme) return;
     isLoadingTheme=true;
     setModal(isLoadingTheme);
+    for(var k in layers){
+        layers[k].setVisible(false);
+    }
+    $("#legenda").hide();
     if(h.adm=='heatmap'){
-        $('#filters_box .dados a,#filters_box .periodo a,#filters_box .contagem a').addClass('inactive');
+        $('#filters_box .dados a,#filters_box .contagem a').addClass('inactive');
+
         setHeatMap();
         return;
     }else{
         $('#filters_box a').removeClass('inactive');
 
+    }
+    if((h.adm=='distritos')||(h.adm=='subprefeituras')){
+        var w=h.adm;
+
+        if(!layers[w]){
+            console.debug("não tem o layer "+w);
+            if(w!='heatmap'){
+                $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
+                    isLoadingTheme=false;
+                    console.debug('adding a layer');
+                    layers[w]=addVector(g,w);
+                    loadTheme();
+                }});
+                return;
+            }
+        }else{
+            layers[w].setVisible(true);
+        }
     }
     $.ajax('/theme',{dataType:'json','data':h,success:function(j){
         var theme={};
@@ -183,15 +232,33 @@ function loadTheme(){
         }
         console.debug(j.percentiles);
         $("table#table_legenda").html('');
-
+        var d=getDescription();
+        var tr=$('<tr><td colspan="2" class="legenda_text"></td></tr>');
+        for(var k in d){
+            var sp=$('<span>'+k+': '+d[k]+'</span><br>');
+            tr.find('td').append(sp);
+        }
+        $("table#table_legenda").append(tr);
         for(var i=1;i<j.percentiles.length;i++){
             var tr=$('<tr></tr>');
             var td=$('<td></td>').addClass('legend_color').css('background-color','#'+colors[i-1]);
             tr.append(td);
-            tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
+            if(i==0)
+                tr.append($('<td></td>').text(Math.round(j.percentiles[i-1])+' a '+Math.round(j.percentiles[i]))    );
+            else
+                tr.append($('<td></td>').text('até '+Math.round(j.percentiles[i]))    );
             $("table#table_legenda").append(tr);
 
         }
+        var lp;
+        try{
+            lp=JSON.parse(getCookie('leg_position'));
+        }catch(e){
+            lp={"top":60, "left":$('body').width()-300};
+        }
+        $("#legenda").css('left', lp.left+'px');
+        $("#legenda").css('right', lp.left+'px');
+
         $("#legenda").fadeIn();
         isLoadingTheme=false;
         setModal(isLoadingTheme);
@@ -246,11 +313,13 @@ function addVector(g,nome){
     source: source,
     style: getStyles
   });
+  /*
   distritos.getSource().on('change',function(e){
     if(distritos.getSource().getState()=='ready'){
         loadTheme();
     }
   })
+  */
   map.addLayer(distritos);
   return distritos;
 }
@@ -270,6 +339,11 @@ function fixHeight(){
 
 var selected=0;
 function start(){
+    var a;
+    if(a=getCookie('adm')){
+        $('input[name=adm][value='+a+']').prop('checked',true);
+    }
+
     var tiled = new ol.layer.Tile({
         visible: true,
         source: new ol.source.TileWMS({
@@ -359,53 +433,64 @@ function start(){
             f=feature;
             isFeature=true;
         })
-        console.debug(isFeature);
-        if(isFeature){
-            console.debug(f.getProperties());
-            var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
-            var html=$('#popup_template').html();
-            if(f.getProperties().sp_id){ // subprefeitura
+        var h=getForm();
+        if(h.adm!='heatmap'){
+            if(isFeature){
                 console.debug(f.getProperties());
-                $('input[name=feature_id]').val(f.getProperties().gid)
-                html=html.replace(/\$name/,f.getProperties().sp_nome);
-                content.innerHTML = html;
-                $(content).find('a.marker_remove').hide();
-            }else if(f.getProperties().ds_nome){ // distrito
-                console.debug(f.getProperties());
-                $('input[name=feature_id]').val(f.getProperties().gid)
-                html=html.replace(/\$name/,f.getProperties().ds_nome);
-                content.innerHTML = html;
-                $(content).find('a.marker_remove').hide();
-            }else if(f.getProperties().name){ //logradouro
-                $('input[name=feature_id]').val(f.getProperties().codlog)
-                console.debug(f.getProperties());
-                html=html.replace(/\$name/,f.getProperties().name);
-                selected_marker=f;
-                content.innerHTML = html;
-                $(content).find('a.marker_remove').show();
-            }
+                var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(coordinate, 'EPSG:3857', 'EPSG:4326'));
+                var html=$('#popup_template').html();
+                if(f.getProperties().sp_id){ // subprefeitura
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
+                    html=html.replace(/\$name/,f.getProperties().sp_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }else if(f.getProperties().ds_nome){ // distrito
+                    console.debug(f.getProperties());
+                    $('input[name=feature_id]').val(f.getProperties().gid)
+                    html=html.replace(/\$name/,f.getProperties().ds_nome);
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').hide();
+                }
+                $('.ol-popup-closer').onclick = function() {
+                  popup.setPosition(undefined);
+                  $('.ol-popup-closer').blur();
+                  return false;
+                };
+                /*else if(f.getProperties().name){ //logradouro
+                    $('input[name=feature_id]').val(f.getProperties().codlog)
+                    console.debug(f.getProperties());
+                    html=html.replace(/\$name/,f.getProperties().name);
+                    selected_marker=f;
+                    content.innerHTML = html;
+                    $(content).find('a.marker_remove').show();
+                }*/
 
-            popup.setPosition(coordinate);
-            $(content).find('a.marker_remove').click(function(){
-                if(selected_marker)vectorSource.removeFeature(selected_marker);
-                selected_marker=null;
-                popup.setPosition(undefined);
-                closer.blur();
-            });
-            $(content).find('a.marker_history').click(function(){
-                $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
-                    console.debug(h);
-                }});
-            });
-            return;
-        }else{
-            if(featurething && vectorSource){
-                vectorSource.removeFeature(featurething);
-                featurething=null;
+                popup.setPosition(coordinate);
+                $(content).find('a.marker_remove').click(function(){
+                    if(selected_marker)vectorSource.removeFeature(selected_marker);
+                    selected_marker=null;
+                    popup.setPosition(undefined);
+                    closer.blur();
+                });
+                $(content).find('a.marker_history').click(function(){
+                    $.ajax('/history',{dataType:'json',data:getForm(),success:function(h){
+                        console.debug(h);
+                    }});
+                });
+                //return;
+            }else{
+                if(featurething && vectorSource){
+                    vectorSource.removeFeature(featurething);
+                    featurething=null;
+                }
             }
         }
         var lonlat = ol.proj.toLonLat(map.getCoordinateFromPixel(e.pixel));
+
+        console.debug(lonlat);
         $.ajax('/reverse',{'method':'post',dataType:'json', data:{point:lonlat,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()}, success:function(j){
+            console.debug(j);
             featurething = new ol.Feature({
                 name: j.endereco,
                 number: j.numero,
@@ -422,7 +507,6 @@ function start(){
         setZoom(zoom);
         setCenter(center);
     }
-    //map.addLayer(layers['heatmap']);
     map.addLayer(vectorLayer);
 
     function geocode(){
@@ -494,21 +578,23 @@ function start(){
                 break;
         }
     });
-    $('input[name=adm]').change(function(){
+    /*$('input[name=adm]').change(function(){
         var w=$(this).val();
+        setCookie('adm',w);
         for(var k in layers){
             layers[k].setVisible(false);
         }
         if(!layers[w]){
-            if(w!='adm'){
+            if(w!='heatmap'){
                 $.ajax('/vector',{dataType:'json',data:{layer:w},success:function(g){
+                    console.debug('adding a layer');
                     layers[w]=addVector(g,w);
                 }});
             }
         }else{
             layers[w].setVisible(true);
         }
-    });
+    });*/
     $('input[value=inverter]').change(function(){
         console.debug($(this).closest('.menu').find('input[type=checkbox][value!=inverter]'));
         $(this).closest('.menu').find('input[type=checkbox][value!=inverter]').each(function(){

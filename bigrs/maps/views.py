@@ -150,26 +150,12 @@ def vector(request):
 
 def reverse(request):
     p=request.POST.getlist('point[]')
-    if p is None:
-        lat = request.POST.get('latitude')
-        lon = request.POST.get('longitude')
-        conn = connection.cursor().connection
-        cur = conn.cursor()
-        cur.execute("select bigrs.get_segmento_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
-        j={
-        'nome':cur.fetchone()
-        }
-        return JsonResponse(j)
     conn = connection.cursor().connection
     cur = conn.cursor()
-    cur.execute("select bigrs.reverse_geocode(%s, %s)", (p[0],p[1],))
-    r=cur.fetchone()
-    res=r[0]
-    j={}
-    if res is not None:
-        j=json.loads(res)
-        cur.execute("select st_asgeojson(st_transform(geom,4326)) from sirgas_shp_logradouro where lg_codlog=%s", (j['codlog'],))
-        j['geometry']=cur.fetchall();
+    cur.execute("select bigrs.get_segmento_nome(gid),gid from (select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1) as a",(p[0], p[1]))
+    j={
+        'res':cur.fetchone()
+    }
     return JsonResponse(j)
 
 def reverse_geocode(request):
@@ -177,7 +163,7 @@ def reverse_geocode(request):
     lon = request.POST.get('longitude')
     conn = connection.cursor().connection
     cur = conn.cursor()
-    cur.execute("select bigrs.get_segmento_nome ((select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1))",(lon,lat))
+    cur.execute("select bigrs.get_segmento_nome(gid),gid from (select gid from sirgas_shp_logradouro ORDER BY geom <-> st_transform(st_setsrid(st_makepoint(%s,%s),4326),31983) limit 1) as a",(lon,lat))
     j={
         'nome':cur.fetchone()
     }
