@@ -53,3 +53,9 @@ if DEBUG:
 from time import time
 t = time()
 DEPLOY_VERSION=time()
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+   }
+}

@@ -152,7 +152,7 @@ a.inactive{
 #legenda{
     position:absolute;
     width:200px;
-    height:300px;
+    min-height:300px;
     top:200px;
     left:800px;
     background-color:white;
@@ -170,4 +170,8 @@ a.inactive{
     position:absolute;
     left:0;
     top:0;
+}
+
+.legenda_text{
+    font-size:small;
 }
