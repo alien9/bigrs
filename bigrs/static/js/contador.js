@@ -350,6 +350,17 @@ function keyup(e){
     }
     var k;
     switch(e.keyCode){
+        case 32:
+
+            var p=videojs('my-video');
+            if(p.paused()){
+                console.log('play');
+                p.play();
+            }else{
+                console.log('pause');
+                p.pause();
+            }
+        break;
         case 33:
         case 105:
         //9

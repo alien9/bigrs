@@ -68,7 +68,7 @@ def theme(request):
     conn = connection.cursor().connection
     cur = conn.cursor()
     query,parameters=get_query(request)
-    #print(cur.mogrify(query,parameters))
+    print(cur.mogrify(query,parameters))
     cur.execute(query,parameters)
     r['items'] = cur.fetchall()
     values = [x[1] for x in r['items']]
