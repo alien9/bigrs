@@ -74,7 +74,7 @@ $(document).ready(function(){
             styleMap: new OpenLayers.StyleMap({'default':{
                 fillOpacity: 0.5,
                 pointRadius: 8,
-                label : "${name}",
+                label : "${label}",
                 fontSize: "12px",
                 fontFamily: "Courier New, monospace",
                 fontWeight: "bold",
@@ -91,16 +91,23 @@ $(document).ready(function(){
     var i=0;
     features=[];
     vectors.events.register("beforefeatureadded", vectors, function(e){
-        console.debug("passando");
-        console.debug(vectors.features.length);
-        e.feature.attributes={name:""+(vectors.features.length+1)};
+        var vid=vectors.features.length;
+        var f;
+        var attrs={};
+        if(f=$('#id_spot_set-'+vid+'-alias')){
+            attrs.label=$('#id_spot_set-'+vid+'-alias').val();
+        }
+        attrs.name=""+(vectors.features.length+1);
+        e.feature.attributes=attrs;
+
     });
     var sty=function(i) {
+        var label=$('#id_spot_set-'+i+'-alias').val();
         return {
             fontFamily: "arial, monospace",
             fontWeight: "bold",
             fontColor: "black",
-            label : ""+(i+1),
+            label : label,
             labelAlign: "center",//set to top right
             labelOutlineColor: "white",
             labelOutlineWidth: 3
@@ -124,7 +131,7 @@ $(document).ready(function(){
                     var line = new OpenLayers.Geometry.LineString(points);
                     console.debug(line);
                     var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
-                    lineFeature.attributes={name:""+(vectors.features.length)};
+                    lineFeature.attributes={label:$("#id_spot_set-"+i+"-alias").val(),name:""+(vectors.features.length)};
                     lineFeature.style = sty(vectors.features.length);
                     vectors.addFeatures([lineFeature]);
                 }

@@ -71,7 +71,7 @@ function start(){
             styleMap: new OpenLayers.StyleMap({'default':{
                 fillOpacity: 0.5,
                 pointRadius: 8,
-                label : "${name}",
+                label : "${label}",
                 fontSize: "12px",
                 fontFamily: "Courier New, monospace",
                 fontWeight: "bold",
@@ -88,10 +88,11 @@ function start(){
     var i=0;
     features=[];
     vectors.events.register("beforefeatureadded", vectors, function(e){
-        e.feature.attributes={name:"_"+(vectors.features.length+1),bidirectional:linhas[j].bi};
+        e.feature.attributes={name:"_"+(vectors.features.length+1),bidirectional:linhas[j].bi,label:linhas[j].alias};
     });
     for(var j=0;j<linhas.length;j++){
         if(linhas[j].geometry!=""){
+            console.debug(linhas[j]);
             var r=linhas[j].geometry;
             var g;
             if(g=r.match(/\((.*)\)/)){
@@ -106,12 +107,12 @@ function start(){
                     }
                     var line = new OpenLayers.Geometry.LineString(points);
                     var lineFeature = new OpenLayers.Feature.Vector(line, null, {});
-                    lineFeature.attributes={name:""+(i+1)};
+                    lineFeature.attributes={name:""+(i+1),label:linhas[j].alias};
                     lineFeature.style = {
                         fontFamily: "arial, monospace",
                         fontWeight: "bold",
                         fontColor: "black",
-                        label : ""+(i+1),
+                        label : linhas[j].alias,
                         labelAlign: "center",//set to top right
                         labelOutlineColor: "white",
                         labelOutlineWidth: 3,
@@ -568,8 +569,6 @@ function drawHeads(){
                 arrowheads.addFeatures(pontaDeFlecha([
                     v.geometry.components[1],v.geometry.components[0]
                 ]));
-
-                console.debug("desenha o rrabo");
             }
             //if(CURRENT_DIRECTION==i){
             //    polygonFeature.style.fillColor='red';
