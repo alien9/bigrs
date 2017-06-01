@@ -31,6 +31,8 @@ pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veícu
 
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3B - Chip 1/"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3C - Chip 4/"
+pa="/home/tiago/Videos"
+
 
 da=datetime(2017,3,26,6,0,0)
 l=listdir(pa)
