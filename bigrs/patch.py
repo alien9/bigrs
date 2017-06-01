@@ -100,7 +100,7 @@ def import_veiculos():
         K data_obito
         INSERT INTO public.vitimas(
             id, id_vitima, id_acidente, id_veiculo, sexo, idade, fx_etaria,
-            tipo_vitima, classifica, tipo_veicu, est_alcool, escolaridade,
+            tipo_vitima, classifica, tipo_veicu, est_alcool, escolaridade,cd bigr
             data_obito)
 
 

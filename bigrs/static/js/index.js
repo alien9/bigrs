@@ -192,7 +192,7 @@ function loadTheme(){
         $('#filters_box a').removeClass('inactive');
 
     }
-    if((h.adm=='distritos')||(h.adm=='subprefeituras')){
+    if((h.adm=='distritos')||(h.adm=='subprefeituras')||(h.adm=='gets')){
         var w=h.adm;
 
         if(!layers[w]){
@@ -222,10 +222,14 @@ function loadTheme(){
             isLoadingTheme=false;
         }
         var s=l.getSource();
+        console.debug(s);
+        console.debug('features');
         if(s.getFeatures){
             var f=layers[h.adm].getSource().getFeatures();
+            console.debug(f);
             for(var i=0;i<f.length;i++){
                 f[i].color=theme[f[i].get('gid')];
+                console.debug(f[i].color);
             }
             layers[h.adm].getSource().clear();
             layers[h.adm].getSource().addFeatures(f);
@@ -266,6 +270,7 @@ function loadTheme(){
 }
 
 function getStyles(feature, resolution){
+console.debug("gettong style");
 var nome=$('input[name=adm]:checked').val();
 switch(nome){
     case 'distritos':
@@ -302,10 +307,29 @@ switch(nome){
           }):null
         });
      break;
+     case 'gets':
+        console.debug("estilo da gets")
+        return new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'gray',
+            width: 1
+          }),
+          fill: new ol.style.Fill({
+            color: (feature.color)?feature.color:hexToRgb('#'+colors[0])
+          }),
+          text: (resolution<100)?new ol.style.Text({
+            font: '10px Verdana, sans-serif',
+            text: feature.get('descricao'),
+            fill: new ol.style.Fill({color: 'black'}),
+            stroke: new ol.style.Stroke({color: 'white', width: 0.5})
+          }):null
+        });
+     break;
  }
 }
 
 function addVector(g,nome){
+
   var source = new ol.source.Vector({
     features: (new ol.format.GeoJSON()).readFeatures(g)
   });
@@ -320,6 +344,9 @@ function addVector(g,nome){
     }
   })
   */
+  console.debug("addding layer");
+  console.debug(distritos);
+
   map.addLayer(distritos);
   return distritos;
 }
