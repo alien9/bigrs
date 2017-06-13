@@ -7,7 +7,7 @@ from os import walk,listdir
 from sys import argv
 from datetime import datetime,timedelta
 import ffmpy
-import re
+import re,glob
 
 if len(argv)>1:
     print('argv')
@@ -31,47 +31,50 @@ pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veícu
 
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3B - Chip 1/"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3C - Chip 4/"
-pa="/home/tiago/Videos"
+
+
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 30_03_17/"
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 01_04_17/"
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 02_04_17/"
+
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 07_04_17/"
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 06_04_17/"
 
 
 da=datetime(2017,3,26,6,0,0)
 l=listdir(pa)
 l.sort()
 for f in l:
-    s=da.strftime('%Y_%m_%d_%H_%M_%S')
-    print(s)
-    destino='static/video/' + dest
-    if not os.path.isdir(destino):
-        os.makedirs(destino)
-    destino+='/'+s+'_'+f.replace('.ASF','.mp4')
-    if not os.path.isfile(destino):
+    if re.search('ASF$',f):
+        destino='static/video/' + dest
+        if not os.path.isdir(destino):
+            os.makedirs(destino)
+        destino+='/'+f.replace('.ASF','.mp4')
         print(destino)
-        ff = ffmpy.FFmpeg(
-            inputs={pa+'/'+f: None},
-            outputs={destino: None}
-        )
-        ff.run()
+        if not os.path.isfile(destino):
+            print(destino)
+            ff = ffmpy.FFmpeg(
+                inputs={pa+'/'+f: None},
+                outputs={destino: '-crf 28'}
+            )
+            ff.run()
+            m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S'))
+            m.save()
+        da=da+timedelta(minutes=15)
 
-        m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da)
-        m.data_e_hora_inicio=da
-        m.save()
-    da=da+timedelta(minutes=15)
-
+da=datetime(2017,3,26,6,0,0)
 pa='static/video/'+dest
 l=listdir(pa)
 l.sort()
 for f in l:
     print(f)
     if re.search('mp4$',f):
-        sd=str(f).split("_")
-        da=datetime(int(sd[0]), int(sd[1]), int(sd[2]), int(sd[3]), int(sd[4]), int(sd[5][0:2]))
-        print(da)
         destino=pa+'/' + f
         print(destino)
-        ds=da.strftime('%Y_%m_%d_%H_%M_%S')
-        m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da)
-        m.data_e_hora_inicio=da
+        m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S'))
+        m.data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S')
         m.save()
+    da=da+timedelta(minutes=15)
 
 for filename in f:
     sd=str(filename).split("_")
@@ -81,4 +84,15 @@ for filename in f:
     ds=da.strftime('%Y_%m_%d_%H_%M_%S')
     m=Movie(contagem=c,data_e_hora_inicio=ds,movie='static/video/'+subs+'/'+str(filename))
     m.save()
+
+def cleanup():
+    result = [y for x in os.walk('static/video/') for y in glob(os.path.join(x[0], '*.mp4'))]
+    movies=[str(m.movie) for m in Movie.objects.all()]
+    for f in result:
+        if not f in movies:
+            print("deletando "+f)
+            dir=re.sub('[^/]*$','',f)
+            if not os.path.isdir('/home/tiago/temp/'+dir):
+                os.makedirs('/home/tiago/temp/'+dir)
+            os.rename(f, '/home/tiago/temp/'+f)
 
