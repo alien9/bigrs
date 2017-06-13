@@ -96,3 +96,59 @@ def cleanup():
                 os.makedirs('/home/tiago/temp/'+dir)
             os.rename(f, '/home/tiago/temp/'+f)
 
+
+def import_veiculos():
+    from openpyxl import load_workbook
+    wb = load_workbook('/home/tiago/Downloads/Veiculos_2016_bloom.xlsx')
+    line=2
+    w=wb['Veiculos_2016']
+    while "A%s"%(line,) in w:
+        """"
+        A id_vitima
+        B id_acidente
+        C id_veiculo
+        D sexo
+        E idade
+        F tipo_vitima
+        G classificacao
+        H tipo_veiculo
+        I estado_alcoolizacao
+        J escolaridade
+        K data_obito
+        INSERT INTO public.vitimas(
+            id, id_vitima, id_acidente, id_veiculo, sexo, idade, fx_etaria,
+            tipo_vitima, classifica, tipo_veicu, est_alcool, escolaridade,cd bigr
+            data_obito)
+
+
+        id_veiculo	id_acidente	tipo_veiculo	placa	sexo_condutor	idade_condutor	categoria_habilitacao	usa_cinto_seguranca	estado_alcoolizacao	escolaridade
+
+
+        """
+
+
+
+
+
+        query="INSERT INTO public.veiculos(" \
+              "id_veiculo, id_acidente, tipo_veiculo, sexo_condutor, idade_condutor, categoria, usa_cinto, est_alcool, escolaridade, placa" \
+              ")VALUES(" \
+              "'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s'" \
+              ")"%(
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+            w['A' + line].value,
+
+        )
+        print(query)
+        line+=1

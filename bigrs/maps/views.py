@@ -105,9 +105,11 @@ def get_query(request):
     if params['tipo_regiao'] == 'distritos':
         table = "sirgas_shp_distrito_polygon p"
         popt = "distritos_populacao dp on dp.distrito_gid=s.gid"
-    else:
+    elif params['tipo_regiao']=='subprefeituras':
         table = "sirgas_shp_subprefeitura p"
         popt = "subprefeituras_populacao dp on dp.subprefeitura_gid=s.gid"
+    elif params['tipo_regiao']=="gets":
+        table = "gets p"
     vtipo = ""
     vwhere = ""
     if len(params['veiculos']) < 14 and len(params['veiculos']) > 0:
@@ -119,7 +121,7 @@ def get_query(request):
     else:
         query = "select p.gid," + qtipo + " from incidentes i join " + table + " on st_contains(p.the_geom, i.geom) = 't' " + vtipo + " where i.data_e_hora between %s and %s " + vwhere + " group by p.gid;"
         parameters = (params['data_inicio'].strftime('%Y-%m-%d'), params['data_final'].strftime('%Y-%m-%d'),)
-
+    print(connection.cursor().mogrify(query,parameters))
     return query,parameters
 
 def prepare_parameters(request):
