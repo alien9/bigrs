@@ -391,3 +391,18 @@ def geocode(request):
 def social_error(request):
     return render(request,'socialauth-error.html')
 
+
+def jenks(request):
+    # contagem anual de incidentes
+    # select incidentes_por_ano from (select gid,avg(incidentes) as incidentes_por_ano from (select gid,incidentes,ano from (select lf.gid, lf.geom_4326,date_part('year',i.data_e_hora) as ano, count(i.*)/length as incidentes, sum(i.feridos)/length as feridos, sum(i.mortos)/length as mortos from sirgas_shp_logradouro_fragmento lf left join incidente_fragmento fi on fi.fragmento_id=lf.gid left join incidentes i on i.gid=fi.incidente_id group by lf.gid, lf.geom_4326, ano) a where incidentes>0) b group by gid) c
+    [20.0, 36.594048, 84.591782, 195.41884, 463.33334, 1001.4109, 2250.0, 8738.5869]
+
+    #contagem anual de vitimas (feridos+mortos)
+    # select vitimas_por_ano from (select gid,avg(vitimas) as vitimas_por_ano from (select gid,vitimas,ano from (select lf.gid, lf.geom_4326,date_part('year',i.data_e_hora) as ano, count(i.*)/length as incidentes,sum(i.feridos+i.mortos)/length as vitimas, sum(i.mortos)/length as mortos from sirgas_shp_logradouro_fragmento lf left join incidente_fragmento fi on fi.fragmento_id=lf.gid left join incidentes i on i.gid=fi.incidente_id group by lf.gid, lf.geom_4326, ano) a where vitimas>0) b group by gid) c
+    [20.0, 51.282722, 134.28572, 350.17316, 880.0, 2042.542, 4282.8447, 9788.0527]
+
+    #contagem anual de mortos
+    #select mortos_por_ano from (select gid,avg(mortos) as mortos_por_ano from (select gid,mortos,ano from (select lf.gid, lf.geom_4326,date_part('year',i.data_e_hora) as ano, sum(i.mortos)/length as mortos from sirgas_shp_logradouro_fragmento lf left join incidente_fragmento fi on fi.fragmento_id=lf.gid left join incidentes i on i.gid=fi.incidente_id group by lf.gid, lf.geom_4326, ano) a where mortos>0) b group by gid) c
+    [20.0, 32.327621, 63.396523, 118.00433, 226.11456, 480.0, 760.66864, 1640.0906]
+
+    return JsonResponse(jenks(data,5),safe=False)
