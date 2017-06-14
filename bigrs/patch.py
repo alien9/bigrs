@@ -9,9 +9,9 @@ from datetime import datetime,timedelta
 import ffmpy
 import re
 
-if len(argv)>1:
-    print('argv')
-print(argv)
+
+contage_name=input('Selecione o ponto de contagem')
+print(contage_name)
 c=Contagem.objects.last()
 f = []
 subs='ponto2'

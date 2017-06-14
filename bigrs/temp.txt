@@ -1,7 +1,0 @@
-select m.endereco,o.data_e_hora_inicio,s.alias,count(c.*) as total, count(pe.*) as  pedestres
-from maps_contagem m 
-join maps_movie o on o.contagem_id=m.id 
-join maps_contado c on c.movie_id=o.id
-join maps_spot s on s.contagem_id=m.id
-join (select * from maps_contado where tipo='pedestre') as pe on pe.spot_id=s.id
-group by endereco,data_e_hora_inicio,alias;
