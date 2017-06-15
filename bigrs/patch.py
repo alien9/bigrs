@@ -1,29 +1,54 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+from os import walk,listdir,environ
+import django
 
+environ.setdefault("DJANGO_SETTINGS_MODULE", "bigrs.settings")
+django.setup()
 from maps.models import *
-from os import walk,listdir
 from sys import argv
 from datetime import datetime,timedelta
 import ffmpy
-import re,glob
+import re,glob,os
+
+contage_name=input('Selecione o ponto de contagem:\n')
+contagens=Contagem.objects.filter(endereco__icontains=contage_name)
+if not len(contagens):
+    print("Contagem não Encontrada.\n")
+    exit()
+i=1
+print("Selecione:")
+for cu in contagens:
+    print("[%s] %s\n"%(i,cu.endereco))
+    i+=1
+selected=None
+while not selected:
+    try:
+        selected=contagens[int(input("Escolha um número: "))-1]
+    except ValueError:
+        pass
+    except IndexError:
+        pass
+
+print("Escolheu o %s"%(selected.endereco))
 
 
-contage_name=input('Selecione o ponto de contagem')
-print(contage_name)
-c=Contagem.objects.last()
-f = []
-subs='ponto2'
-for (dirpath, dirnames, filenames) in walk('static/video/'+subs):
-    f.extend(filenames)
-    break
 
-
-c=Contagem.objects.get(pk=22)
+c=selected
+"""
 dest="ponto2_new"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 2/P2 26_03_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 1 Chip 3/P1 08_04_17"
+pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 -from os import walk,listdir,environ
+import django
+
+environ.setdefault("DJANGO_SETTINGS_MODULE", "bigrs.settings")
+django.setup()
+from maps.models import *
+from sys import argv
+from datetime import datetime,timedelta
+import ffmpy
+import re,glob Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 1 Chip 3/P1 08_04_17"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 1 Chip 3/P1 09_04_17"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 3 A/P3A 23_03_17"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 3 A/P3A 25_03_17"
@@ -40,27 +65,23 @@ pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veícu
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 07_04_17/"
 pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 06_04_17/"
 
-
+"""
 da=datetime(2017,3,26,6,0,0)
-l=listdir(pa)
-l.sort()
-for f in l:
-    if re.search('ASF$',f):
-        destino='static/video/' + dest
-        if not os.path.isdir(destino):
-            os.makedirs(destino)
-        destino+='/'+f.replace('.ASF','.mp4')
-        print(destino)
-        if not os.path.isfile(destino):
-            print(destino)
-            ff = ffmpy.FFmpeg(
-                inputs={pa+'/'+f: None},
-                outputs={destino: '-crf 28'}
-            )
-            ff.run()
-            m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S'))
-            m.save()
-        da=da+timedelta(minutes=15)
+
+converts = [val for sublist in [[os.path.join(i[0], j) for j in i[2]] for i in os.walk('static/video')] for val in sublist if re.search("ASF$",val)]
+print("Terei que converter %s arquivo(s)"%(len(converts)))
+for filename in converts:
+    mp4=filename.replace('.ASF','.mp4')
+    if os.path.exists(mp4):
+        os.remove(mp4)
+    print("Convertendo %s para %s"%(filename,mp4))
+    ff = ffmpy.FFmpeg(
+        inputs={filename: None},
+        outputs={mp4: '-crf 28 -strict experimental'}
+    )
+    ff.run()
+    os.remove(filename)
+exit()
 
 da=datetime(2017,3,26,6,0,0)
 pa='static/video/'+dest
