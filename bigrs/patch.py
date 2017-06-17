@@ -32,79 +32,114 @@ while not selected:
         pass
 
 print("Escolheu o %s"%(selected.endereco))
-
-
-
 c=selected
-"""
-dest="ponto2_new"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 2/P2 26_03_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 -from os import walk,listdir,environ
-import django
+i=1
+l=listdir('static/video')
 
-environ.setdefault("DJANGO_SETTINGS_MODULE", "bigrs.settings")
-django.setup()
-from maps.models import *
-from sys import argv
-from datetime import datetime,timedelta
-import ffmpy
-import re,glob Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 1 Chip 3/P1 08_04_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 1 Chip 3/P1 09_04_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 3 A/P3A 23_03_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 3 A/P3A 25_03_17"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/1 - Pesquisa Realizada - São Miguel - 22_03 a 26_03_2017/Ponto 3 A/P3A 26_03_17"
+for directory in l:
+    print("[%s] %s"%(i,directory))
+    i+=1
+dest=None
+while not dest:
+    try:
+        dest=l[int(input("Escolha o diretório para importar:"))-1]
+    except ValueError:
+        pass
+    except IndexError:
+        pass
+print("Escolhido %s"%(dest))
+horarios=(
+    (6, 0),
+    (6, 15),
+    (6, 30),
+    (6, 45),
+    (7, 0),
+    (7, 15),
+    (7, 30),
+    (7, 45),
+    (8, 0),
+    (8, 15),
+    (8, 30),
+    (8, 45),
+    (9, 0),
+    (12, 0),
+    (12, 15),
+    (12, 30),
+    (12, 45),
+    (13, 0),
+    (13, 15),
+    (13, 30),
+    (13, 45),
+    (14, 0),
+    (16, 0),
+    (16, 15),
+    (16, 30),
+    (16, 45),
+    (17, 0),
+    (17, 15),
+    (17, 30),
+    (17, 45),
+    (18, 0),
+    (18, 15),
+    (18, 30),
+    (18, 45),
+    (19, 0),
+)
+da=None
+while not da:
+    try:
+        ano=int(input("Ano:"))
+        mes=int(input("Mês:"))
+        dia=int(input("Dia:"))
 
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3B - Chip 1/"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/4 - Pesquisa Realizada - São Miguel - 03_05 a 07_05_2017/Ponto 3C - Chip 4/"
-
-
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 30_03_17/"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 01_04_17/"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/2 - Pesquisa Realizada - São Miguel - 29_03 a 02_04_2017/Ponto 04 Chip 4/P4 02_04_17/"
-
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 07_04_17/"
-pa="/media/tiago/Seagate/Pesquisa COUNTcam MINI - Contagem de Pedestres e Veículos com Câmeras/3 - Pesquisa Realizada - São Miguel - 05_04 a 09_04_2017/Ponto 4 Chip 4/P4 06_04_17/"
-
-"""
-da=datetime(2017,3,26,6,0,0)
-
-converts = [val for sublist in [[os.path.join(i[0], j) for j in i[2]] for i in os.walk('static/video')] for val in sublist if re.search("ASF$",val)]
-print("Terei que converter %s arquivo(s)"%(len(converts)))
-for filename in converts:
-    mp4=filename.replace('.ASF','.mp4')
-    if os.path.exists(mp4):
-        os.remove(mp4)
-    print("Convertendo %s para %s"%(filename,mp4))
-    ff = ffmpy.FFmpeg(
-        inputs={filename: None},
-        outputs={mp4: '-crf 28 -strict experimental'}
-    )
-    ff.run()
-    os.remove(filename)
-exit()
-
-da=datetime(2017,3,26,6,0,0)
+        da=datetime(ano,
+                    mes,
+                    dia,
+                    6,0,0)
+    except ValueError:
+        pass
 pa='static/video/'+dest
 l=listdir(pa)
 l.sort()
+
+"""
 for f in l:
     print(f)
     if re.search('mp4$',f):
         destino=pa+'/' + f
         print(destino)
-        m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S'))
-        m.data_e_hora_inicio=da.strftime('%Y-%m-%d %H:%M:%S')
+        m = Movie(contagem=c, movie=destino, data_e_hora_inicio=da) #.strftime('%Y-%m-%d %H:%M:%S'))
         m.save()
     da=da+timedelta(minutes=15)
-
-for filename in f:
-    sd=str(filename).split("_")
-    print(sd)
-    da=datetime(int(sd[0]), int(sd[1]), int(sd[2]), int(sd[3]), int(sd[4]), int(sd[5][0:2]))
-    print(da)
-    ds=da.strftime('%Y_%m_%d_%H_%M_%S')
-    m=Movie(contagem=c,data_e_hora_inicio=ds,movie='static/video/'+subs+'/'+str(filename))
-    m.save()
+"""
+def cria(files, dia, mes, ano, contagem):
+    i=0
+    if contagem is None:
+        print("Sem contagem não pode.")
+        return
+    for filename in files:
+        arquivo_residual=os.stat(pa+'/'+filename).st_size < 999999
+        if horarios[i][0]==14 or horarios[i][0]==9: #ferifique se é mesmo residual
+            if not arquivo_residual:
+                i+=1
+        da=datetime(ano,mes,dia,horarios[i][0],horarios[i][1])
+        print("criando movie para %s"%(filename))
+        m = Movie(contagem=contagem, movie=pa+'/'+filename, data_e_hora_inicio=da)
+        m.save()
+        i+=1
+cria(l,dia,mes,ano,c)
+def conserta_horarios(movies, dia, mes, ano):
+    i=0
+    for m in movies:
+        arquivo_residual=os.stat(m.movie.url).st_size < 999999
+        if horarios[i][0]==14 or horarios[i][0]==9: #ferifique se é mesmo residual
+            if not arquivo_residual:
+                i+=1
+        da=datetime(ano,mes,dia,horarios[i][0],horarios[i][1])
+        print("File size %s devia ser %s"%(os.stat(m.movie.url).st_size,da.strftime('%Y-%m-%d %H:%M:%S')))
+        m.data_e_hora_inicio=da
+        m.save()
+        i+=1
 
 def cleanup():
     result = [y for x in os.walk('static/video/') for y in glob(os.path.join(x[0], '*.mp4'))]
