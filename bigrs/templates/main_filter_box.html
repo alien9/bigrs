@@ -1,0 +1,108 @@
+<div id="header_menu">
+      <div style="" id="filters_box" >
+          <input name="feature_id" type="hidden">
+        <div class="divisoes menu">
+            <a href="javascript:void(0);">Divisões</a>
+            <div>
+              <label><input type="radio" name="adm" value="distritos">Distritos</label><br>
+              <label><input type="radio" name="adm" value="subprefeituras">Subprefeituras</label><br>
+              <label><input type="radio" name="adm" value="gets">GETs</label><br>
+              <label><input type="radio" name="adm" value="heatmap" checked="true">Mapa de Calor</label>
+            </div>
+        </div>
+        <div class="dados menu">
+            <a href="javascript:void(0);">Dados</a><div>
+              <label><input type="radio" name="tipo" value="vitimas" checked=true>Vítimas</label><br>
+              <label><input type="radio" name="tipo" value="feridos">Feridos</label><br>
+              <label><input type="radio" name="tipo" value="mortos">Mortos</label>
+          </div>
+        </div>
+        <div class="periodo menu">
+            <a href="javascript:void(0);">Período</a><div>
+              <label><input type="radio" name="periodo" value="mes" checked=true>Por mês</label><br>
+              <label><input type="radio" name="periodo" value="ano">Por ano</label><br>
+            <br>
+            Mês: <select name="mes">
+                <option value="1">Janeiro</option>
+                <option value="2">Fevereiro</option>
+                <option value="3">Março</option>
+                <option value="4">Abril</option>
+                <option value="5">Maio</option>
+                <option value="6">Junho</option>
+                <option value="7">Julho</option>
+                <option value="8">Agosto</option>
+                <option value="9">Setembro</option>
+                <option value="10">Outubro</option>
+                <option value="11">Novembro</option>
+                <option value="12">Dezembro</option>
+            </select><br><br>
+            Ano:
+            <input name="ano" size="4" value="{{ano}}" type="text">
+          </div>
+        </div>
+        <div class="contagem menu">
+            <a href="javascript:void(0);">Contagem</a><div>
+              <label><input type="radio" name="contagem" value="absolute" checked=true>Absoluta</label><br>
+              <label><input type="radio" name="contagem" value="cem_mil">Por cem mil </label><br>
+          </div>
+        </div>
+        <div class="tipo_acidente menu">
+            <a href="javascript:void(0);">Tipo de Acidente</a><div>
+            <!--
+CO - Colisão
+CF - Colisão frontal
+CT - Colisão traseira
+CL - Colisão lateral
+CV - Colisão transversal
+CP - Capotamento
+TB - Tombamento
+AT - Atropelamento
+AA - Atropelamento de animal
+CH - Choque
+QM - Queda moto/bicicleta
+QV - Queda veículo
+QD - Queda ocupante dentro
+QF - Queda ocupante fora
+OU - Outros
+SI - Sem informações
+            -->
+              <label><input type="checkbox" name="tipo_acidente" value="CO,CF,CT,CL,CV,CH" checked=true>Colisão</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="CP,TB" checked=true>Capotamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="AT,AA" checked=true>Atropelamento</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="QM,QV,QD,QF" checked=true>Queda</label><br>
+              <label><input type="checkbox" name="tipo_acidente" value="OU" checked=true>Outros</label><br>
+              <label><input type="checkbox" value="inverter">Inverter</label>
+          </div>
+        </div>
+        <div class="tipo_veiculo menu">
+            <a href="javascript:void(0);">Tipo de Veículo</a><div>
+            <!--
+A - AU - Auto
+M - MO - Moto
+O - ON - Ônibus
+C - CA - Caminhão
+B - BI - Bicicleta
+X - MT - Moto Táxi
+F - OF - Ônibus Fretado/Internmunicipal
+R - OU - Ônibus Urbano
+N - MC - Microônibus
+V - VA - Van
+U - VC - Vuc
+H - CM - Caminhonete/Camioneta
+T - CR - Carreta
+J - JI - Jipe
+S - OT - Outros
+I - SI - Sem Informação
+Y - CO - Carroça -->
+              <label><input type="checkbox" name="tipo_veiculo" value="AU,CM,JI,VA,VC" checked=true>Carro</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="ON,OF,OU" checked=true>Ônibus</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="BI" checked=true>Bicicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CA,CR" checked=true>Caminhão</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="MT,MO" checked=true>Motocicleta</label><br>
+              <label><input type="checkbox" name="tipo_veiculo" value="CO" checked=true>Carroça</label><br>
+              <label><input type="checkbox" value="inverter">Inverter</label>
+          </div>
+        </div>
+      </div>
+      <div class="modal"></div>
+  </div>

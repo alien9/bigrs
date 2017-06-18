@@ -22,3 +22,8 @@ class ContagemAdmin(GeoModelAdmin):
     inlines=[SpotInline,MovieInline]
 
 admin.site.register(Contagem,ContagemAdmin)
+
+class BairroAdmin(admin.ModelAdmin):
+    model=Bairro
+
+admin.site.register(Bairro,BairroAdmin)

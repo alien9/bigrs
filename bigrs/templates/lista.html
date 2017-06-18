@@ -1,8 +1,22 @@
-{% extends 'base.html' %}{% block css %}
+{% extends 'base.html' %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/main.css?k={{timestamp}}" type="text/css">
 <link href="/static/css/lista.css?k={{timestamp}}" rel="stylesheet">
 <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css">
 {% endblock %}
-{% block contents %}
+{%block scripts%}
+<script type="text/javascript" src="/static/js/lista.js?k={{timestamp}}"></script>
+{%endblock%}
+{%block contents%}
+<body>
+<div id="cabecalho">
+{% include 'cabecalho.html' %}
+<div id="header_menu">
+    <div style="" id="filters_box" >
+    <a href="javascript:void(0);">Contagens</a>
+    </div>
+</div>
+</div>
 <div class="lista_contagens">
   <a href="/teclado">teclado</a>
   {%for c in contagens%}
@@ -12,17 +26,6 @@
   </div>
   {%endfor%}
 </div>
-<div class="logout"><a href="/logout">Sair</a></div>
-{%endblock%}
-{% block scripts %}
-<script type="text/javascript">
-$(document).ready(function(){
-    $(".lista_contagens a").click(function(){
-        //alert($(this).attr('contagem'));
-    });
-});
-function start(){
-    console.debug('startando');
-}
-</script>
+</body>
+
 {%endblock%}
