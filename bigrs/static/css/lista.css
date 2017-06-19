@@ -4,3 +4,33 @@ body{
 .lista_contagens{
     font-size:22px;
 }
+
+.contagem_body {
+   -moz-box-shadow:    inset 0 10px 10px #000000;
+   -webkit-box-shadow: inset 0 0 10px #000000;
+   box-shadow:         inset 0 0px 10px #000000;
+}
+.bairro_title{
+    color:#e84e0e;
+    font-weight:bold;
+    padding:0.4em;
+}
+.contagem_linha{
+    background:lime;
+    padding:0.4em;
+    font-size:16px;
+    font-family: courier, monospace;
+    border-bottom:1px solid #999;
+}
+.contagem_linha div{
+    display:inline-block;
+}
+.contagem_nome{
+    background:white;
+    width:120px;
+    overflow:hidden;
+    white-space:nowrap;
+}
+.contagem_dia{
+    background:#eee;
+}

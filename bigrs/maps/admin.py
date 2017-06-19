@@ -25,5 +25,6 @@ admin.site.register(Contagem,ContagemAdmin)
 
 class BairroAdmin(admin.ModelAdmin):
     model=Bairro
+    list_display = ('nome','nome',)
 
 admin.site.register(Bairro,BairroAdmin)

@@ -5,13 +5,22 @@ from django.core.files.base import File
 
 class Bairro(models.Model):
     nome=models.TextField(max_length=100)
-
+    def __str__(self):
+        return self.nome
 class Contagem(models.Model):
     class Meta:
         verbose_name_plural = "Contagens"
+        ordering = ['endereco']
     endereco=models.TextField(max_length = 100)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
     bairro=models.ForeignKey(Bairro,null=True)
+    def get_dias(self):
+        resp={}
+        for d in [(duh.year,duh.month,duh.day) for duh in self.movie_set.values_list('data_e_hora_inicio', flat=True)]:
+            resp["%04d-%02d-%02d"%(d[0],d[1],d[2],)]="%02d.%02d.%02d"%(d[2],d[1],d[0],)
+        k=list(resp.keys())
+        k.sort()
+        return [resp[u] for u in k]
 
 class Movie(models.Model):
     class Meta:

@@ -18,6 +18,21 @@
 </div>
 </div>
 <div class="lista_contagens">
+{%for bairro in bairros%}
+    <div class="bairro_title">{{bairro.nome}}</div>
+<div class="contagem_body">
+    {%for contagem in bairro.contagem_set.all%}
+    <div class="contagem_linha">
+        <div class="contagem_nome">{{contagem.endereco}}</div>
+        {%for dia in contagem.get_dias%}
+        <div class="contagem_dia">
+            {{dia}}
+        </div>
+        {%endfor%}
+    </div>
+    {%endfor%}
+</div>
+{%endfor%}
   <a href="/teclado">teclado</a>
   {%for c in contagens%}
   <div class="contagem">

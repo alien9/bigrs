@@ -217,8 +217,9 @@ def teclado(request):
 def lista_contagens(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
+    bairros=Bairro.objects.all()
     contagens=Contagem.objects.all()
-    return render(request,'lista.html',{'contagens':contagens,'timestamp':DEPLOY_VERSION})
+    return render(request,'lista.html',{'contagens':contagens,'bairros':bairros,'timestamp':DEPLOY_VERSION})
 
 @login_required(login_url='/auth')
 def update_contagens(request):
