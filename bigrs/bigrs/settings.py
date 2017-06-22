@@ -59,3 +59,5 @@ CACHES = {
         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
    }
 }
+
+WSGI_APPLICATION = 'ws4redis.django_runserver.application'

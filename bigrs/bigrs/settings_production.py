@@ -27,7 +27,7 @@ DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
-
+WEBSOCKET_URL = '/ws/'
 # Application definition
 
 INSTALLED_APPS = [
@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.gis',
+    'ws4redis',
     'maps',
     'social_django',
     'social.apps.django_app.default',
@@ -69,6 +70,8 @@ TEMPLATES = [
                 'social.apps.django_app.context_processors.login_redirect',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
+                'django.core.context_processors.static',
+                'ws4redis.context_processors.default',
             ],
         },
     },
