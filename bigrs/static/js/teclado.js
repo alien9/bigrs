@@ -49,7 +49,7 @@ $(document).ready(function(){
         }});
     };
     updatePlayer();
-    setTimeout(upload, 10000);
+    setTimeout(upload, 1000);
 });
 
 function setContagem(spot_id){
