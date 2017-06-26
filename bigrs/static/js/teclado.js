@@ -69,14 +69,14 @@ function upload(){
             for(var local_id in h){
                 delete(fila[local_id]);
             }
-            setTimeout(upload,10000);
+            setTimeout(upload,1000);
         },'error':function(e){
             console.log('Erro: não foi possível enviar a contagem.');
             console.debug(e);
-            setTimeout(upload, 10000);
+            setTimeout(upload, 1000);
         }});
     }else{
-        setTimeout(upload,10000);
+        setTimeout(upload,1000);
     }
 }
 
