@@ -226,7 +226,7 @@ function start(){
             break;
         }
     });
-
+    $( "#lateral" ).accordion();
     updateContagemAll();
     fixHeight();
     $(window).resize(fixHeight);
@@ -266,12 +266,15 @@ function destroiContagemVideo(){
 
 function fixHeight(){
     var h=$('body').height();
-    var w=Math.round(h*4.0/3.0)+'px';
+    var w=Math.round(h*4.0/3.0);
+    $('.lateralcontainer').css('width',($('body').width()-w-110)+'px');
+    w+='px';
     $('.main').css('height',h+"px");
     $('video').css('width', w);//($('body').width()-300)+'px');
     $('video').attr('width',w);//($('body').width()-300)+'px');
     $('.vjs-control-bar').css('width',w);//($('body').width()-300)+'px');
     $('.videocontainer').css('width',w);//($('body').width()-300)+'px');
+
     $('.my-video-dimensions').css('width',w);//($('body').width()-300)+'px');
 }
 function collectpoints(){
@@ -530,6 +533,7 @@ function setContagem(){
 var contagem_all_timeout;
 function updateContagemAll(){
     $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+        console.debug(h);
         for(var tipo in h['local']){
             contado[tipo]=h['local'][tipo];
             $("#contagem-"+tipo).text(h['local'][tipo]);
@@ -537,6 +541,17 @@ function updateContagemAll(){
         for(var tipo in h['total']){
             contado[tipo]=h['total'][tipo];
             $("#total-"+tipo).text(h['total'][tipo]);
+        }
+        for(var spot in h.spots){
+            var tr=$('#spot_'+spot);
+            if(!tr.length){
+                tr=$('<tr id="spot_'+spot+'"></tr>');
+                $('#counting_table').append(tr);
+            }
+            tr.html('<td>'+spot+'</td>')
+            for(var i=0;i<tipokeys.length;i++){
+                tr.append($('<td class="cell">'+h.spots[spot][tipokeys[i]]+'</td>'))
+            }
         }
     }})
     contagem_all_timeout=setTimeout(updateContagemAll, 3000);

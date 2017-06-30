@@ -4,6 +4,8 @@
 <link href="http://vjs.zencdn.net/5.16.0/video-js.css" rel="stylesheet">
 <link href="/static/css/contador.css?k={{timestamp}}" rel="stylesheet">
 <link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="/static/css/jquery-ui.css">
+
 {% endblock %}
 {% block openlayers %}
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/openlayers/2.13.1/OpenLayers.js"></script>
@@ -11,6 +13,8 @@
 
 {%block scripts%}
 <script src="/static/js/jquery-ui-1.12.1.custom/jquery-ui.min.js"></script>
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 <script src="/static/js/video.min.js"></script>
 <script src="/static/js/timecode.js"></script>
 <script src="/static/js/contador.js?k={{timestamp}}"></script>
@@ -31,9 +35,39 @@
             <a href="javascript:void(0);" class="control"></a>
         </div>
     </div>
-    <div class="subcontainer" style="vertical-align:top">
+    <div class="subcontainer lateralcontainer" style="vertical-align:top">
         <div class="title_lateral">{{contagem.endereco}}</div>
-        <div id="map" style="width:300px;height:300px;"></div>
+        <div id="lateral">
+            <h3>Mapa de Localização</h3>
+            <div>
+                <div id="map" style="width:300px;height:300px;"></div>
+            </div>
+            <h3>Imagem de Localização</h3>
+  <div>
+    <p>
+    Sed non urna. Donec et ante. Phasellus eu ligula. Vestibulum sit amet
+    purus. Vivamus hendrerit, dolor at aliquet laoreet, mauris turpis porttitor
+    velit, faucibus interdum tellus libero ac justo. Vivamus non quam. In
+    suscipit faucibus urna.
+    </p>
+  </div>
+  <h3>Contagem Neste Vídeo</h3>
+  <div>
+    <table id="counting_table">
+        <tr>
+            <td></td>
+            <td><div class="conta_head carro"></div></td>
+            <td><div class="conta_head moto"></div></td>
+            <td><div class="conta_head microonibus"></div></td>
+            <td><div class="conta_head onibus"></div></td>
+            <td><div class="conta_head brt"></div></td>
+            <td><div class="conta_head vuc"></div></td>
+            <td><div class="conta_head caminhao"></div></td>
+            <td><div class="conta_head pedestre"></div></td>
+            <td><div class="conta_head bici"></div></td>
+        </tr>
+    </table>
+  </div>
         <div id="teclado_numerico">
             <div class="tecla t7"><div class="subtecla">7<div class="tecla_detalhe">Home</div></div></div>
             <div class="tecla t8"><div class="subtecla">8<div class="tecla_detalhe">↑</div></div></div>

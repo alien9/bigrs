@@ -267,10 +267,17 @@ def contaspots(spots):
 @login_required(login_url='/auth')
 def update_contagem_all(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
+    rc={}
     total_spots=contaspots(contagem.spot_set.all())
     movie=Movie.objects.get(pk=request.POST.get('movie_id'))
+
+    for spot in contagem.spot_set.all():
+        rc[spot.alias]={}
+        for tecla in Key.objects.all():
+            rc[spot.alias][tecla.name]=movie.contado_set.filter(contagem=contagem,spot=spot,tipo=tecla.name).count()
+
     local_spots=contamovie(movie)
-    r={'total':total_spots,'local':local_spots}
+    r={'total':total_spots,'local':local_spots,'spots':rc}
     return JsonResponse(r)
 
 @login_required(login_url='/auth')
