@@ -31,7 +31,7 @@
             <a href="javascript:void(0);" class="control"></a>
         </div>
     </div>
-    <div class="subcontainer" style="width:300px;float:right;">
+    <div class="subcontainer" style="vertical-align:top">
         <div id="map" style="width:300px;height:300px;"></div>
         <div id="teclado_numerico">
             <div class="tecla t7"><div class="subtecla">7<div class="tecla_detalhe">Home</div></div></div>
@@ -55,19 +55,19 @@
         <div id="od">
 
         </div>
-        <div>
+        <div style="">
             Neste Filme
         </div>
-        <div id="contagem">
+        <div id="contagem" style="">
 
         </div>
-        <div>
+        <div style="">
             Totais
         </div>
-        <div id="total">
+        <div id="total" style="">
 
         </div>
-        <div id="controles">
+        <div id="controles" style="">
             <div>
                 <a class="player-button" href="javascript:void(0);" what="rew">
                     <i class="fa fa-step-backward" aria-hidden="true"></i>
@@ -85,9 +85,9 @@
             </div>
         </div>
 
-        <div id="voltar"><div><a href="/lista">Voltar</a></div></div>
+        <div id="voltar" style=""><div><a href="/lista">Voltar</a></div></div>
         <div>
-            <input type="text" name="data_e_hora" id="data_e_hora">
+            <input type="text" name="data_e_hora" id="data_e_hora" style="display:none">
 
         </div>
     </div>
@@ -103,6 +103,7 @@ if(!contado['{{contado.tipo}}'])contado['{{contado.tipo}}']=0;
 contado['{{contado.tipo}}']++;
 {% endfor %}
 var contagem_id={{contagem.id}};
+var dia='{{dia}}';
 var movie='{{contagem.endereco}}';
 var VIDEO_ROOT='{{root}}';
 {% autoescape on %}

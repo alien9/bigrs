@@ -19,27 +19,21 @@
 </div>
 <div class="lista_contagens">
 {%for bairro in bairros%}
-    <div class="bairro_title">{{bairro.nome}}</div>
-<div class="contagem_body">
+    <div><div class="bairro_title">{{bairro.nome}}</div>
+    <div class="contagem_body">
     {%for contagem in bairro.contagem_set.all%}
     <div class="contagem_linha">
-        <div class="contagem_nome">{{contagem.endereco}}</div>
+        <div class="contagem_nome"><a>{{contagem.endereco}}</a></div>
         {%for dia in contagem.get_dias%}
         <div class="contagem_dia">
-            {{dia}}
+            <a href="/contador/{{contagem.id}}?dia={{dia}}">{{dia}}</a>
         </div>
         {%endfor%}
     </div>
     {%endfor%}
-</div>
+    </div></div>
 {%endfor%}
   <a href="/teclado">teclado</a>
-  {%for c in contagens%}
-  <div class="contagem">
-    <a href="/contador/{{c.id}}" contagem="{{c.id}}">{{c.data_e_hora_inicio}} {{c.endereco}}</a>
-            
-  </div>
-  {%endfor%}
 </div>
 </body>
 

@@ -190,6 +190,8 @@ def get_player(request):
 def contador(request,contador_id):
     contagem=Contagem.objects.get(pk=contador_id)
     tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
+    dia=request.GET.get('dia',None)
+    print(dia)
     return render(request,'contador.html', {
         'contagem':contagem,
         'spots':contagem.spot_set.all(),
@@ -198,7 +200,8 @@ def contador(request,contador_id):
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
-        'videos':contagem.movie_set.filter(is_contado=False).order_by('data_e_hora_inicio')
+        'videos':contagem.movie_set.filter(is_contado=False).order_by('data_e_hora_inicio'),
+        'dia':dia,
     })
 
 @login_required(login_url='/auth')

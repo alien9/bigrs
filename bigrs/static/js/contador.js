@@ -11,6 +11,10 @@ var map;
 var rate=1;
 var is_playing=false;
 function start(){
+    if(dia!="None"){
+        dia=dia.split(/\./).reverse().join('-');
+        while(dia>videos[CURRENT_VIDEO].date) CURRENT_VIDEO++;
+    }
     movie_id=videos[CURRENT_VIDEO].id;
     presetDisplay();
     if(typeof MAP_CENTER != "undefined"){
@@ -262,13 +266,13 @@ function destroiContagemVideo(){
 
 function fixHeight(){
     var h=$('body').height();
+    var w=Math.round(h*4.0/3.0)+'px';
     $('.main').css('height',h+"px");
-    $('video').css('width',($('body').width()-300)+'px');
-    $('video').attr('width',($('body').width()-300)+'px');
-    $('.vjs-control-bar').css('width',($('body').width()-300)+'px');
-    $('.videocontainer').css('width',($('body').width()-300)+'px');
-
-    $('.my-video-dimensions').css('width',($('body').width()-300)+'px');
+    $('video').css('width', w);//($('body').width()-300)+'px');
+    $('video').attr('width',w);//($('body').width()-300)+'px');
+    $('.vjs-control-bar').css('width',w);//($('body').width()-300)+'px');
+    $('.videocontainer').css('width',w);//($('body').width()-300)+'px');
+    $('.my-video-dimensions').css('width',w);//($('body').width()-300)+'px');
 }
 function collectpoints(){
     var i=0;

@@ -13,7 +13,7 @@ import ffmpy
 import re,glob,os
 
 contage_name=input('Selecione o ponto de contagem:\n')
-contagens=Contagem.objects.filter(endereco__icontains=contage_name)
+contagens=Contagem.objects.filter(endereco__icontains=contage_name).order_by('endereco')
 if not len(contagens):
     print("Contagem não Encontrada.\n")
     exit()
@@ -35,7 +35,7 @@ print("Escolheu o %s"%(selected.endereco))
 c=selected
 i=1
 l=listdir('static/video')
-
+l.sort()
 for directory in l:
     print("[%s] %s"%(i,directory))
     i+=1

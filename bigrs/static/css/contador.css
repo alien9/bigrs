@@ -8,9 +8,8 @@
 .main{
     padding:0;
     margin:0;
-    background-color:black;
+    background-color:#eee;
     overflow: hidden;
-    vertical-align:middle;
 }
 #map {
     clear: both;
@@ -18,6 +17,7 @@
     width: 638px;
     height: 768px;
     border: 1px solid black;
+    top:0;
 }
 html,body{
     width:100%;
