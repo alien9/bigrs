@@ -70,7 +70,7 @@ TEMPLATES = [
                 'social.apps.django_app.context_processors.login_redirect',
                 'django.template.context_processors.debug',
                 'django.template.context_processors.request',
-                'django.core.context_processors.static',
+                #'django.core.context_processors.static',
                 'ws4redis.context_processors.default',
             ],
         },
