@@ -16,7 +16,6 @@ body{
     padding:0.4em;
 }
 .contagem_linha{
-    background:lime;
     padding:0.4em;
     font-size:16px;
     font-family: courier, monospace;
@@ -26,11 +25,21 @@ body{
     display:inline-block;
 }
 .contagem_nome{
-    background:white;
+    padding:2px;
+    border-radius:4px;
     width:120px;
-    overflow:hidden;
-    white-space:nowrap;
+}
+.contagem_nome a{
+    text-decoration:none;
+    color:#666;
 }
 .contagem_dia{
-    background:#eee;
+    background:#ddd;
+    padding:2px;
+    border-radius:4px;
+}
+.contagem_dia a{
+    font-weight:bold;
+    text-decoration:none;
+    color:#666;
 }
