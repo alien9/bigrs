@@ -193,7 +193,16 @@ function start(){
         var p = videojs('my-video');
         switch($(this).attr('what')){
             case 'play':
-                p.play();
+                var bu=$('a.player-button[what=play] i')
+                if(p.paused()){
+                    $(bu).removeClass('fa-play');
+                    $(bu).addClass('fa-pause');
+                    p.play();
+                }else{
+                    $(bu).removeClass('fa-pause');
+                    $(bu).addClass('fa-play');
+                    p.pause();
+                }
                 $("#data_e_hora").val(videos[CURRENT_VIDEO].date);
                 is_playing=true;
             break;
@@ -237,12 +246,12 @@ $("#teclado_numerico").focus();
 }
 
 function presetDisplay(){
-    for(var i=0;i<tipokeys.length;i++){
+    /*for(var i=0;i<tipokeys.length;i++){
         $('#contagem').append($('<div class="head '+tipokeys[i]+'"><div class="kid"><span id="contagem-'+tipokeys[i]+'"></span></div></div>'));
     }
     for(var i=0;i<tipokeys.length;i++){
         $('#total').append($('<div class="head '+tipokeys[i]+'"><div class="kid"><span id="total-'+tipokeys[i]+'"></span></div></div>'));
-    }
+    }*/
 }
 
 
@@ -251,7 +260,7 @@ function destroiContagemVideo(){
 
         $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             }, success:function(h){
-                for(var tipo in h['local']){
+                /*for(var tipo in h['local']){
                     contado[tipo]=h['local'][tipo];
                     $("#contagem-"+tipo).text(h['local'][tipo]);
                 }
@@ -259,6 +268,8 @@ function destroiContagemVideo(){
                     contado[tipo]=h['total'][tipo];
                     $("#total-"+tipo).text(h['total'][tipo]);
                 }
+                */
+                updateContagemAll();
         }});
     }
 
@@ -267,7 +278,7 @@ function destroiContagemVideo(){
 function fixHeight(){
     var h=$('body').height();
     var w=Math.round(h*4.0/3.0);
-    $('.lateralcontainer').css('width',($('body').width()-w-110)+'px');
+    $('.lateralcontainer').css('width',($('body').width()-w-40)+'px');
     w+='px';
     $('.main').css('height',h+"px");
     $('video').css('width', w);//($('body').width()-300)+'px');
@@ -472,16 +483,13 @@ function keyup(e){
             contado[t]++;
             fila[local_id]=veiculo;
             local_id++;
-            setContagem();
             if(contagem_all_timeout) clearTimeout(contagem_all_timeout);
             contagem_all_timeout=setTimeout(updateContagemAll,3000);
         }
     }
 }
 function resetCounterDisplay(){
-    $("#contagem span").text('');
-    $("#total span").text('');
-
+    console.debug("reset display");
 }
 function getOd(){
     var a;
@@ -524,16 +532,11 @@ function setKeyboard(){
         $(".t"+k).attr('tipo',tipokeys[i]);
     }
 }
-function setContagem(){
-    for(var tipo in contado){
-        $("#contagem-"+tipo).text(contado[tipo]);
-    }
-}
 
 var contagem_all_timeout;
 function updateContagemAll(){
     $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
-        console.debug(h);
+        /*console.debug(h);
         for(var tipo in h['local']){
             contado[tipo]=h['local'][tipo];
             $("#contagem-"+tipo).text(h['local'][tipo]);
@@ -541,7 +544,7 @@ function updateContagemAll(){
         for(var tipo in h['total']){
             contado[tipo]=h['total'][tipo];
             $("#total-"+tipo).text(h['total'][tipo]);
-        }
+        }*/
         for(var spot in h.spots){
             var tr=$('#spot_'+spot);
             if(!tr.length){
