@@ -489,7 +489,7 @@ function keyup(e){
     }
 }
 function resetCounterDisplay(){
-    console.debug("reset display");
+    $('td.cell').html('...');
 }
 function getOd(){
     var a;

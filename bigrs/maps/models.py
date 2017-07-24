@@ -16,7 +16,7 @@ class Contagem(models.Model):
     bairro=models.ForeignKey(Bairro,null=True)
     def get_dias(self):
         resp={}
-        for d in [(duh.year,duh.month,duh.day) for duh in self.movie_set.values_list('data_e_hora_inicio', flat=True)]:
+        for d in [(duh.year,duh.month,duh.day) for duh in self.movie_set.filter(is_valid=True).values_list('data_e_hora_inicio', flat=True)]:
             resp["%04d-%02d-%02d"%(d[0],d[1],d[2],)]="%02d.%02d.%02d"%(d[2],d[1],d[0],)
         k=list(resp.keys())
         k.sort()
@@ -29,6 +29,7 @@ class Movie(models.Model):
     data_e_hora_inicio = models.DateTimeField()
     movie = models.FileField(upload_to='static/video', null=True)
     is_contado=models.BooleanField(default=False)
+    is_valid=models.BooleanField(default=True)
 
 class Contado(models.Model):
     author = models.ForeignKey('auth.User')

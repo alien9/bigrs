@@ -1,0 +1,7 @@
+{"agen":"767","habi1_cod":"76","habi1_nom":"Alberto dos Santos","habi1_nom_mae":"Célia Furtado","habi1_nom_pai":"Carlos Aragão","habi1_cns":"216758539450006","ende1_cod":"8018","ende1_logr":"GRALHA AZUL","ende1_num":"337","ende1_bai":"DONA FINA","ende1_cida":"Campo Largo","ende1_uf":"PR","ende1_cep":"83609120","ende1_lat":"-25.4536252173913","ende1_lng":"-49.3917111594202","dataehora":1499573504,"gps":"-23.5982203 -46.6240533","gpsprec":"19.405000686645508","3428":{"v":"09\/07\/2017"},"3429":{"v":"fuck"},"3430":{"v":{"1":true,"2":true,"3":false}}}
+
+
+{"36":[
+{"agen":"767","habi1_cod":"76","habi1_nom":"Alberto dos Santos","habi1_nom_mae":"Célia Furtado","habi1_nom_pai":"Carlos Aragão","habi1_cns":"216758539450006","ende1_cod":"8018","ende1_logr":"GRALHA AZUL","ende1_num":"337","ende1_bai":"DONA FINA","ende1_cida":"Campo Largo","ende1_uf":"PR","ende1_cep":"83609120","ende1_lat":"-25.4536252173913","ende1_lng":"-49.3917111594202","dataehora":1499573504,"gps":"-23.5982203 -46.6240533","gpsprec":"19.405000686645508","3428":{"v":"09\/07\/2017"},"3429":{"v":"fuck"},"3430":{"v":{"1":true,"2":true,"3":false}}},
+{"dataehora":1499573632,"gps":"-23.5982203 -46.6240533","gpsprec":"19.327999114990234","3428":{"v":"09\/07\/2017"},"3429":{"v":"reduções"},"3430":{"v":{"1":false,"2":true,"3":true}}}
+]}
