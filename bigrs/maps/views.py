@@ -200,7 +200,7 @@ def contador(request,contador_id):
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
-        'videos':contagem.movie_set.filter(is_contado=False).order_by('data_e_hora_inicio'),
+        'videos':contagem.movie_set.filter(is_valid=True,is_contado=False).order_by('data_e_hora_inicio'),
         'dia':dia,
     })
 
