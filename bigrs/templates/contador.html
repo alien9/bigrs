@@ -71,6 +71,11 @@
             </div>
         </div>
         <div id="voltar" style=""><div><a href="/lista">Voltar</a></div></div>
+{%if mostra_data%}
+    <div>
+        <input type="text" name="data_e_hora" id="data_e_hora">
+    </div>
+{%endif%}
   </div>
   <h3>Contagem</h3>
   <div>
@@ -107,9 +112,6 @@
         <table style="background-color:gray;width:100%" id="points_table">
         </table>
         </form>
-    </div>
-    <div style="display:none">
-        <input type="text" name="data_e_hora" id="data_e_hora">
     </div>
     </div>
 </div>
