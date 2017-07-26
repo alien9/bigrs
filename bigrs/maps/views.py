@@ -9,6 +9,10 @@ from datetime import date,datetime,timedelta
 from bigrs.settings import *
 from django.core.files.storage import FileSystemStorage
 from maps.models import *
+from django.http import HttpResponse
+from django.template import loader, Context
+
+HEADERS=['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']
 
 # Create your views here.
 @login_required(login_url='/auth')
@@ -191,7 +195,7 @@ def contador(request,contador_id):
     contagem=Contagem.objects.get(pk=contador_id)
     tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
     dia=request.GET.get('dia',None)
-    print(dia)
+    print(request.user.groups.filter(name__in=['Chefatura da Contagem']).exists())
     return render(request,'contador.html', {
         'contagem':contagem,
         'spots':contagem.spot_set.all(),
@@ -202,6 +206,7 @@ def contador(request,contador_id):
         'timestamp':DEPLOY_VERSION,
         'videos':contagem.movie_set.filter(is_valid=True,is_contado=False).order_by('data_e_hora_inicio'),
         'dia':dia,
+        'mostra_data':request.user.groups.filter(name__in=['Chefatura da Contagem']).exists(),
     })
 
 @login_required(login_url='/auth')
@@ -332,6 +337,39 @@ def conta(request):
                 res[veiculo['local_id']]=True
     return JsonResponse(res);
 
+@login_required(login_url='/auth')
+def lista_contagens_totais(request):
+    if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
+        conn = connection.cursor().connection
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
+        r=cur.fetchall()
+        return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
+    else:
+        return render(request, 'login.html')
+
+@login_required(login_url='/auth')
+def lista_contagens_totais_xls(request):
+    if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
+        conn = connection.cursor().connection
+        cur = conn.cursor()
+        cur.execute(
+            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
+        r=cur.fetchall()
+        c = Context({
+            'records': r,
+        })
+        t = loader.get_template('skeleton.xml')
+        response = HttpResponse(content_type='application/ms-excel')
+        d=date.today()
+        da=d.strftime("%Y_%m_%d")
+        response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
+        response.write(t.render({'records': r,'headers':HEADERS}))
+        return response
+        #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
+    else:
+        return render(request, 'login.html')
 
 def auth(request):
     t='login_contador.html'

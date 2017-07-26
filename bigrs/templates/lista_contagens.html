@@ -1,0 +1,56 @@
+{% extends 'base.html' %}
+{% load standard %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/main.css?k={{timestamp}}" type="text/css">
+<link href="/static/css/lista.css?k={{timestamp}}" rel="stylesheet">
+<link rel="stylesheet" href="/static/font-awesome-4.7.0/css/font-awesome.min.css">
+<style>
+table, th, td {
+    border: 1px solid black;
+}
+.numebrcell{
+    text-align:right;
+}
+</style>
+{% endblock %}
+{%block scripts%}
+<script type="text/javascript" src="/static/js/lista.js?k={{timestamp}}"></script>
+{%endblock%}
+{%block contents%}
+<body>
+<div id="cabecalho">
+{% include 'cabecalho.html' %}
+<div id="header_menu">
+    <div style="" id="filters_box" >
+    <a href="/lista_contagens_xls">Baixar XLS</a>
+    </div>
+</div>
+</div>
+<div class="lista_contagens">
+    <table style="border:">
+        <tr>
+{%for c in headers%}
+            {%if forloop.counter0 > 3%}
+            <td><img src="/static/images/icons/{{c}}.png"></td>
+            {%else%}
+            <td>{{c}}</td>
+            {%endif%}
+{%endfor%}
+        </tr>
+{%for r in records%}
+        <tr>
+{%for c in headers%}
+            {%if forloop.counter0 > 3%}
+            <td class="numbercell">{{r|item:forloop.counter0}}</td>
+            {%else%}
+            <td>{{r|item:forloop.counter0}}</td>
+            {%endif%}
+
+{%endfor%}
+        </tr>
+{%endfor%}
+    </table>
+</div>
+</body>
+
+{%endblock%}

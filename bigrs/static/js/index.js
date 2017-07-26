@@ -39,6 +39,7 @@ var center;
 var vectorSource;
 
 function intersects(a,b){
+    if(!a)return false;
     var ta=a.split('|');
     var i=0;
     while(i<ta.length){
