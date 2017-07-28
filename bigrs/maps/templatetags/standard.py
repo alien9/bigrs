@@ -22,12 +22,12 @@ def rowcolor(a, uid):
     if old_day is not None:
         day,color=re.split("_",old_day)
         if day!=d:
-            if color=="white":
-                color="lightgray"
+            if color=="#FFFFFF":
+                color="#D3D3D3"
             else:
-                color="white"
+                color="#FFFFFF"
     else:
-        color="white"
+        color="#FFFFFF"
     mc.set('last_day_%s'%(uid,),"%s_%s"%(d,color))
     return color
 register.filter('rowcolor', rowcolor)
