@@ -358,7 +358,7 @@ def lista_contagens_totais(request):
         cur.execute(
             "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
         r=cur.fetchall()
-        return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
+        return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES})
     else:
         return render(request, 'login.html')
 

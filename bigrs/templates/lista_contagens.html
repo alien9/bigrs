@@ -31,7 +31,7 @@ table, th, td {
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}
-            <td><img src="/static/images/icons/{{c}}.png"></td>
+            <td><img src="/static/images/icons/{{c}}.png" alt="{{nomes|item:forloop.counter0}}"></td>
             {%else%}
             <td>{{c}}</td>
             {%endif%}
