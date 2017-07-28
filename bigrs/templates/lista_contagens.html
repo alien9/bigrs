@@ -41,9 +41,9 @@ table, th, td {
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}
-            <td class="numbercell">{{r|item:forloop.counter0}}</td>
+            <td  style="background-color:{{r|rowcolor:uid}}" class="numbercell">{{r|item:forloop.counter0}}</td>
             {%else%}
-            <td>{{r|item:forloop.counter0}}</td>
+            <td style="background-color:{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
             {%endif%}
 
 {%endfor%}

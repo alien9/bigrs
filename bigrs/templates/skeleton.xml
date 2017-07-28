@@ -62,7 +62,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
 {%for r in records%}
 <tr>
    {%for c in headers%}
-   <td>{{r|item:forloop.counter0}}</td>
+   <td style="background-color:{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
    {%endfor%}
 </tr>
 {%endfor%}

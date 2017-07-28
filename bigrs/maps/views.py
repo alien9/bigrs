@@ -359,7 +359,7 @@ def lista_contagens_totais(request):
         cur.execute(
             "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
         r=cur.fetchall()
-        return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES})
+        return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
         return render(request, 'login.html')
 
@@ -379,7 +379,7 @@ def lista_contagens_totais_xls(request):
         d=date.today()
         da=d.strftime("%Y_%m_%d")
         response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
-        response.write(t.render({'records': r,'headers':HEADERS,"nomes":NOMES}))
+        response.write(t.render({'records': r,'headers':HEADERS,"nomes":NOMES,'uid':request.user.id}))
         return response
         #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
     else:
