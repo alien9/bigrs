@@ -12,9 +12,22 @@ from maps.models import *
 from django.http import HttpResponse
 from django.template import loader, Context
 
-HEADERS=['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']
+HEADERS=['bairro','endereco', 'data', 'sentido',"carro","moto","microonibus","onibus","brt","vuc","caminhao","pedestre","bici"]
+NOMES=[
+    "Bairro",
+    "Local",
+    "Sentido",
+    "Automóvel",
+    "Motocicleta",
+    "Van",
+    "Microônibus",
+    "Ônibus",
+    "VUC",
+    "Caminhão",
+    "pedestre",
+    "Bicicleta",
+]
 
-# Create your views here.
 @login_required(login_url='/auth')
 def index(request):
     u=request.user
@@ -365,7 +378,7 @@ def lista_contagens_totais_xls(request):
         d=date.today()
         da=d.strftime("%Y_%m_%d")
         response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
-        response.write(t.render({'records': r,'headers':HEADERS}))
+        response.write(t.render({'records': r,'headers':HEADERS,"nomes":NOMES}))
         return response
         #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
     else:

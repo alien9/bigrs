@@ -52,7 +52,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
 
 <thead>
 <tr>
-    {%for c in headers%}
+    {%for c in nomes%}
    <th>{{c}}</th>
    {%endfor%}
 </tr>
