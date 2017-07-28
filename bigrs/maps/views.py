@@ -16,6 +16,7 @@ HEADERS=['bairro','endereco', 'data', 'sentido',"carro","moto","microonibus","on
 NOMES=[
     "Bairro",
     "Local",
+    "Data",
     "Sentido",
     "Automóvel",
     "Motocicleta",
@@ -24,7 +25,7 @@ NOMES=[
     "Ônibus",
     "VUC",
     "Caminhão",
-    "pedestre",
+    "Pedestre",
     "Bicicleta",
 ]
 
