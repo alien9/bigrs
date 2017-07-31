@@ -12,9 +12,23 @@ from maps.models import *
 from django.http import HttpResponse
 from django.template import loader, Context
 
-HEADERS=['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']
-COISAS=['carro','moto','microonibus','onibus','brt','caminhao','pedestre','bici']
-# Create your views here.
+HEADERS=['bairro','endereco', 'data', 'sentido',"carro","moto","microonibus","onibus","brt","vuc","caminhao","pedestre","bici"]
+NOMES=[
+    "Bairro",
+    "Local",
+    "Data",
+    "Sentido",
+    "Automóvel",
+    "Motocicleta",
+    "Van",
+    "Microônibus",
+    "Ônibus",
+    "VUC",
+    "Caminhão",
+    "Pedestre",
+    "Bicicleta",
+]
+
 @login_required(login_url='/auth')
 def index(request):
     u=request.user
@@ -204,7 +218,7 @@ def contador(request,contador_id):
         'root':VIDEO_URL_ROOT,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
-        'videos':contagem.movie_set.filter(is_contado=False,is_valid=True).order_by('data_e_hora_inicio'),
+        'videos':contagem.movie_set.filter(is_valid=True,is_contado=False).order_by('data_e_hora_inicio'),
         'dia':dia,
         'mostra_data':request.user.groups.filter(name__in=['Chefatura da Contagem']).exists(),
     })
@@ -345,7 +359,7 @@ def lista_contagens_totais(request):
         cur.execute(
             "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
         r=cur.fetchall()
-        return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
+        return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
         return render(request, 'login.html')
 
@@ -365,7 +379,7 @@ def lista_contagens_totais_xls(request):
         d=date.today()
         da=d.strftime("%Y_%m_%d")
         response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
-        response.write(t.render({'records': r,'headers':HEADERS}))
+        response.write(t.render({'records': r,'headers':HEADERS,"nomes":NOMES,'uid':request.user.id}))
         return response
         #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
     else:

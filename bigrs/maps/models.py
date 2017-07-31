@@ -25,10 +25,11 @@ class Contagem(models.Model):
 class Movie(models.Model):
     class Meta:
         verbose_name_plural = "Vídeos"
+        ordering = ['data_e_hora_inicio']
     contagem=models.ForeignKey(Contagem)
     data_e_hora_inicio = models.DateTimeField()
     movie = models.FileField(upload_to='static/video', null=True)
-    is_contado=models.BooleanField(default=False)
+    is_contado = models.BooleanField(default=False)
     is_valid=models.BooleanField(default=True)
 
 class Contado(models.Model):
