@@ -13,7 +13,7 @@ from django.http import HttpResponse
 from django.template import loader, Context
 
 HEADERS=['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']
-
+COISAS=['carro','moto','microonibus','onibus','brt','caminhao','pedestre','bici']
 # Create your views here.
 @login_required(login_url='/auth')
 def index(request):
