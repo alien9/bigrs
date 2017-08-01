@@ -229,7 +229,10 @@ def destroy_video_count(request):
     video=Movie.objects.get(pk=request.POST.get('video_id'))
     if 'spot' in request.POST:
         spot=Contagem.objects.get(pk=request.POST.get('contagem_id')).spot_set.get(alias=request.POST.get('spot'))
-        video.contado_set.filter(spot=spot).delete()
+        if 'tipo' in request.POST:
+            video.contado_set.filter(spot=spot,tipo=request.POST.get('tipo')).delete()
+        else:
+            video.contado_set.filter(spot=spot).delete()
     else:
         video.contado_set.all().delete()
     return update_contagem_all(request)

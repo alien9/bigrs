@@ -556,7 +556,7 @@ function updateContagemAll(){
             }
             tr.html('<td>'+spot+'</td>')
             for(var i=0;i<tipokeys.length;i++){
-                tr.append($('<td class="cell">'+h.spots[spot][tipokeys[i]]+'</td>'))
+                tr.append($('<td class="cell"><a class="apaga_tipo" href="javascript:void(0);" tipo="'+tipokeys[i]+'" spot="'+spot+'">'+h.spots[spot][tipokeys[i]]+'</a></td>'));
             }
             tr.append($('<td><a href="javascript:void(0);" class="apaga" spot="'+spot+'">x</a></td>'))
         }
@@ -637,10 +637,18 @@ function pontaDeFlecha(p){ // p é um array com dois pontos
 function setApagador(){
     $('a.apaga').click(function(){
         if(!confirm('Tem certeza de que deseja apagar a contagem?')) return;
-         $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+        $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             }, success:function(h){
                 updateContagemAll();
         }});
 
+    });
+    $('a.apaga_tipo').click(function(){
+        var tipo=$(this).attr('tipo');
+        if(!confirm('Tem certeza de que deseja apagar a contagem de '+tipo+'?')) return;
+        $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'tipo':$(this).attr('tipo'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            }, success:function(h){
+                updateContagemAll();
+        }});
     });
 }
