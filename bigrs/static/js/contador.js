@@ -6,7 +6,7 @@ var CURRENT_VIDEO=0;
 var pressing=false;
 var fila={};
 var local_id=1;
-var movie_id;
+var video_id;
 var map;
 var rate=1;
 var is_playing=false;
@@ -16,7 +16,7 @@ function start(){
         dia=dia.split(/\./).reverse().join('-');
         while(dia>videos[CURRENT_VIDEO].date) CURRENT_VIDEO++;
     }
-    movie_id=videos[CURRENT_VIDEO].id;
+    video_id=videos[CURRENT_VIDEO].id;
     presetDisplay();
     if(typeof MAP_CENTER != "undefined"){
         //map.getView().setZoom(17);
@@ -146,14 +146,14 @@ function start(){
 
     var updatePlayer=function(){
         var p = videojs('my-video');
-        movie_id=videos[CURRENT_VIDEO].id;
+        video_id=videos[CURRENT_VIDEO].id;
         rate=p.playbackRate();
         is_playing=!p.paused();
         $.ajax('/set_player', {'method':'POST','dataType':'json','data':{
             'contagem_id':contagem_id,
             'ts':p.currentTime(),
             'movie':movie,
-            'movie_id':videos[CURRENT_VIDEO].id,
+            'video_id':videos[CURRENT_VIDEO].id,
             'spots':JSON.stringify($.map(linhas,function(l){return {'id':l.id,'alias':l.alias}})),
             csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
         },'success':function(h){
@@ -164,8 +164,12 @@ function start(){
         }});
     };
     setTimeout(updatePlayer, 3000);
-    videojs('my-video').src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
-
+    try{
+        console.log("carga do video original");
+        videojs('my-video').src({type: 'video/mp4', src: VIDEO_ROOT+videos[CURRENT_VIDEO].url});
+    }catch(e){
+        console.debug(e);
+    }
     videojs('my-video').on('ended', function() {
         if(CURRENT_VIDEO<videos.length-1){
             CURRENT_VIDEO++;
@@ -180,7 +184,7 @@ function start(){
         var dt=$("#data_e_hora").val();
         $.ajax('/set_data_e_hora', {method:'post',dataType:'json', data:{
                 csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
-                'movie_id':movie_id,
+                'video_id':video_id,
                 'data_e_hora':dt
             },success:function(h){
                 console.debug(h)
@@ -259,7 +263,6 @@ function presetDisplay(){
 
 function destroiContagemVideo(){
     if(confirm('Deseja apagar as contagens feitas para este vídeo?')){
-
         $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
             }, success:function(h){
                 /*for(var tipo in h['local']){
@@ -536,8 +539,6 @@ function setKeyboard(){
 }
 
 var contagem_all_timeout;
-
-
 function updateContagemAll(first){
     $.ajax('/update_contagem_from_cache',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
         for(var spot in h.spots){
@@ -548,13 +549,14 @@ function updateContagemAll(first){
             }
             tr.html('<td>'+spot+'</td>')
             for(var i=0;i<tipokeys.length;i++){
-                tr.append($('<td class="cell">'+h.spots[spot][tipokeys[i]]+'</td>'))
+                tr.append($('<td class="cell"><a class="apaga_tipo" href="javascript:void(0);" tipo="'+tipokeys[i]+'" spot="'+spot+'">'+h.spots[spot][tipokeys[i]]+'</a></td>'));
             }
+            tr.append($('<td><a href="javascript:void(0);" class="apaga" spot="'+spot+'">x</a></td>'))
         }
     }});
+    setApagador();
     contagem_all_timeout=setTimeout(updateContagemAll, 3000);
 }
-
 
 function upload(){
     if(fila.length){
@@ -623,4 +625,22 @@ function pontaDeFlecha(p){ // p é um array com dois pontos
     var geometry = new OpenLayers.Geometry.Polygon([linearRing]);
     var polygonFeature = new OpenLayers.Feature.Vector(geometry, null, {});
     return polygonFeature;
+}
+function setApagador(){
+    $('a.apaga').click(function(){
+        if(!confirm('Tem certeza de que deseja apagar a contagem?')) return;
+        $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            }, success:function(h){
+                updateContagemAll();
+        }});
+
+    });
+    $('a.apaga_tipo').click(function(){
+        var tipo=$(this).attr('tipo');
+        if(!confirm('Tem certeza de que deseja apagar a contagem de '+tipo+'?')) return;
+        $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'tipo':$(this).attr('tipo'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()
+            }, success:function(h){
+                updateContagemAll();
+        }});
+    });
 }

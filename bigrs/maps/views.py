@@ -192,7 +192,7 @@ def reverse_geocode(request):
 @login_required(login_url='/auth')
 def set_player(request):
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-    h={'movie':request.POST.get('movie'),'movie_id':request.POST.get('movie_id'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')}
+    h={'movie':request.POST.get('movie'),'video_id':request.POST.get('video_id'),'ts':request.POST.get('ts'),'spots':request.POST.get('spots'),'contagem_id':request.POST.get('contagem_id')}
     mc.set('player_%s'%request.user.id, h)
     return JsonResponse(h)
 
@@ -227,7 +227,14 @@ def contador(request,contador_id):
 def destroy_video_count(request):
     print("destroying %s"%(request.POST.get('video_id')))
     video=Movie.objects.get(pk=request.POST.get('video_id'))
-    video.contado_set.all().delete()
+    if 'spot' in request.POST:
+        spot=Contagem.objects.get(pk=request.POST.get('contagem_id')).spot_set.get(alias=request.POST.get('spot'))
+        if 'tipo' in request.POST:
+            video.contado_set.filter(spot=spot,tipo=request.POST.get('tipo')).delete()
+        else:
+            video.contado_set.filter(spot=spot).delete()
+    else:
+        video.contado_set.all().delete()
     return update_contagem_all(request)
 
 @login_required(login_url='/auth')
@@ -299,7 +306,7 @@ def update_contagem_all(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
     rc={}
     total_spots=contaspots(contagem.spot_set.all())
-    movie=Movie.objects.get(pk=request.POST.get('movie_id'))
+    movie=Movie.objects.get(pk=request.POST.get('video_id'))
 
     for spot in contagem.spot_set.all():
         rc[spot.alias]={}
@@ -314,7 +321,7 @@ def update_contagem_all(request):
 
 @login_required(login_url='/auth')
 def set_data_e_hora(request):
-    movie = Movie.objects.get(pk=request.POST.get('movie_id'))
+    movie = Movie.objects.get(pk=request.POST.get('video_id'))
     movie.data_e_hora_inicio=request.POST.get('data_e_hora')
     movie.save()
     return JsonResponse({'result':'OK'})

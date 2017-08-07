@@ -62,14 +62,10 @@ xmlns="http://www.w3.org/TR/REC-html40">
 {%for r in records%}
 <tr>
    {%for c in headers%}
-   <td style="background-color:{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
+   <td bgcolor="{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
    {%endfor%}
 </tr>
 {%endfor%}
-<tr>
-   <td><span style="color: green">This cell is green.</span></td>
-   <td>This cell is plain.</td>
-</tr>
 </tbody>
 
 </body>

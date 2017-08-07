@@ -173,3 +173,4 @@ if DEBUG:
     mimetypes.add_type("video/mpeg", ".asf", True)
 
 DEPLOY_VERSION=904
+
