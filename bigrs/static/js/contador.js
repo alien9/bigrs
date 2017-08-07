@@ -10,6 +10,7 @@ var movie_id;
 var map;
 var rate=1;
 var is_playing=false;
+var first;
 function start(){
     if(dia!="None"){
         dia=dia.split(/\./).reverse().join('-');
@@ -236,6 +237,7 @@ function start(){
         }
     });
     $( "#lateral" ).accordion();
+    first=true;
     updateContagemAll();
     fixHeight();
     $(window).resize(fixHeight);
@@ -534,17 +536,10 @@ function setKeyboard(){
 }
 
 var contagem_all_timeout;
-function updateContagemAll(){
-    $.ajax('/update_contagem_all',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
-        /*console.debug(h);
-        for(var tipo in h['local']){
-            contado[tipo]=h['local'][tipo];
-            $("#contagem-"+tipo).text(h['local'][tipo]);
-        }
-        for(var tipo in h['total']){
-            contado[tipo]=h['total'][tipo];
-            $("#total-"+tipo).text(h['total'][tipo]);
-        }*/
+
+
+function updateContagemAll(first){
+    $.ajax('/update_contagem_from_cache',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
         for(var spot in h.spots){
             var tr=$('#spot_'+spot);
             if(!tr.length){
@@ -556,7 +551,7 @@ function updateContagemAll(){
                 tr.append($('<td class="cell">'+h.spots[spot][tipokeys[i]]+'</td>'))
             }
         }
-    }})
+    }});
     contagem_all_timeout=setTimeout(updateContagemAll, 3000);
 }
 

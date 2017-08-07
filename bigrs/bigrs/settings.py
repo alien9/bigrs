@@ -51,7 +51,7 @@ if DEBUG:
     mimetypes.add_type("video/mpeg", ".asf", True)
 
 from time import time
-t = time()
+
 DEPLOY_VERSION=time()
 
 CACHES = {
@@ -62,3 +62,4 @@ CACHES = {
 
 WSGI_APPLICATION = 'ws4redis.django_runserver.application'
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 10000
+

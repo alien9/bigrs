@@ -283,6 +283,17 @@ def contaspots(spots):
                 r[c.tipo]+=1
     return r
 
+
+@login_required(login_url='/auth')
+def update_contagem_from_cache(request):
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    r=mc.get('contagem_%s_movie_%s' % (request.POST.get('contagem_id'), request.POST.get('movie_id')))
+    if r is None:
+        return update_contagem_all(request)
+    else:
+        print("from cache")
+    return JsonResponse(r)
+
 @login_required(login_url='/auth')
 def update_contagem_all(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
@@ -297,6 +308,8 @@ def update_contagem_all(request):
 
     local_spots=contamovie(movie)
     r={'total':total_spots,'local':local_spots,'spots':rc}
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    mc.set('contagem_%s_movie_%s' % (contagem.id,movie.id),r)
     return JsonResponse(r)
 
 @login_required(login_url='/auth')
@@ -330,6 +343,7 @@ def conta(request):
     if w is None:
         w = {}
     res = {}
+    print(request.POST)
     if request.is_ajax():
         if request.method == 'POST':
             jake=json.loads(request.POST.get('fila'))
@@ -338,16 +352,30 @@ def conta(request):
                 print(w['ts'])
                 contagem=Contagem.objects.get(pk=veiculo['contagem_id'])
                 movie=contagem.movie_set.get(pk=w['movie_id'])
+                spot=Spot.objects.get(pk=veiculo['spot_id'])
                 c=Contado(
                     author=request.user,
                     contagem=contagem,
                     tipo=veiculo['tipo'],
                     data_e_hora=movie.data_e_hora_inicio+timedelta(seconds=float(veiculo['ts'])),
-                    spot=Spot.objects.get(pk=veiculo['spot_id']),
+                    spot=spot,
                     timestamp=int(float(w['ts'])),
                     movie=movie
                 )
                 c.save()
+                r = mc.get('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['movie_id']))
+                if r is not None:
+                    print(r)
+                    if not veiculo['tipo'] in r['total']:
+                        r['total'][veiculo['tipo']]=0
+                    r['total'][veiculo['tipo']]+=1
+                    if not veiculo['spot_id'] in r['spots']:
+                        r['spots'][veiculo['spot_id']]={}
+                    if not veiculo['tipo'] in r['spots'][spot.alias]:
+                        r['spots'][spot.alias][veiculo['tipo']]=0
+                    r['spots'][spot.alias][veiculo['tipo']]+=1
+                    mc.set('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['movie_id']),r)
+                    #{'total': {'pedestre': 1551}, 'spots': {'1': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '2': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '3': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '4': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}}, 'local': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}}
                 res[veiculo['local_id']]=True
     return JsonResponse(res);
 

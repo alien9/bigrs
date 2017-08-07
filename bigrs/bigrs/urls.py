@@ -35,6 +35,7 @@ urlpatterns = [
     url(r'^lista_contagens_xls$', views.lista_contagens_totais_xls),
     url(r'^update_contagens$', views.update_contagens),
     url(r'^update_contagem_all$', views.update_contagem_all),
+    url(r'^update_contagem_from_cache$', views.update_contagem_from_cache),
     url(r'^destroy_video_count$',views.destroy_video_count),
     url(r'^set_data_e_hora$',views.set_data_e_hora),
     url(r'^conta$', views.conta),
