@@ -540,7 +540,7 @@ function setKeyboard(){
 
 var contagem_all_timeout;
 function updateContagemAll(first){
-    $.ajax('/update_contagem_from_cache',{method:'POST',data:{'contagem_id':contagem_id,'movie_id':movie_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
+    $.ajax('/update_contagem_from_cache',{method:'POST',data:{'contagem_id':contagem_id,'video_id':video_id,csrfmiddlewaretoken: $('input[name=csrfmiddlewaretoken]').val()},success:function(h){
         for(var spot in h.spots){
             var tr=$('#spot_'+spot);
             if(!tr.length){
@@ -553,9 +553,11 @@ function updateContagemAll(first){
             }
             tr.append($('<td><a href="javascript:void(0);" class="apaga" spot="'+spot+'">x</a></td>'))
         }
+
+        console.debug('devia setar');
+        setApagador();
+        contagem_all_timeout=setTimeout(updateContagemAll, 3000);
     }});
-    setApagador();
-    contagem_all_timeout=setTimeout(updateContagemAll, 3000);
 }
 
 function upload(){
@@ -627,6 +629,7 @@ function pontaDeFlecha(p){ // p é um array com dois pontos
     return polygonFeature;
 }
 function setApagador(){
+    console.debug("set apagador");
     $('a.apaga').click(function(){
         if(!confirm('Tem certeza de que deseja apagar a contagem?')) return;
         $.ajax('/destroy_video_count',{dataType:'json',method:'post', data:{'spot':$(this).attr('spot'),'contagem_id':contagem_id,'video_id':videos[CURRENT_VIDEO].id,csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val()

@@ -359,7 +359,7 @@ def conta(request):
                 print(request.POST.get('video_id'))
                 print(w['ts'])
                 contagem=Contagem.objects.get(pk=veiculo['contagem_id'])
-                movie=contagem.movie_set.get(pk=w['movie_id'])
+                movie=contagem.movie_set.get(pk=w['video_id'])
                 spot=Spot.objects.get(pk=veiculo['spot_id'])
                 c=Contado(
                     author=request.user,
@@ -371,7 +371,7 @@ def conta(request):
                     movie=movie
                 )
                 c.save()
-                r = mc.get('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['movie_id']))
+                r = mc.get('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['video_id']))
                 if r is not None:
                     print(r)
                     if not veiculo['tipo'] in r['total']:
@@ -382,7 +382,7 @@ def conta(request):
                     if not veiculo['tipo'] in r['spots'][spot.alias]:
                         r['spots'][spot.alias][veiculo['tipo']]=0
                     r['spots'][spot.alias][veiculo['tipo']]+=1
-                    mc.set('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['movie_id']),r)
+                    mc.set('contagem_%s_movie_%s' % (veiculo['contagem_id'], w['video_id']),r)
                     #{'total': {'pedestre': 1551}, 'spots': {'1': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '2': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '3': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}, '4': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}}, 'local': {'onibus': 0, 'bici': 0, 'brt': 0, 'moto': 0, 'microonibus': 0, 'pedestre': 0, 'vuc': 0, 'carro': 0, 'caminhao': 0}}
                 res[veiculo['local_id']]=True
     return JsonResponse(res);
