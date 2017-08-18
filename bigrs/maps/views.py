@@ -301,6 +301,7 @@ def update_contagem_from_cache(request):
         print("from cache")
     return JsonResponse(r)
 
+
 @login_required(login_url='/auth')
 def update_contagem_all(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
