@@ -30,7 +30,7 @@ table, th, td {
     <table style="border:">
         <tr>
 {%for c in headers%}
-            {%if forloop.counter0 > 3%}
+            {%if forloop.counter0 > 3 %}
             <td><img src="/static/images/icons/{{c}}.png" alt="{{nomes|item:forloop.counter0}}"></td>
             {%else%}
             <td>{{c}}</td>
@@ -38,6 +38,7 @@ table, th, td {
 {%endfor%}
         </tr>
 {%for r in records%}
+        {% autoescape off %}{{r|locator:uid}}{% endautoescape off %}
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}

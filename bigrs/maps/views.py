@@ -3,7 +3,7 @@ from django.db import connection
 from django.http import JsonResponse
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.decorators import login_required
-import json,memcache,re,calendar,os,numpy,unicodedata
+import json,memcache,re,calendar,os,numpy,unicodedata,requests
 import time as t_ime
 from datetime import date,datetime,timedelta
 from bigrs.settings import *
@@ -301,7 +301,6 @@ def update_contagem_from_cache(request):
         print("from cache")
     return JsonResponse(r)
 
-
 @login_required(login_url='/auth')
 def update_contagem_all(request):
     contagem=Contagem.objects.get(pk=request.POST.get('contagem_id'))
@@ -393,7 +392,7 @@ def lista_contagens_totais(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
+            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc,contagem_id FROM contagens_totais_por_local")
         r=cur.fetchall()
         return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
@@ -405,7 +404,7 @@ def lista_contagens_totais_xls(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc FROM contagens_totais_por_local")
+            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc,contagem_id FROM contagens_totais_por_local")
         r=cur.fetchall()
         c = Context({
             'records': r,
@@ -505,3 +504,16 @@ def jenks(request):
     [20.0, 32.327621, 63.396523, 118.00433, 226.11456, 480.0, 760.66864, 1640.0906]
 
     return JsonResponse(jenks(data,5),safe=False)
+
+def sentidos(request):
+    if not 'contagem_id' in request.GET:
+        return None
+    conn = connection.cursor().connection
+    cur = conn.cursor()
+    cur.execute("select st_asewkt(st_envelope(st_buffer(st_transform(location,31983),200))) from maps_contagem where id=%s", (request.GET.get('contagem_id'),))
+    r = cur.fetchone()
+    br=re.split("\,|\s|\(|\)",r[0])
+    bbox="%s, %s, %s, %s"%(br[2],br[3],br[6],br[5])
+    url="http://bigrs.alien9.net:8080/geoserver/BIGRS/wms?service=WMS&version=1.1.0&request=GetMap&layers=BIGRS:Flechas%20no%20Mapa&styles=&bbox="+bbox+"&width=900&height=900&srs=EPSG:31983&format=image/png&viewparams=contagem_id:"+request.GET.get('contagem_id')
+    i=requests.get(url)
+    return HttpResponse(i.content, content_type="image/png")

@@ -45,6 +45,7 @@ urlpatterns = [
     url(r'^search', views.search),
     url(r'^geocode', views.geocode),
     url(r'^jenks', views.jenks),
+    url(r'^sentidos$', views.sentidos),
     url(r'^socialauth-error', views.social_error),
     url('', include('social.apps.django_app.urls', namespace='social')),
 ]

@@ -18,7 +18,7 @@ def rowcolor(a, uid):
     d=m.group()
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
     old_day = mc.get('last_day_%s'%(uid,))
-    print("oi %s"%(old_day))
+    #print("oi %s"%(old_day))
     if old_day is not None:
         day,color=re.split("_",old_day)
         if day!=d:
@@ -30,4 +30,17 @@ def rowcolor(a, uid):
         color="#FFFFFF"
     mc.set('last_day_%s'%(uid,),"%s_%s"%(d,color))
     return color
+
+def locator(a, uid):
+    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
+    old_cont = mc.get('last_contagem_%s'%(uid,))
+    if old_cont is None:
+        old_cont=0
+    if old_cont != a[13]:
+        mc.set('last_contagem_%s' % (uid,), a[13])
+        return "<tr><td colspan=\"13\"><img src=\"/sentidos?contagem_id="+str(a[13])+"\" style=\"width:200px;height:200px;\"></td></tr>"
+    else:
+        return ""
+
+register.filter('locator', locator)
 register.filter('rowcolor', rowcolor)
