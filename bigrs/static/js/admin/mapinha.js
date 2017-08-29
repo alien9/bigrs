@@ -165,6 +165,8 @@ $(document).ready(function(){
                 "#id_spot_set-"+i+"-endereco_origem"
             ]);
         }
+        $("id_spot_set-"+i+"-geom").val(e.feature.geometry);
+        console.debug(e.feature.geometry);
         drawHeads();
     });
     var reverse_geocode_line=function(ps,textareas){

@@ -1,5 +1,10 @@
 from django.db import models
 from django.contrib.gis.db import models as gis_models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.gis.geos import Point, GEOSGeometry
+from django.db import connection
+
 import exifread,ffmpy,re,os
 from django.core.files.base import File
 
@@ -8,6 +13,8 @@ class Bairro(models.Model):
     def __str__(self):
         return self.nome
 class Contagem(models.Model):
+    def __str__(self):
+        return "%s: %s" % (self.bairro.nome, self.endereco)
     class Meta:
         verbose_name_plural = "Contagens"
         ordering = ['endereco']
@@ -49,6 +56,16 @@ class Spot(models.Model):
     geometry=models.TextField(max_length=2000)
     bi=models.BooleanField(default=False)
     keys = models.ManyToManyField("Key", blank=True)
+
+@receiver(post_save, sender=Spot)
+def my_handler(sender, **kwargs):
+    print('post save callback')
+    conn = connection.cursor().connection
+    cur = conn.cursor()
+    print(kwargs)
+    cur.execute(
+        "update maps_spot set geom=geomfromewkt(%s) where id=%s",('SRID=3857;'+kwargs['instance'].geometry,kwargs['instance'].id))
+    cur.close()
 
 class Key(models.Model):
     def __str__(self):

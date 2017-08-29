@@ -2,10 +2,14 @@
 # -*- coding: utf-8 -*-
 
 import ffmpy
-import re,glob,os
+import re,glob,os,sys
 
+if(len(sys.argv)==2):
+    dir=sys.argv[1]
+else:
+    dir='static/video'
 
-converts = [val for sublist in [[os.path.join(i[0], j) for j in i[2]] for i in os.walk('static/video')] for val in sublist if re.search("ASF$",val)]
+converts = [val for sublist in [[os.path.join(i[0], j) for j in i[2]] for i in os.walk(dir)] for val in sublist if re.search("ASF$",val)]
 print("Terei que converter %s arquivo(s)"%(len(converts)))
 for filename in converts:
     mp4=filename.replace('.ASF','.mp4')
