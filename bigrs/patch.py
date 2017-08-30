@@ -10,7 +10,12 @@ from maps.models import *
 from sys import argv
 from datetime import datetime,timedelta
 import ffmpy
-import re,glob,os
+import re,glob,os,sys
+
+root='static/video/'
+if len(sys.argv)>1:
+    root=sys.argv[1]
+print(root)
 
 contage_name=input('Selecione o ponto de contagem:\n')
 contagens=Contagem.objects.filter(endereco__icontains=contage_name).order_by('endereco')
@@ -34,7 +39,7 @@ while not selected:
 print("Escolheu o %s"%(selected.endereco))
 c=selected
 i=1
-l=listdir('static/video')
+l=listdir(root)
 l.sort()
 for directory in l:
     print("[%s] %s"%(i,directory))
@@ -98,7 +103,7 @@ while not da:
                     6,0,0)
     except ValueError:
         pass
-pa='static/video/'+dest
+pa=root+dest
 l=listdir(pa)
 l.sort()
 
@@ -142,7 +147,7 @@ def conserta_horarios(movies, dia, mes, ano):
         i+=1
 
 def cleanup():
-    result = [y for x in os.walk('static/video/') for y in glob(os.path.join(x[0], '*.mp4'))]
+    result = [y for x in os.walk(root) for y in glob(os.path.join(x[0], '*.mp4'))]
     movies=[str(m.movie) for m in Movie.objects.all()]
     for f in result:
         if not f in movies:

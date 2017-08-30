@@ -6,6 +6,37 @@
 {% endblock %}
 {%block scripts%}
 <script type="text/javascript" src="/static/js/lista.js?k={{timestamp}}"></script>
+<script type="text/javascript">
+function createCookie(name,value,days) {
+    var expires = "";
+    if (days) {
+        var date = new Date();
+        date.setTime(date.getTime() + (days*24*60*60*1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + value + expires + "; path=/";
+}
+
+function readCookie(name) {
+    var nameEQ = name + "=";
+    var ca = document.cookie.split(';');
+    for(var i=0;i < ca.length;i++) {
+        var c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    createCookie(name,"",-1);
+}
+
+    function setServer(){
+            console.debug($('input[name=servidor]').val());
+            createCookie('servidor',$('input[name=servidor]').val(),3000);
+    }
+</script>
 {%endblock%}
 {%block contents%}
 <body>
@@ -13,10 +44,11 @@
 {% include 'cabecalho.html' %}
 <div id="header_menu">
     <div style="" id="filters_box" >
-    <a href="javascript:void(0);">Contagens</a>
-    </div>
-    <div style="">
-    <a href="javascript:void(0);">Servidor:</a>
+        <div class="contagens menu">
+            <a href="javascript:void(0);">Contagens</a>
+        </div>
+        <div class="servidor menu"><a href="javascript:void(0);">Servidor:<input  type="text" name="servidor" value="{{SERVER}}" onchange="setServer();"/></a></div>
+
     </div>
 </div>
 </div>

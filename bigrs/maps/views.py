@@ -210,12 +210,17 @@ def contador(request,contador_id):
     tipos={"7":"moto","8":"pedestre","9":"bici","4":"microonibus","5":"onibus","6":"brt","1":"vuc","2":"caminhao","0":"carro"}
     dia=request.GET.get('dia',None)
     print(request.user.groups.filter(name__in=['Chefatura da Contagem']).exists())
+
+    server = VIDEO_URL_ROOT
+    if 'servidor' in request.COOKIES:
+        server = request.COOKIES.get('servidor')
+
     return render(request,'contador.html', {
         'contagem':contagem,
         'spots':contagem.spot_set.all(),
         'contados':contagem.contado_set.all(),
         'tipos':tipos,'json_tipos':json.dumps(tipos),
-        'root':VIDEO_URL_ROOT,
+        'root':server,
         'geoserver':geoserver,
         'timestamp':DEPLOY_VERSION,
         'videos':contagem.movie_set.filter(is_valid=True,is_contado=False).order_by('data_e_hora_inicio'),
@@ -246,9 +251,12 @@ def teclado(request):
 def lista_contagens(request):
     if not request.user.is_authenticated:
         return render(request,'login.html')
+    server=VIDEO_URL_ROOT
+    if 'servidor' in request.COOKIES:
+        server=request.COOKIES.get('servidor')
     bairros=Bairro.objects.all()
     contagens=Contagem.objects.all()
-    return render(request,'lista.html',{'contagens':contagens,'bairros':bairros,'timestamp':DEPLOY_VERSION})
+    return render(request,'lista.html',{'contagens':contagens,'bairros':bairros,'timestamp':DEPLOY_VERSION,'SERVER':server})
 
 @login_required(login_url='/auth')
 def update_contagens(request):
