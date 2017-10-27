@@ -137,6 +137,7 @@ videos.push({url:'{{m.movie}}',id:{{m.id}}, date:'{{m.data_e_hora_inicio|datinha
 
 {% endautoescape %}
     GEOSERVER='{{geoserver}}';
+    MAP_CENTER=[-46.5,-23.5];
     {%if contagem.location != None %}
     MAP_CENTER=[{{contagem.location.x}},{{contagem.location.y}}];
     {%endif%}

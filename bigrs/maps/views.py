@@ -400,7 +400,8 @@ def lista_contagens_totais(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc,contagem_id FROM contagens_totais_por_local")
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);"
+        )
         r=cur.fetchall()
         return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
@@ -412,7 +413,8 @@ def lista_contagens_totais_xls(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "SELECT bairro,endereco, data, sentido, carro, moto, caminhao, microonibus, bicicleta, onibus, brt, pedestre, vuc,contagem_id FROM contagens_totais_por_local")
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int,onibus int,brt int, pedestre int,vuc int,id int);"
+        )
         r=cur.fetchall()
         c = Context({
             'records': r,

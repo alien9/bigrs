@@ -8,6 +8,8 @@ def datinha(value):
 register.filter('datinha', datinha)
 
 def item(a,i):
+    if a[i] is None:
+        return 0
     return a[i]
 register.filter('item', item)
 
@@ -34,11 +36,13 @@ def rowcolor(a, uid):
 def locator(a, uid):
     mc = memcache.Client(['127.0.0.1:11211'], debug=0)
     old_cont = mc.get('last_contagem_%s'%(uid,))
+    if old_cont=='None':
+        old_cont=0
     if old_cont is None:
         old_cont=0
     if old_cont != a[13]:
         mc.set('last_contagem_%s' % (uid,), a[13])
-        return "<tr><td colspan=\"13\"><img src=\"/sentidos?contagem_id="+str(a[13])+"\" style=\"width:200px;height:200px;\"></td></tr>"
+        return "<td rowspan=\"5\"><img src=\"/sentidos?contagem_id="+str(a[13])+"\" style=\"width:200px;height:200px;\"></td>"
     else:
         return ""
 

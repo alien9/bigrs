@@ -36,9 +36,10 @@ table, th, td {
             <td>{{c}}</td>
             {%endif%}
 {%endfor%}
+            <td>mapa</td>
         </tr>
 {%for r in records%}
-        {% autoescape off %}{{r|locator:uid}}{% endautoescape off %}
+
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}
@@ -48,6 +49,7 @@ table, th, td {
             {%endif%}
 
 {%endfor%}
+            {% autoescape off %}{{r|locator:uid}}{% endautoescape off %}
         </tr>
 {%endfor%}
     </table>

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from os import walk,listdir,environ
-import django
+import django,re
 
 environ.setdefault("DJANGO_SETTINGS_MODULE", "bigrs.settings")
 django.setup()
@@ -90,6 +90,40 @@ horarios=(
     (18, 45),
     (19, 0),
 )
+horarios_limpos=(
+    (6, 0),
+    (6, 15),
+    (6, 30),
+    (6, 45),
+    (7, 0),
+    (7, 15),
+    (7, 30),
+    (7, 45),
+    (8, 0),
+    (8, 15),
+    (8, 30),
+    (8, 45),
+    (12, 0),
+    (12, 15),
+    (12, 30),
+    (12, 45),
+    (13, 0),
+    (13, 15),
+    (13, 30),
+    (13, 45),
+    (16, 0),
+    (16, 15),
+    (16, 30),
+    (16, 45),
+    (17, 0),
+    (17, 15),
+    (17, 30),
+    (17, 45),
+    (18, 0),
+    (18, 15),
+    (18, 30),
+    (18, 45),
+)
 da=None
 while not da:
     try:
@@ -156,6 +190,51 @@ def cleanup():
             if not os.path.isdir('/home/tiago/temp/'+dir):
                 os.makedirs('/home/tiago/temp/'+dir)
             os.rename(f, '/home/tiago/temp/'+f)
+result = [os.path.join(dp, f) for dp, dn, filenames in os.walk("/media/tiago/Seagate/LAPA") for f in filenames if os.path.splitext(f)[1] == '.mp4']
+result.sort()
+bairro=Bairro.objects.last()
+
+def pseudo_import(l):
+    i=0
+    old_day=99
+    for f in l:
+        ## /media/tiago/Seagate/LAPA/LA_P7B_2017_05_27/00000114.mp4'"
+        s=re.search("LAPA\/LA_([^_]+)_([^_]+)_([^_]+)_([^_]+)\/(.*)",f)
+        if s is not None:
+            movie=s.group()
+            nome_contagem=s.group(1)
+            contagens=Contagem.objects.filter(endereco=nome_contagem,bairro=bairro)
+            if len(contagens) ==0:
+                print("crie contagem %s"%(nome_contagem))
+                contagem=Contagem(endereco=nome_contagem,bairro=bairro)
+                contagem.save()
+            else:
+                contagem=contagens[0]
+
+            ano=int(s.group(2))
+            mes=int(s.group(3))
+            dia=int(s.group(4))
+            if dia!=old_day:
+                i=0
+            old_day=dia
+            da=datetime(ano,mes,dia,horarios_limpos[i][0],horarios_limpos[i][1])
+            movies=Movie.objects.filter(contagem=contagem, movie=movie, data_e_hora_inicio=da)
+            if len(movies)==0:
+                print("movie nao ecsiste")
+                m = Movie(contagem=contagem, movie=movie, data_e_hora_inicio=da)
+                m.save()
+            i+=1
+            if i==32:
+                i=0
+            print("movie %s  -  contagem %s"%(movie,nome_contagem,))
+
+
+
+    for dir in l:
+        print(dir)
+        if re.match("^LA_.*"):
+            print("este vai")
+            files=listdir()
 
 
 def import_veiculos():
