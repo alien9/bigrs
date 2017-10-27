@@ -525,7 +525,7 @@ def sentidos(request):
     #    "select st_asewkt(st_envelope(st_buffer(st_transform(location,31983),200))) from maps_contagem where id=%s",
     #    (request.GET.get('contagem_id'),))
     cur.execute(
-        "select st_asewkt(st_envelope(st_buffer(st_eXTENT(st_transform(geom,31983)),20))) from maps_spot where contagem_id=%s",
+        "select st_asewkt(st_envelope(st_buffer(st_eXTENT(st_transform(geomfromewkt('SRID=3857;'||geometry),31983)),20))) from maps_spot where contagem_id=%s",
         (request.GET.get('contagem_id'),))
 
     r = cur.fetchone()
