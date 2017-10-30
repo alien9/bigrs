@@ -38,19 +38,22 @@ table, th, td {
 {%endfor%}
             <td>mapa</td>
         </tr>
-{%for r in records%}
 
+{%for records in result%}
+{%for r in records%}
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}
-            <td  style="background-color:{{r|rowcolor:uid}}" class="numbercell">{{r|item:forloop.counter0}}</td>
+            <td class="numbercell">{{r|item:forloop.counter0}}</td>
             {%else%}
-            <td style="background-color:{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
+            <td >{{r|item:forloop.counter0}}</td>
             {%endif%}
-
 {%endfor%}
-            {% autoescape off %}{{r|locator:uid}}{% endautoescape off %}
+            {%if forloop.counter0 == 0 %}
+            <td rowspan="10" style="vertical-align:top;border:none"><img style="width:200px;height:200px;" src="/sentidos?contagem_id={{r|item:13}}"></td>
+            {%endif%}
         </tr>
+{%endfor%}
 {%endfor%}
     </table>
 </div>

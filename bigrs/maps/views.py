@@ -397,34 +397,47 @@ def conta(request):
 @login_required(login_url='/auth')
 def lista_contagens_totais(request):
     if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
+        contagens=Contagem.objects.all()
+        result=[]
         conn = connection.cursor().connection
         cur = conn.cursor()
-        cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);"
-        )
-        r=cur.fetchall()
-        return render(request, 'lista_contagens.html', {'records':r,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
+        for c in contagens:
+            cur.execute(
+                "select * from bigrs.report_contagem(%s) f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);",
+                (str(c.id),)
+            )
+            result.append(cur.fetchall())
+        print(result)
+        return render(request, 'lista_contagens.html', {'result':result,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
         return render(request, 'login.html')
 
 @login_required(login_url='/auth')
 def lista_contagens_totais_xls(request):
     if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
+        contagens=Contagem.objects.all()
+        result=[]
         conn = connection.cursor().connection
         cur = conn.cursor()
-        cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int,onibus int,brt int, pedestre int,vuc int,id int);"
-        )
-        r=cur.fetchall()
-        c = Context({
-            'records': r,
-        })
+        for c in contagens:
+            cur.execute(
+                "select * from bigrs.report_contagem(%s) f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);",
+                (str(c.id),)
+            )
+            result.append(cur.fetchall())
+        #cur.execute(
+        #    "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int,onibus int,brt int, pedestre int,vuc int,id int);"
+        #)
+        #r=cur.fetchall()
+        #c = Context({
+        #    'records': r,
+        #})
         t = loader.get_template('skeleton.xml')
         response = HttpResponse(content_type='application/ms-excel')
         d=date.today()
         da=d.strftime("%Y_%m_%d")
         response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
-        response.write(t.render({'records': r,'headers':HEADERS,"nomes":NOMES,'uid':request.user.id}))
+        response.write(t.render({'result': result,'headers':HEADERS,"nomes":NOMES,'uid':request.user.id}))
         return response
         #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
     else:
@@ -534,3 +547,5 @@ def sentidos(request):
     url="http://bigrs.alien9.net:8080/geoserver/BIGRS/wms?service=WMS&version=1.1.0&request=GetMap&layers=BIGRS:Flechas%20no%20Mapa&styles=&bbox="+bbox+"&width=900&height=900&srs=EPSG:31983&format=image/png&viewparams=contagem_id:"+request.GET.get('contagem_id')
     i=requests.get(url)
     return HttpResponse(i.content, content_type="image/png")
+
+#def mapas(request):
