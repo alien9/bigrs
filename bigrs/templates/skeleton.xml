@@ -59,17 +59,13 @@ xmlns="http://www.w3.org/TR/REC-html40">
 </thead>
 
 <tbody>
-{%for records in result%}
-{%for r in records%}
+{%for r in result%}
 <tr>
    {%for c in headers%}
-   <td bgcolor="{{r|rowcolor:uid}}">{{r|item:forloop.counter0}}</td>
+   <td bgcolor="{{r|rowcolor}}">{{r|item:forloop.counter0}}</td>
    {%endfor%}
-   {%if forloop.counter0 == 0 %}
-   <td rowspan="10" style="vertical-align:top;border:none"><img style="width:200px;height:200px;" src="/sentidos?contagem_id={{r|item:13}}"></td>
-   {%endif%}
+   {% autoescape off %}{{r|locator}}{% endautoescape %}
 </tr>
-{%endfor%}
 {%endfor%}
 </tbody>
 

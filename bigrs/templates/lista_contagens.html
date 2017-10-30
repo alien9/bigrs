@@ -39,21 +39,17 @@ table, th, td {
             <td>mapa</td>
         </tr>
 
-{%for records in result%}
-{%for r in records%}
+{%for r in result%}
         <tr>
 {%for c in headers%}
             {%if forloop.counter0 > 3%}
-            <td class="numbercell">{{r|item:forloop.counter0}}</td>
+            <td style="background-color:{{r|rowcolor}}" class="numbercell">{{r|item:forloop.counter0}}</td>
             {%else%}
-            <td >{{r|item:forloop.counter0}}</td>
+            <td style="background-color:{{r|rowcolor}}">{{r|item:forloop.counter0}}</td>
             {%endif%}
 {%endfor%}
-            {%if forloop.counter0 == 0 %}
-            <td rowspan="10" style="vertical-align:top;border:none"><img style="width:200px;height:200px;" src="/sentidos?contagem_id={{r|item:13}}"></td>
-            {%endif%}
+            {% autoescape off %}{{r|locator}}{% endautoescape %}
         </tr>
-{%endfor%}
 {%endfor%}
     </table>
 </div>

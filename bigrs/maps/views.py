@@ -397,17 +397,14 @@ def conta(request):
 @login_required(login_url='/auth')
 def lista_contagens_totais(request):
     if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
-        contagens=Contagem.objects.all()
+        contagens=Contagem.objects.all().order_by('bairro__nome','endereco')
         result=[]
         conn = connection.cursor().connection
         cur = conn.cursor()
-        for c in contagens:
-            cur.execute(
-                "select * from bigrs.report_contagem(%s) f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);",
-                (str(c.id),)
-            )
-            result.append(cur.fetchall())
-        print(result)
+        cur.execute(
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int,rowcolor text,image text);"
+        )
+        result=cur.fetchall()
         return render(request, 'lista_contagens.html', {'result':result,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
     else:
         return render(request, 'login.html')
@@ -415,16 +412,14 @@ def lista_contagens_totais(request):
 @login_required(login_url='/auth')
 def lista_contagens_totais_xls(request):
     if request.user.groups.filter(name__in=['Chefatura da Contagem']).exists():
-        contagens=Contagem.objects.all()
+        contagens=Contagem.objects.all().order_by('bairro__nome','endereco')
         result=[]
         conn = connection.cursor().connection
         cur = conn.cursor()
-        for c in contagens:
-            cur.execute(
-                "select * from bigrs.report_contagem(%s) f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int);",
-                (str(c.id),)
-            )
-            result.append(cur.fetchall())
+        cur.execute(
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int,rowcolor text,image text);"
+        )
+        result=cur.fetchall()
         #cur.execute(
         #    "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int,onibus int,brt int, pedestre int,vuc int,id int);"
         #)
@@ -532,6 +527,7 @@ def sentidos(request):
     if not 'contagem_id' in request.GET:
         contagens=Contagem.objects.all()
         return render(request,'sentidos.html', {'contagens':contagens})
+    contagem=Contagem.objects.get(pk=request.GET.get('contagem_id'))
     conn = connection.cursor().connection
     cur = conn.cursor()
     #cur.execute(
@@ -540,12 +536,13 @@ def sentidos(request):
     cur.execute(
         "select st_asewkt(st_envelope(st_buffer(st_eXTENT(st_transform(geomfromewkt('SRID=3857;'||geometry),31983)),20))) from maps_spot where contagem_id=%s",
         (request.GET.get('contagem_id'),))
-
     r = cur.fetchone()
     br=re.split("\,|\s|\(|\)",r[0])
     bbox="%s, %s, %s, %s"%(br[2],br[3],br[6],br[5])
     url="http://bigrs.alien9.net:8080/geoserver/BIGRS/wms?service=WMS&version=1.1.0&request=GetMap&layers=BIGRS:Flechas%20no%20Mapa&styles=&bbox="+bbox+"&width=900&height=900&srs=EPSG:31983&format=image/png&viewparams=contagem_id:"+request.GET.get('contagem_id')
     i=requests.get(url)
-    return HttpResponse(i.content, content_type="image/png")
+    hr=HttpResponse(i.content, content_type="image/png")
+    hr["content-disposition"] = "attachment; filename=\"%s_%s.png\""%(contagem.bairro.nome,contagem.endereco,);
 
-#def mapas(request):
+    return hr
+

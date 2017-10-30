@@ -13,36 +13,12 @@ def item(a,i):
     return a[i]
 register.filter('item', item)
 
-def rowcolor(a, uid):
-    m=re.search("^\d+",a[2])
-    if m is None:
-        return ""
-    d=m.group()
-    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-    old_day = mc.get('last_day_%s'%(uid,))
-    #print("oi %s"%(old_day))
-    if old_day is not None:
-        day,color=re.split("_",old_day)
-        if day!=d:
-            if color=="#FFFFFF":
-                color="#D3D3D3"
-            else:
-                color="#FFFFFF"
-    else:
-        color="#FFFFFF"
-    mc.set('last_day_%s'%(uid,),"%s_%s"%(d,color))
-    return color
+def rowcolor(a):
+    return a[14]
 
-def locator(a, uid):
-    mc = memcache.Client(['127.0.0.1:11211'], debug=0)
-    old_cont = mc.get('last_contagem_%s'%(uid,))
-    if old_cont=='None':
-        old_cont=0
-    if old_cont is None:
-        old_cont=0
-    if old_cont != a[13]:
-        mc.set('last_contagem_%s' % (uid,), a[13])
-        return "<td rowspan=\"5\"><img src=\"/sentidos?contagem_id="+str(a[13])+"\" style=\"width:200px;height:200px;\"></td>"
+def locator(a):
+    if a[15]!="":
+        return "<td rowspan=\"15\" style=\"vertical-align:top;border:none\"><img src=\"/sentidos?contagem_id="+str(a[13])+"\" style=\"width:200px;height:200px;\"></td>"
     else:
         return ""
 
