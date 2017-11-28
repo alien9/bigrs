@@ -51,10 +51,7 @@ $(document).ready(function(){
           (zoomLevel < 22 ));
     }
     map.addLayer(tiled);
-    zoom=17;
-
-
-
+    zoom=parseInt($("#id_zoom").val());
     var labellayer = new OpenLayers.Layer.WMS( "Labels",
                     "http://bigrs.alien9.net:8080/geoserver/BIGRS/wms",
                     {
@@ -212,6 +209,7 @@ $(document).ready(function(){
     });
     map.events.register("zoomend", map, function(e){
         drawHeads();
+        $("#id_zoom").val(map.getZoom());
     });
 });
 })(django.jQuery);

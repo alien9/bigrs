@@ -21,6 +21,7 @@ class Contagem(models.Model):
     endereco=models.TextField(max_length = 100)
     location=gis_models.PointField(srid=4326,blank=True,null=True)
     bairro=models.ForeignKey(Bairro,null=True)
+    zoom=models.IntegerField(default=17,null=False)
     def get_dias(self):
         resp={}
         for d in [(duh.year,duh.month,duh.day) for duh in self.movie_set.filter(is_valid=True).values_list('data_e_hora_inicio', flat=True)]:

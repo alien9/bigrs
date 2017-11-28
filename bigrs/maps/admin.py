@@ -8,7 +8,6 @@ class SpotInline(admin.TabularInline):
     model=Spot
 
     def get_form(self, request, obj=None, **kwargs):
-        print("getting form")
         form = super(SpotInline, self).get_form(request, obj, **kwargs)
         return form
 

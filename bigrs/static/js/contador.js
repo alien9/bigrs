@@ -71,7 +71,7 @@ function start(){
                         LAYERS: 'BIGRS:labels',
                     isBaselayer: false, transparent: true});
     map.addLayer(labellayer);
-    map.setCenter(new OpenLayers.LonLat(MAP_CENTER).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), 17);
+    map.setCenter(new OpenLayers.LonLat(MAP_CENTER).transform(new OpenLayers.Projection("EPSG:4326"), new OpenLayers.Projection("EPSG:900913")), MAP_ZOOM);
     vectors = new OpenLayers.Layer.Vector("Travels", {
             styleMap: new OpenLayers.StyleMap({'default':{
                 fillOpacity: 0.5,

@@ -29,6 +29,12 @@ NOMES=[
     "Bicicleta",
 ]
 
+def get_deploy_version():
+    if DEBUG:
+        from time import time
+        return time()
+    else:
+        return DEPLOY_VERSION
 @login_required(login_url='/auth')
 def index(request):
     u=request.user
@@ -53,7 +59,7 @@ def index(request):
         ano=r[0]
         mc.set('mes',mes)
         mc.set('ano',ano)
-    return render(request, "index.html",{'timestamp':DEPLOY_VERSION,'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
+    return render(request, "index.html",{'timestamp':get_deploy_version(),'geoserver':geoserver,'mes':int(mes),'ano':int(ano),'user':request.user})
 
 def geojson(request):
     conn = connection.cursor().connection #psycopg2.connect(cstring)
@@ -222,7 +228,7 @@ def contador(request,contador_id):
         'tipos':tipos,'json_tipos':json.dumps(tipos),
         'root':server,
         'geoserver':geoserver,
-        'timestamp':DEPLOY_VERSION,
+        'timestamp':get_deploy_version(),
         'videos':contagem.movie_set.filter(is_valid=True,is_contado=False).order_by('data_e_hora_inicio'),
         'dia':dia,
         'mostra_data':request.user.groups.filter(name__in=['Chefatura da Contagem']).exists(),
@@ -245,7 +251,7 @@ def destroy_video_count(request):
 @login_required(login_url='/auth')
 def teclado(request):
     teclas = {"7": "moto", "8": "pedestre", "9": "bici", "4": "microonibus", "5": "onibus", "6": "brt", "1": "vuc","2": "caminhao", "0": "carro"}
-    return render(request,'teclado.html',{'teclas':teclas,'timestamp':DEPLOY_VERSION,})
+    return render(request,'teclado.html',{'teclas':teclas,'timestamp':get_deploy_version(),})
 
 @login_required(login_url='/auth')
 def lista_contagens(request):
@@ -256,7 +262,7 @@ def lista_contagens(request):
         server=request.COOKIES.get('servidor')
     bairros=Bairro.objects.all()
     contagens=Contagem.objects.all()
-    return render(request,'lista.html',{'contagens':contagens,'bairros':bairros,'timestamp':DEPLOY_VERSION,'SERVER':server})
+    return render(request,'lista.html',{'contagens':contagens,'bairros':bairros,'timestamp':get_deploy_version(),'SERVER':server})
 
 @login_required(login_url='/auth')
 def update_contagens(request):
@@ -451,7 +457,7 @@ def auth(request):
         login(request, user)
         return redirect(index)
     else:
-        return render(request,t,{'timestamp':DEPLOY_VERSION})
+        return render(request,t,{'timestamp':get_deploy_version()})
 
 
 def log_out(request):
@@ -545,4 +551,3 @@ def sentidos(request):
     hr["content-disposition"] = "attachment; filename=\"%s_%s.png\""%(contagem.bairro.nome,contagem.endereco,);
 
     return hr
-
