@@ -20,7 +20,7 @@ TIPOS_COLISAO={
 }
 
 
-username=raw_input("Usuário:")
+username=input("Usuário:")
 password=getpass.getpass("Senha:")
 
 def extract(csv_path):
@@ -41,37 +41,38 @@ r=client.get(URL+"/api/recordtypes/?active=True&format=json",cookies=r.cookies,h
 j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
-for record in extract("~/acidentes_sp_2010_a_2015.csv"):
-    print(record)
-dia, mes, ano= record['data'].split('/')
-hora, minuto= record['hora'].split(':')
-stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
-occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
-#point = ogr.Geometry(ogr.wkbPoint)
-#point.AddPoint(float(record['X']), float(record['Y']))
-#point.FlattenTo2D()
-tipo=None
-if record['tipo_acide'] in TIPOS_COLISAO:
-    tipo=TIPOS_COLISAO[record['tipo_acide']]
-obj = {
-    'data': {
-        'incidentDetails': {
-            "Tipo de Colisão":tipo,
-            "acidente_id":record['id_acident'],
+record=None
+for r in extract("acidentes_sp_2010_a_2015.csv"):
+    record=r
+    dia, mes, ano= record['data'].split('/')
+    hora, minuto= record['hora'].split(':')
+    stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
+    occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
+    #point = ogr.Geometry(ogr.wkbPoint)
+    #point.AddPoint(float(record['X']), float(record['Y']))
+    #point.FlattenTo2D()
+    tipo=None
+    if record['tipo_acide'] in TIPOS_COLISAO:
+        tipo=TIPOS_COLISAO[record['tipo_acide']]
+    obj = {
+        'data': {
+            'incidentDetails': {
+                "Tipo de Colisão":tipo,
+                "acidente_id":record['id_acident'],
+            },
+            'person': [],
+            'vehicle': []
         },
-        'person': [],
-        'vehicle': []
-    },
-    'schema': str(r.json()['uuid']),
-    'occurred_from': occurred_date.isoformat(),
-    'occurred_to': occurred_date.isoformat(),
-    'geom': "SRID=4326;POINT(%s %s)"%(float(record['X']), float(record['Y']), ),
-}
-response = client.post(URL + '/api/records/',
-                       json=obj,
-                       headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
-                       cookies=cookies,)
+        'schema': str(j['uuid']),
+        'occurred_from': occurred_date.isoformat(),
+        'occurred_to': occurred_date.isoformat(),
+        'geom': "SRID=4326;POINT(%s %s)"%(float(record['X']), float(record['Y']), ),
+    }
+    response = client.post(URL + '/api/records/',
+                           json=obj,
+                           headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
+                           cookies=cookies,)
+    print(response.content)
 
-print(response)
     #X,Y,id_acident,data,Ano,X,Y,hora,cod_acid,tipo_acide,carros,caminhao,bicicleta,moto,onibusmicr,van,vuc,carreta,carroca,outros,sem_inform,feridos,mortos
 
