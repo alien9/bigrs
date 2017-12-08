@@ -26,8 +26,8 @@ TIPOS_COLISAO={
     "SI":"Sem informações",
 }
 
-username="tiago" #input("Usuário:")
-password="peganingas" #getpass.getpass("Senha:")
+username=input("Usuário:")
+password=getpass.getpass("Senha:")
 
 def extract(csv_path, delimiter=','):
     """Simply pulls rows into a DictReader"""
@@ -73,6 +73,8 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
             severidade="Ferimento"
         else:
             severidade="Danos Materiais"
+    num_vitimas=int(record['mortos'])+int(record['feridos']) 
+    print(num_vitimas)
     num_veiculos=0
     for key in [
         "carros",
@@ -96,6 +98,7 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
                 "Severidade": severidade,
                 "Veículos": num_veiculos,
                 "Número de Veículos": num_veiculos,
+                "Número de Vítimas": num_vitimas,
             },
             'person': [],
             'vehicle': []
@@ -112,7 +115,7 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
                            headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
                            cookies=cookies,)
 
-#    print(response)
+    print(response)
     #X,Y,id_acident,data,Ano,X,Y,hora,cod_acid,tipo_acide,carros,caminhao,bicicleta,moto,onibusmicr,van,vuc,carreta,carroca,outros,sem_inform,feridos,mortos
 n=0
 print("Veículos")
@@ -127,6 +130,7 @@ for record in extract("./maps/Veiculos2010.csv", "\t"):
         incident=j['results'][0]
         if incident['data']['driverVehicle'] is None:
             incident['data']['driverVehicle']=[]
+"""
         incident['data']['driverVehicle'].append({
 "Sobrecarregado"
 Chassis
@@ -172,3 +176,4 @@ _localId
         :
         {Falha: "Luzes", Tipo de Veículo: "Carro", Manobra: "Ré", Danos: "Traseira", Seguro: "",…}
         })
+"""

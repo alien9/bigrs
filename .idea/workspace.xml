@@ -154,10 +154,6 @@
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DRIVER/web/test/spec/views/record/list-directive.spec.js" afterPath="$PROJECT_DIR$/../DRIVER/web/test/spec/views/record/list-directive.spec.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DRIVER/web/test/spec/weather/weather-label.spec.js" afterPath="$PROJECT_DIR$/../DRIVER/web/test/spec/weather/weather-label.spec.js" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/../DRIVER/web/test/spec/weather/weather-service.spec.js" afterPath="$PROJECT_DIR$/../DRIVER/web/test/spec/weather/weather-service.spec.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="$PROJECT_DIR$/.idea/modules.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/import_sat.py" afterPath="$PROJECT_DIR$/import_sat.py" />
     </list>
     <ignored path="bigrs.iws" />
     <ignored path=".idea/workspace.xml" />
