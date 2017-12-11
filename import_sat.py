@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import re, requests, getpass, csv, json, uuid
+import re, requests, getpass, csv, json, uuid, glob
 from dateutil import parser
 from dateutil.tz import gettz
 import pytz #,ogr
@@ -25,9 +25,46 @@ TIPOS_COLISAO={
     "OU":"Outros",
     "SI":"Sem informações",
 }
-
-username=input("Usuário:")
-password=getpass.getpass("Senha:")
+TIPOS_VEICULO={
+    "AU":"Auto",
+    "MO":"Moto",
+    "ON":"Ônibus",
+    "CA":"Caminhão",
+    "BI":"Bicicleta",
+    "MT":"Moto Táxi",
+    "OF":"Ônibus Fretado/Internmunicipal",
+    "OU":"Ônibus Urbano",
+    "MC":"Microônibus",
+    "VA":"Van",
+    "VC":"Vuc",
+    "CM":"Caminhonete/Camioneta",
+    "CR":"Carreta",
+    "JI":"Jipe",
+    "OT":"Outros",
+    "SI":"Sem Informação",
+    "CO":"Carroça",
+}
+TIPOS_VITIMA={
+    "CD":"Condutor",
+    "PS":"passageiro",
+    "PD":"Pedestre",
+    "OU":"OUtros",
+    "SI":"Sem Informação",
+}
+CLASS_VITIMA={
+    "F":"Ferida",
+    "M":"Morta",
+}
+GENERO={
+    "M":"Masculino",
+    "F":"Feminino",
+}
+CLASSIFICACAO={
+    "F":"Grave",
+    "M":"Fatal",
+}
+username="tiago" #input("Usuário:")
+password="peganingas" #getpass.getpass("Senha:")
 
 def extract(csv_path, delimiter=','):
     """Simply pulls rows into a DictReader"""
@@ -49,11 +86,12 @@ j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
 n=0
+"""
 for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
     print(record)
     n+=1
-    if n>20:
-        break
+    #if n>20:
+    #    break
 
     dia, mes, ano= record['data'].split('/')
     hora, minuto= record['hora'].split(':')
@@ -93,12 +131,11 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
     obj = {
         'data': {
             'driverIncidentDetails': {
-                "Tipo de Colisão":tipo,
+                "Tipo de Incidente":tipo,
                 "acidente_id":record['id_acident'],
                 "Severidade": severidade,
                 "Veículos": num_veiculos,
-                "Número de Veículos": num_veiculos,
-                "Número de Vítimas": num_vitimas,
+                "Vítimas": num_vitimas,
             },
             'person': [],
             'vehicle': []
@@ -117,20 +154,109 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
 
     print(response)
     #X,Y,id_acident,data,Ano,X,Y,hora,cod_acid,tipo_acide,carros,caminhao,bicicleta,moto,onibusmicr,van,vuc,carreta,carroca,outros,sem_inform,feridos,mortos
-n=0
-print("Veículos")
-for record in extract("./maps/Veiculos2010.csv", "\t"):
-    n+=1
-    if n > 40:
-        break
-    print(record)
-    r=client.get(URL+"/api/records/?jsonb={%22driverIncidentDetails%22:{%22acidente_id%22:{%22_rule_type%22:%22containment%22,%22contains%22:[%22"+record['id_acidente']+"%22]}}}")
-    j=r.json()
-    if int(j['count'])==1:
-        incident=j['results'][0]
-        if incident['data']['driverVehicle'] is None:
-            incident['data']['driverVehicle']=[]
 """
+n=0
+
+print("Veículos")
+for file in glob.glob("./maps/Veiculos*.csv"):
+    for record in extract(file, "\t"):
+        n+=1
+        #if n > 40:
+        #    break
+        print(record)
+        r=client.get(URL+"/api/records/?jsonb={%22driverIncidentDetails%22:{%22acidente_id%22:{%22_rule_type%22:%22containment%22,%22contains%22:[%22"+record['id_acidente']+"%22]}}}")
+        j=r.json()
+        if int(j['count'])==1:
+            print("ENCONTRADA")
+            incident=j['results'][0]
+            if not 'driverVehicle' in incident['data']:
+                incident['data']['driverVehicle']=[]
+            if record['tipo_veiculo'] in TIPOS_VEICULO:
+                tipo = TIPOS_VEICULO[record['tipo_veiculo']]
+            else:
+                tipo="Sem Informação"
+            veiculo={
+                "Tipo de Veículo":tipo,
+                "Placa":record["placa"],
+            }
+            _add_local_id(veiculo)
+            incident['data']['driverVehicle'].append(veiculo)
+            print(veiculo)
+            response = client.patch(URL + '/api/records/'+incident['uuid']+"/?archived=False",
+               json=incident,
+               headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
+               cookies=cookies,)
+            print(response)
+        else:
+            print("NAO ENCONTRADA")
+
+n=0
+print("Vítimas")
+for file in glob.glob("./maps/Vitimas*.csv"):
+    for record in extract(file, "\t"):
+        n+=1
+        #if n > 40:
+        #    break
+        print(record)
+        r = client.get(
+            URL + "/api/records/?jsonb={%22driverIncidentDetails%22:{%22acidente_id%22:{%22_rule_type%22:%22containment%22,%22contains%22:[%22" +
+            record['id_acidente'] + "%22]}}}")
+        j = r.json()
+        if int(j['count']) == 1:
+            print("ENCONTRADA")
+            incident=j['results'][0]
+            print(incident)
+            if not 'driverPerson' in incident['data']:
+                incident['data']['driverPerson']=[]
+            tipo="Sem Informação"
+            if record['tipo_vitima'] in TIPOS_VITIMA:
+                tipo=TIPOS_VITIMA[record['tipo_vitima']]
+            condicao="Ileso"
+            if record["classificacao"] in CLASSIFICACAO:
+                condicao=CLASSIFICACAO[record["classificacao"]]
+            veiculo=None
+            if 'id_veiculo' in record:
+                if len(record['id_veiculo']) > 0:
+                    vid=int(record['id_veiculo'])-1
+                    if len(incident['data']['driverVehicle']) > vid:
+                        veiculo=incident['data']['driverVehicle'][vid]['_localId']
+                        print("O veículo é %s"%(veiculo,))
+            person={
+                "Tipo de vítima":tipo,
+                "Veículo":veiculo,
+                "Idade":record["idade"],
+                "Gênero":record['sexo'],
+                "Condição":condicao,
+            }
+            _add_local_id(person)
+            incident['data']['driverPerson'].append(person)
+            print(person)
+            response = client.patch(URL + '/api/records/'+incident['uuid']+"/?archived=False",
+               json=incident,
+               headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
+               cookies=cookies,)
+            print(response)
+
+"""
+
+CD - Condutor
+PS - Passageiro
+PD - Pedestre
+OU - Outros
+SI - Sem Informação
+
+{'id_acidente': 'D011000033',
+ 'classificacao': 'F',
+ 'estado_alcoolizacao': 'BR',
+ 'data': '          ',
+ 'escolaridade': '8',
+ 'tipo_veiculo': 'AU',
+ 'tipo_vitima': 'PD',
+ 'sexo': 'M',
+ 'idade': 'SI',
+ 'id_veiculo': '01',
+ 'id_vitima': '001'}
+
         incident['data']['driverVehicle'].append({
 "Sobrecarregado"
 Chassis
