@@ -1,0 +1,71 @@
+!table
+!version 1000
+!charset WindowsLatin1
+
+Definition Table
+  Type NATIVE Charset "WindowsLatin1"
+  Fields 58
+    id_acidente Char (20) ;
+    cadloga Char (10) ;
+    logradouro_a Char (70) ;
+    cadlogb Char (10) ;
+    logradouro_b Char (70) ;
+    alt_num Char (10) ;
+    referencia Char (30) ;
+    data DateTime ;
+    dia__semana Float ;
+    dia_semana Char (26) ;
+    mes_acidente Char (18) ;
+    hora DateTime ;
+    cod_acid Char (2) ;
+    fonte Char (2) ;
+    viatura Char (1) ;
+    dp Char (6) ;
+    talao Char (12) ;
+    sentido Char (2) ;
+    pista Char (2) ;
+    automovel Char (2) ;
+    moto Char (2) ;
+    onibus Char (2) ;
+    caminhao Char (2) ;
+    bicicleta Char (2) ;
+    moto_taxi Char (2) ;
+    onibus_fretado Char (2) ;
+    onibus_urbano Char (2) ;
+    microonibus Char (2) ;
+    van Char (2) ;
+    vuc Char (2) ;
+    caminhonete Char (2) ;
+    carreta Char (2) ;
+    jipe Char (2) ;
+    outros Char (2) ;
+    sem_informacao Char (2) ;
+    carroca Char (2) ;
+    feridos Char (4) ;
+    mortos Char (2) ;
+    dec Char (6) ;
+    det_atz Char (6) ;
+    get_atz Char (6) ;
+    distrito Char (4) ;
+    distrito_atz Char (4) ;
+    pref_reg Char (50) ;
+    folha Char (1) ;
+    princ_a Char (10) ;
+    princ_b Char (10) ;
+    placa1 Char (1) ;
+    tipo_placa1 Char (1) ;
+    placa2 Char (1) ;
+    tipo_plac2 Char (1) ;
+    placa3 Char (1) ;
+    tipo_plac3 Char (1) ;
+    tipo_acidente Char (4) ;
+    mi_prinx Char (1) ;
+    LAT Float ;
+    LONG Float ;
+    MAPINFO_ID Float ;
+begin_metadata
+"\IsReadOnly" = "FALSE"
+"\MapInfo" = ""
+"\MapInfo\TableID" = "e4a2d690-73b9-4adb-8ff9-98639846ea90"
+"\MapInfo\ParentTableID" = "8caa7d78-929d-4cbc-816f-81619acba724"
+end_metadata
