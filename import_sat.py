@@ -63,13 +63,13 @@ CLASSIFICACAO={
     "F":"Grave",
     "M":"Fatal",
 }
-username="tiago" #input("Usuário:")
-password="peganingas" #getpass.getpass("Senha:")
+username=input("Usuário:")
+password=getpass.getpass("Senha:")
 
-def extract(csv_path, delimiter=','):
+def extract(csv_path, delimiter=',', quotechar='"'):
     """Simply pulls rows into a DictReader"""
     with open(csv_path) as csvfile:
-        reader = csv.DictReader(csvfile, delimiter=delimiter)
+        reader = csv.DictReader(csvfile, delimiter=delimiter, quotechar=quotechar)
         for row in reader:
             yield row
 def _add_local_id(dictionary):
@@ -92,15 +92,17 @@ j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
 n=0
-for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
+for record in extract("./maps/acidentes_sp_2016.csv"):
     print(record)
     n+=1
     #if n>20:
     #    break
-
-    dia, mes, ano= record['data'].split('/')
-    hora, minuto= record['hora'].split(':')
-    stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
+    if "data_e_hora" in record:
+        stringdate = record['data_e_hora']
+    else:
+        dia, mes, ano= record['data'].split('/')
+        hora, minuto= record['hora'].split(':')
+        stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
     occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
     #point = ogr.Geometry(ogr.wkbPoint)
     #point.AddPoint(float(record['X']), float(record['Y']))
@@ -120,18 +122,21 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
     print(num_vitimas)
     num_veiculos=0
     for key in [
-        "carros",
-        "caminhao",
-        "bicicleta",
-        "moto",
-        "onibusmicr",
-        "van",
-        "vuc",
-        "carreta",
-        "carroca",
-        "outros",
+            "carros",
+            "caminhao",
+            "bicicleta",
+            "moto",
+            "onibusmicr",
+            "van",
+            "vuc",
+            "carreta",
+            "carroca",
+            "outros",
         ]:
-        num_veiculos+=int(record[key])
+        if key in record:
+            num_veiculos+=int(record[key])
+    if "veiculos" in record:
+        num_veiculos=sum([int(n) for n in list(record["veiculos"])])
 
     obj = {
         'data': {
@@ -148,7 +153,7 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
         'schema': str(r.json()['uuid']),
         'occurred_from': occurred_date.isoformat(),
         'occurred_to': occurred_date.isoformat(),
-        'geom': "SRID=4326;POINT(%s %s)"%(float(record['X']), float(record['Y']), ),
+        'geom': "SRID=4326;POINT(%s %s)"%(float(record['x']), float(record['y']), ),
     }
 
     _add_local_id(obj['data']['driverIncidentDetails'])
@@ -158,4 +163,5 @@ for record in extract("./maps/acidentes_sp_2010_a_2015.csv"):
                            cookies=cookies,)
 
     print(response)
+
     #X,Y,id_acident,data,Ano,X,Y,hora,cod_acid,tipo_acide,carros,caminhao,bicicleta,moto,onibusmicr,van,vuc,carreta,carroca,outros,sem_inform,feridos,mortos

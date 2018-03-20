@@ -64,8 +64,8 @@ CLASS_INCIDENTE={
     "F":"Grave",
     "M":"Fatal",
 }
-username="tiago" #input("Usuário:")
-password="peganingas" #getpass.getpass("Senha:")
+username=input("Usuário:")
+password=getpass.getpass("Senha:")
 
 def extract(csv_path, delimiter=','):
     """Simply pulls rows into a DictReader"""
@@ -93,7 +93,7 @@ j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
 
-r=client.get(URL+"/api/records/?format=json")
+r=client.get(URL+"/api/records/?format=json&limit=1000")
 j_inc=r.json()
 
 print("Encontrados %s incidentes na base. Carregando veículos..."%(j_inc['count']))
@@ -126,9 +126,9 @@ for file in glob.glob("./maps/Veiculos*.csv"):
         }
         _add_local_id(veiculo)
         if "ID_ACIDENT" in record:
-            id_a=record["ID_ACIDENT"]
+            id_a=record["ID_ACIDENT"].upper()
         else:
-            id_a=record['id_acidente']
+            id_a=record['id_acidente'].upper()
         if not id_a in veiculos:
             veiculos[id_a]=[]
         veiculos[id_a].append(veiculo)
@@ -162,34 +162,44 @@ for file in glob.glob("./maps/Vitimas*.csv"):
         _add_local_id(vitima)
         if not record['id_acidente'] in vitimas:
             vitimas[record['id_acidente']] = []
-        vitimas[record['id_acidente']].append(vitima)
+        vitimas[record['id_acidente'].upper()].append(vitima)
         print("%s de %s" % (n, total_vitimas), end='\r')
-print("Inserindo dados")
-next=URL+"/api/records/?format=json"
+print("Inserindo dados:                                                  ")
+next=URL+"/api/records/?format=json&limit=10000"
 n=0
 while next is not None:
     j_inc=client.get(next).json()
     for incident in j_inc["results"]:
         n+=1
+        next=j_inc["next"]
+        #if "driverPerson" in incident['data']:
+        #    print("Incidentes: %s de %s (%s) (existente)" % (n, j_inc['count'], incident['uuid']), end='\r')
+        #    continue
         condutores=0
         pedestres=0
         passageiros=0
-        incident['data']['driverVehicle'] = veiculos[incident['data']['driverIncidentDetails']['acidente_id'].upper()]
-        for vitima in vitimas[incident['data']['driverIncidentDetails']['acidente_id'].upper()]:
-            try:
-                vitima[u'Veículo']=incident['data']['driverVehicle'][int(vitima['veiculo_id'])-1]['_localId']
-            except:
-                pass
-            vitima.pop('veiculo_id',None)
-            if vitima[u'Condição']=="Morta":
-                incident["data"]["driverIncidentDetails"]["Severidade"]="Fatal"
+        if 'driverIncidentDetails' in incident['data']:
+            incident['data']['driverVehicle'] = veiculos[incident['data']['driverIncidentDetails']['acidente_id'].upper()]
+            if incident['data']['driverIncidentDetails']['acidente_id'].upper() in vitimas:
+                for vitima in vitimas[incident['data']['driverIncidentDetails']['acidente_id'].upper()]:
+                    try:
+                        vitima[u'Veículo']=incident['data']['driverVehicle'][int(vitima['veiculo_id'])-1]['_localId']
+                    except:
+                        pass
+                    vitima.pop('veiculo_id',None)
+                    if vitima[u'Condição']=="Morta":
+                        incident["data"]["driverIncidentDetails"]["Severidade"]="Fatal"
 
 
-        incident['data']['driverPerson'] = vitimas[incident['data']['driverIncidentDetails']['acidente_id'].upper()]
-        response = client.patch(URL + '/api/records/' + incident['uuid'] + "/?archived=False",
-                                json=incident,
-                                headers={'Content-type': 'application/json', "X-CSRFToken": csrf,
-                                         "Referer": URL + "/api/recordtypes/?active=True&format=json"},
-                                cookies=cookies, )
-        print("Incidentes: %s de %s (%s)"%(n,j_inc['count'],incident['uuid']), end='\r')
-        next=j_inc["next"]
+                incident['data']['driverPerson'] = vitimas[incident['data']['driverIncidentDetails']['acidente_id'].upper()]
+            else:
+                print(incident['data']['driverIncidentDetails']['acidente_id'].upper()+" key error", end="\r")
+            response = client.patch(URL + '/api/records/' + incident['uuid'] + "/?archived=False",
+                                    json=incident,
+                                    headers={'Content-type': 'application/json', "X-CSRFToken": csrf,
+                                             "Referer": URL + "/api/recordtypes/?active=True&format=json"},
+                                    cookies=cookies, )
+            print("Incidentes: %s de %s (%s)                                      "%(n,j_inc['count'],incident['uuid']), end='\r')
+        else:
+            print("Nada a fazer...         "+incident['uuid']+"                         ", end='\r')
+
