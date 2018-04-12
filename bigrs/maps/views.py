@@ -407,8 +407,9 @@ def lista_contagens_totais(request):
         result=[]
         conn = connection.cursor().connection
         cur = conn.cursor()
+        #['bairro', 'endereco', 'data', 'sentido', "carro", "moto", "microonibus", "onibus", "brt", "vuc", "caminhao", "pedestre", "bici"]
         cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int,rowcolor text,image text);"
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int, rowcolor text,image text);"
         )
         result=cur.fetchall()
         return render(request, 'lista_contagens.html', {'result':result,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
@@ -423,7 +424,7 @@ def lista_contagens_totais_xls(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, caminhao int, microonibus int, bicicleta int, onibus int, brt int, pedestre int, vuc int,id int,rowcolor text,image text);"
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int,rowcolor text,image text);"
         )
         result=cur.fetchall()
         #cur.execute(

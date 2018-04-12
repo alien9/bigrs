@@ -36,7 +36,7 @@ function start(){
     }
     var tiled = new OpenLayers.Layer.TMS( "TMS", "http://bigrs.alien9.net:8080/geoserver/gwc/service/tms/",
         {
-            layername:'BIGRS%3Aquadras_e_logradouros@3857@png',
+            layername:'BIGRS%3Acidade_com_semaforos_e_lotes@3857@png',
             type:'png',
             maxZoomLevel:22,
             minZoomLevel:17,
