@@ -5,6 +5,7 @@ import re, requests, getpass, csv, json, uuid, glob
 from dateutil import parser
 from dateutil.tz import gettz
 import pytz #,ogr
+from carrega_csv import *
 
 tz1 = gettz('America/Sao_Paulo')
 TIPOS_COLISAO={
@@ -63,8 +64,13 @@ CLASSIFICACAO={
     "F":"Grave",
     "M":"Fatal",
 }
-username=input("Usuário:")
-password=getpass.getpass("Senha:")
+url=input("URL:[https://motorista.alien9.net]")
+if url=="":
+    url="https://motorista.alien9.net"
+#username=input("Usuário:")
+#password=getpass.getpass("Senha:")
+username="admin"
+password="peganingas10"
 
 def extract(csv_path, delimiter=',', quotechar='"'):
     """Simply pulls rows into a DictReader"""
@@ -82,7 +88,7 @@ def file_len(fname):
     return i + 1
 
 client=requests.session()
-URL="https://motorista.alien9.net"
+URL=url #"https://driver.alien9.net"
 r=client.get(URL+"/api-auth/login/?next=/api/")
 csrf=r.cookies.get('csrftoken')
 cookies=r.cookies
@@ -92,76 +98,129 @@ j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
 n=0
-for record in extract("./maps/acidentes_sp_2016.csv"):
-    print(record)
-    n+=1
-    #if n>20:
-    #    break
-    if "data_e_hora" in record:
-        stringdate = record['data_e_hora']
-    else:
-        dia, mes, ano= record['data'].split('/')
-        hora, minuto= record['hora'].split(':')
-        stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
-    occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
-    #point = ogr.Geometry(ogr.wkbPoint)
-    #point.AddPoint(float(record['X']), float(record['Y']))
-    #point.FlattenTo2D()
-    tipo=None
 
-    if record['tipo_acide'] in TIPOS_COLISAO:
-        tipo=TIPOS_COLISAO[record['tipo_acide']]
-    if int(record['mortos']) > 0:
-        severidade="Fatal"
-    else:
-        if int(record['feridos']) > 0:
-            severidade="Ferimento"
+for filename in glob.glob("maps/incidente*.csv"):
+    for record in extract(filename):
+        print(record)
+        n+=1
+        #if n>20:
+        #    break
+        if "data_e_hora" in record:
+                stringdate = record['data_e_hora']
         else:
-            severidade="Danos Materiais"
-    num_vitimas=int(record['mortos'])+int(record['feridos']) 
-    print(num_vitimas)
-    num_veiculos=0
-    for key in [
-            "carros",
-            "caminhao",
-            "bicicleta",
-            "moto",
-            "onibusmicr",
-            "van",
-            "vuc",
-            "carreta",
-            "carroca",
-            "outros",
-        ]:
-        if key in record:
-            num_veiculos+=int(record[key])
-    if "veiculos" in record:
-        num_veiculos=sum([int(n) for n in list(record["veiculos"])])
+            if len(record['data'])>10:
+                record['data'],nada=record['data'].split(' ')
+            ano, mes , dia = record['data'].split('/')
+            if int(dia)>int(ano):
+                d=ano
+                ano=dia
+                dia=d
+            if re.match("\d+:\d+",record['hora']):
+                hora, minuto= record['hora'].split(':')
+            else:
+                if len(record['hora'])>8:
+                    nada,hora=record['hora'].split(' ')
+                    hora,minuto,segundo=hora.split(':')
+                    print(hora+"::"+minuto)
+                else:
+                    a, hora, minuto, b = re.split('^(\d+)(\d{2})',record['hora'])
+            stringdate="%s-%s-%s %s:%s:00"%(ano,mes,dia,hora,minuto)
+        occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
 
-    obj = {
-        'data': {
-            'driverIncidentDetails': {
-                "Tipo de Incidente":tipo,
-                "acidente_id":record['id_acident'],
-                "Severidade": severidade,
-                "Veículos": num_veiculos,
-                "Vítimas": num_vitimas,
+        tipo=None
+        if not 'tipo_acide' in record:
+            record['tipo_acide']=record['tipo_acidente']
+        if record['tipo_acide'] in TIPOS_COLISAO:
+            tipo=TIPOS_COLISAO[record['tipo_acide']]
+        if not 'mortos' in record:
+            a,m,f,b=re.split('^(\d+)(\d{2})',record['vitimas'])
+            record['mortos']=m
+            record['feridos']=f
+        if int(record['mortos']) > 0:
+            severidade="Fatal"
+        else:
+            if int(record['feridos']) > 0:
+                severidade="Ferimento"
+            else:
+                severidade="Danos Materiais"
+        num_vitimas=int(record['mortos'])+int(record['feridos'])
+        print(num_vitimas)
+        num_veiculos=0
+        for key in [
+                "carros",
+                "caminhao",
+                "bicicleta",
+                "moto",
+                "onibusmicr",
+                "van",
+                "vuc",
+                "carreta",
+                "carroca",
+                "outros",
+            ]:
+            if key in record:
+                num_veiculos+=int(record[key])
+        if "veiculos" in record:
+            num_veiculos=sum([int(n) for n in list(record["veiculos"])])
+
+        #"[{'placa': 'EHP0938', 'tipo_veiculo': 'MO', 'sexo_condutor': 'M', 'id_acidente': 'D011600179', 'idade_condutor': '36', 'categoria_habilitacao': 'SI', 'escolaridade': '8', 'estado_alcoolizacao': 'BR', 'id_veiculo': '1', 'usa_cinto_seguranca': 'X'}, {'placa': 'FKE8500', 'tipo_veiculo': 'AU', 'sexo_condutor': 'M', 'id_acidente': 'D011600179', 'idade_condutor': '36', 'categoria_habilitacao': 'SI', 'escolaridade': '8', 'estado_alcoolizacao': 'BR', 'id_veiculo': '2', 'usa_cinto_seguranca': 'X'}]
+        vei=[]
+        veiculos_ids={}
+        if record['id_acident'] in veiculos:
+            for v in veiculos[record['id_acident']]:
+                veiculo = {
+                    'PLaca': v['placa'],
+                    'Tipo':TIPOS_VEICULO[v['tipo_veiculo']]
+                }
+                _add_local_id(veiculo)
+                veiculos_ids[str(int(v['id_veiculo']))]=veiculo['_localId']
+                vei.append(veiculo)
+        vit=[]
+        if record['id_acident'] in vitimas:
+            for v in vitimas[record['id_acident']]:
+                print(v)
+                condicao='Ferido'
+                if v['classificacao']=='M':
+                    condicao='Morto'
+                tipo_vitima='Condutor'
+                if v['tipo_vitima'] == 'CD':
+                    tipo_vitima = 'Condutor'
+                if v['tipo_vitima'] == 'PS':
+                    tipo_vitima = 'Passageiro'
+                if v['tipo_vitima'] == 'PD':
+                    tipo_vitima = 'Pedestre'
+                vitima={
+                    'Idade':v['idade'],
+                    'Sexo':v['sexo'],
+                    'Condição':condicao,
+                    'Tipo':tipo_vitima,
+                    'Veículo':veiculos_ids[str(int(v['id_veiculo']))]
+                }
+                _add_local_id(vitima)
+                vit.append(vitima)
+        obj = {
+            'data': {
+                'driverIncidenteDetails': {
+                    "Tipo de Incidente":tipo,
+                    "acidente_id":record['id_acident'],
+                    "Severidade": severidade,
+                    "Veículos": num_veiculos,
+                    "Vítimas": num_vitimas,
+                },
+                'driverVítima': vit,
+                'drtiverVeículo': vei,
             },
-            'person': [],
-            'vehicle': []
-        },
-        'schema': str(r.json()['uuid']),
-        'occurred_from': occurred_date.isoformat(),
-        'occurred_to': occurred_date.isoformat(),
-        'geom': "SRID=4326;POINT(%s %s)"%(float(record['x']), float(record['y']), ),
-    }
+            'schema': str(r.json()['uuid']),
+            'occurred_from': occurred_date.isoformat(),
+            'occurred_to': occurred_date.isoformat(),
+            'geom': "SRID=4326;POINT(%s %s)"%(float(record['x']), float(record['y']), ),
+        }
+        _add_local_id(obj['data']['driverIncidenteDetails'])
+        print(obj)
+        response = client.post(URL + '/api/records/',
+                               json=obj,
+                               headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
+                               cookies=cookies,)
 
-    _add_local_id(obj['data']['driverIncidentDetails'])
-    response = client.post(URL + '/api/records/',
-                           json=obj,
-                           headers={'Content-type': 'application/json',  "X-CSRFToken":csrf, "Referer": URL+"/api/recordtypes/?active=True&format=json"},
-                           cookies=cookies,)
+        print(response)
 
-    print(response)
-
-    #X,Y,id_acident,data,Ano,X,Y,hora,cod_acid,tipo_acide,carros,caminhao,bicicleta,moto,onibusmicr,van,vuc,carreta,carroca,outros,sem_inform,feridos,mortos
