@@ -82,7 +82,7 @@ def file_len(fname):
     return i + 1
 
 client=requests.session()
-URL="https://driver.alien9.net"
+URL="https://motorista.alien9.net"
 r=client.get(URL+"/api-auth/login/?next=/api/")
 csrf=r.cookies.get('csrftoken')
 cookies=r.cookies
