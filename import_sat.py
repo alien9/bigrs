@@ -63,6 +63,9 @@ CLASSIFICACAO={
     "F":"Grave",
     "M":"Fatal",
 }
+url=input("URL:[https://motorista.alien9.net]")
+if url=="":
+    url="https://motorista.alien9.net"
 username=input("Usuário:")
 password=getpass.getpass("Senha:")
 
@@ -82,7 +85,7 @@ def file_len(fname):
     return i + 1
 
 client=requests.session()
-URL="https://driver.alien9.net"
+URL=url #"https://driver.alien9.net"
 r=client.get(URL+"/api-auth/login/?next=/api/")
 csrf=r.cookies.get('csrftoken')
 cookies=r.cookies
@@ -92,13 +95,16 @@ j=r.json()
 r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
 n=0
+
+
+
 for record in extract("./maps/acidentes_sp_2016.csv"):
     print(record)
     n+=1
     #if n>20:
     #    break
     if "data_e_hora" in record:
-        stringdate = record['data_e_hora']
+            stringdate = record['data_e_hora']
     else:
         dia, mes, ano= record['data'].split('/')
         hora, minuto= record['hora'].split(':')
