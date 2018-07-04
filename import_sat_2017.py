@@ -144,7 +144,7 @@ for record in extract("./maps/Veiculos2017.csv"):
 
 
 """
-for record in extract("./maps/Vitimas2017.csv"):
+for record in extract("./SAT/vitimas.csv"):
     print(record)
     dias=re.split("\s|\/",record['DATA_OBITO'])
     data_obito=None

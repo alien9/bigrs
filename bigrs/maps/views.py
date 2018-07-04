@@ -13,6 +13,8 @@ from django.http import HttpResponse
 from django.template import loader, Context
 
 HEADERS=['bairro','endereco', 'data', 'sentido',"carro","moto","microonibus","onibus","brt","vuc","caminhao","pedestre","bici"]
+XLS_HEADERS=['bairro','endereco', 'data', 'sentido',"carro","moto","microonibus","onibus","brt","vuc","caminhao","pedestre","bici","movie","image",""]
+
 NOMES=[
     "Bairro",
     "Local",
@@ -28,7 +30,22 @@ NOMES=[
     "Pedestre",
     "Bicicleta",
 ]
-
+XLS_NOMES=[
+    "Bairro",
+    "Local",
+    "Data",
+    "Sentido",
+    "Automóvel",
+    "Motocicleta",
+    "Van",
+    "Microônibus",
+    "Ônibus",
+    "VUC",
+    "Caminhão",
+    "Pedestre",
+    "Bicicleta",
+    'Arquivo',
+]
 def get_deploy_version():
     if DEBUG:
         from time import time
@@ -409,7 +426,7 @@ def lista_contagens_totais(request):
         cur = conn.cursor()
         #['bairro', 'endereco', 'data', 'sentido', "carro", "moto", "microonibus", "onibus", "brt", "vuc", "caminhao", "pedestre", "bici"]
         cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int, rowcolor text,image text);"
+            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int, rowcolor text,image text, movie text);"
         )
         result=cur.fetchall()
         return render(request, 'lista_contagens.html', {'result':result,'headers':HEADERS,'nomes':NOMES,'uid':request.user.id})
@@ -424,7 +441,7 @@ def lista_contagens_totais_xls(request):
         conn = connection.cursor().connection
         cur = conn.cursor()
         cur.execute(
-            "select * from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int,rowcolor text,image text);"
+            "select bairro,endereco,data_e_hora,sentido,carro,moto,microonibus,onibus,brt,vuc,caminhao,pedestre,bicicleta,movie,rowcolor,image,id from bigrs.report() f(bairro text, endereco text, data_e_hora text, sentido text, carro int, moto int, microonibus int, onibus int, brt int, vuc int, caminhao int, pedestre int, bicicleta int, id int,rowcolor text,image text, movie text);"
         )
         result=cur.fetchall()
         #cur.execute(
@@ -439,7 +456,7 @@ def lista_contagens_totais_xls(request):
         d=date.today()
         da=d.strftime("%Y_%m_%d")
         response['Content-Disposition'] = "attachment; filename=contagens_relatorio_%s.xls"%(da,)
-        response.write(t.render({'result': result,'headers':HEADERS,"nomes":NOMES,'uid':request.user.id}))
+        response.write(t.render({'result': result,'headers':XLS_HEADERS,"nomes":XLS_NOMES,'uid':request.user.id}))
         return response
         #return render(request, 'lista_contagens.html', {'records':r,'headers':['bairro','endereco', 'data', 'sentido', 'carro', 'moto', 'caminhao', 'microonibus', 'bicicleta', 'onibus', 'brt', 'pedestre', 'vuc']})
     else:

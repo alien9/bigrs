@@ -61,7 +61,7 @@ xmlns="http://www.w3.org/TR/REC-html40">
 <tbody>
 {%for r in result%}
 <tr>
-   {%for c in headers%}
+   {%for c in nomes%}
    <td bgcolor="{{r|rowcolor}}">{{r|item:forloop.counter0}}</td>
    {%endfor%}
    {% autoescape off %}{{r|locator}}{% endautoescape %}
