@@ -5,14 +5,26 @@ import psycopg2
 from config import *
 conn = psycopg2.connect(cstring)
 
-import re, requests, getpass, csv, json, uuid, glob
+import re, requests, getpass, csv, json, uuid, glob, os
 from dateutil import parser
 from dateutil.tz import gettz
 import pytz #,ogr
-from carrega_csv import *
 
-with open("maps/written") as f:
-    existent = f.read().splitlines()
+
+import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+import carrega_csv
+carrega_csv.directory = 'SAT'
+
+veiculos=carrega_csv.loadveiculos()
+vitimas=carrega_csv.loadvitimas()
+
+existent=[]
+if os.path.exists("maps/written"):
+    with open("maps/written") as f:
+        existent = f.read().splitlines()
 
 tz1 = gettz('America/Sao_Paulo')
 
@@ -38,6 +50,22 @@ TIPOS_COLISAO={
     "QF":"Queda ocupante fora",
     "OU":"Outros",
     "SI":"Sem informações",
+    "Choque":"Choque",
+    "Colisão transversal":"Colisão transversal",
+    "Atropelamento":"Atropelamento",
+    "Colisão lateral":"Colisão lateral",
+    "Queda moto/bicicleta":"Queda moto/bicicleta",
+    "Colisão traseira":"Colisão traseira",
+    "Colisão":"Colisão",
+    "Outros":"Outros",
+    "Colisão frontal":"Colisão frontal",
+    "Tombamento":"Tombamento",
+    "Queda ocupante dentro":"Queda ocupante dentro",
+    "Sem Informação":"Sem informações",
+    "Capotamento":"Capotamento",
+    "Queda ocupante fora":"Queda ocupante fora",
+    "Atropelamento de animal":"Atropelamento de animal",
+    "Queda veículo":"Queda veículo",
 }
 TIPOS_RESUMIDOS_COLISAO={
     "CO":"Colisão",
@@ -57,6 +85,22 @@ TIPOS_RESUMIDOS_COLISAO={
     "QF":"Queda",
     "OU":"Outros",
     "SI":"Sem informações",
+    "Choque": "Choque",
+    "Colisão transversal": "Colisão",
+    "Atropelamento": "Atropelamento",
+    "Colisão lateral": "Colisão",
+    "Queda moto/bicicleta": "Queda",
+    "Colisão traseira": "Colisão",
+    "Colisão": "Colisão",
+    "Outros": "Outros",
+    "Colisão frontal": "Colisão",
+    "Tombamento": "Capotamento",
+    "Queda ocupante dentro": "Queda",
+    "Sem Informação": "Sem informações",
+    "Capotamento": "Capotamento",
+    "Queda ocupante fora": "Queda",
+    "Atropelamento de animal": "Atropelamento",
+    "Queda veículo": "Queda",
 }
 
 
@@ -67,7 +111,7 @@ TIPOS_VEICULO={
     "CA":"Caminhão",
     "BI":"Bicicleta",
     "MT":"Moto Táxi",
-    "OF":"Ônibus Fretado/Internmunicipal",
+    "OF":"Ônibus Fretado/Intermunicipal",
     "OU":"Ônibus Urbano",
     "MC":"Microônibus",
     "VA":"Van",
@@ -78,6 +122,19 @@ TIPOS_VEICULO={
     "OT":"Outros",
     "SI":"Sem Informação",
     "CO":"Carroça",
+    "automóvel":"Auto",
+    "moto":"Moto",
+    "ônibus":"Ônibus",
+    "caminhonete":"Caminhonete/Camioneta",
+    "bicicleta":"Bicicleta",
+    "caminhão":"Caminhão",
+    "sem informação":"Sem Informação",
+    "outro":"Outros",
+    "van":"Van",
+    "micro-ônibus":"Microônibus",
+    "ônibus urbano":"Ônibus Urbano",
+    "carreta":"Outros",
+
 }
 TIPOS_VEICULO_RESUMIDO={
     "AU":"Automóvel",
@@ -97,6 +154,18 @@ TIPOS_VEICULO_RESUMIDO={
     "OT":"Outros",
     "SI":"Sem Informação",
     "CO":"Carroça",
+    "automóvel": "Automóvel",
+    "moto": "Motocicleta",
+    "ônibus": "Ônibus",
+    "caminhonete": "Automóvel",
+    "bicicleta": "Bicicleta",
+    "caminhão": "Caminhão",
+    "sem informação": "Sem Informação",
+    "outro": "Outros",
+    "van": "Automóvel",
+    "micro-ônibus": "Ônibus",
+    "ônibus urbano": "Ônibus",
+    "carreta": "Outros",
 }
 TIPOS_VITIMA={
     "CD":"Condutor",
@@ -104,28 +173,41 @@ TIPOS_VITIMA={
     "PD":"Pedestre",
     "OU":"Outros",
     "SI":"Sem Informação",
+    "Condutor":"Condutor",
+    "Passageiro":"Passageiro",
+    "Pedestre":"Pedestre",
+    "Sem Informação":"Sem Informação",
+    "Outros": "Sem Informação",
+
 }
 CLASS_VITIMA={
     "F":"Ferida",
     "M":"Morta",
+    "Ferida": "Ferida",
+    "Morta": "Morta",
 }
 GENERO={
     "M":"Masculino",
     "F":"Feminino",
+    "Masculino":"Masculino",
+    "Feminino":"Feminino",
     "SI": "Sem Informação",
+    "Sem Informação": "Sem Informação",
 }
 CLASSIFICACAO={
     "F":"Grave",
     "M":"Fatal",
+    "Ferida": "Grave",
+    "Morta": "Fatal",
 }
 #url=input("URL:[https://motorista.alien9.net]")
-#url="http://192.168.0.100:3001" #
+#url="http://localhost:3001"
 url="https://vidasegura.prefeitura.sp.gov.br"
 #if url=="":
 #url="https://motorista.alien9.net"
-username="admin" #input("Usuário:")
-password="7zGDwj0kIPTXnEi9Tq-WzyHb1Jccdnq9_GgznEVgWwU" #getpass.getpass("Senha:")
-#username="admin"
+#username=input("Usuário:")
+password=getpass.getpass("Senha:")
+username="admin"
 #password="admin"
 
 
@@ -153,13 +235,16 @@ print("até aqui ok")
 r=client.post(URL+"/api-auth/login/", data={"username":username,"password":password,"csrfmiddlewaretoken":csrf,"next":"/api/"},cookies=r.cookies,headers={"referer":URL+"/api-auth/login/?next=/api/"},verify=False)
 r=client.get(URL+"/api/recordtypes/?active=True&format=json",cookies=r.cookies,headers={"referer":URL+"/api/"})
 j=r.json()
-r=client.get(URL+"/api/recordschemas/%s/"%(j['results'][0]["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
+
+def is_incident(thing):
+    return re.match('Incide.*', thing['label'])
+
+data_type = list(filter(is_incident, j['results']))[0]
+r=client.get(URL+"/api/recordschemas/%s/"%(data_type["current_schema"]),cookies=r.cookies,headers={"referer":URL+"/api/recordtypes/?active=True&format=json"})
 j=r.json()
-
 n=0
-print()
 
-for filename in glob.glob("SAT/incidentes.csv"):
+for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
     for record in extract(filename,'\t'):
         print(record)
         ano=1984
@@ -195,13 +280,17 @@ for filename in glob.glob("SAT/incidentes.csv"):
             occurred_date = pytz.timezone('America/Sao_Paulo').localize(parser.parse(stringdate))
 
             tipo=None
+            tipo_resumido = 'Sem informações'
+
             if not 'tipo_acide' in record:
                 record['tipo_acide']=record['tipo_acidente']
             if record['tipo_acide'] in TIPOS_COLISAO:
                 tipo=TIPOS_COLISAO[record['tipo_acide']]
-            tipo_resumido=None
-            if record['tipo_acide'] in TIPOS_RESUMIDOS_COLISAO:
-                tipo_resumido = TIPOS_RESUMIDOS_COLISAO[record['tipo_acide']]
+            if tipo is None:
+                tipo = 'Sem informações'
+            else:
+                if record['tipo_acide'] in TIPOS_RESUMIDOS_COLISAO:
+                    tipo_resumido = TIPOS_RESUMIDOS_COLISAO[record['tipo_acide']]
             """
             if not 'mortos' in record:
                 a,f,m,b=re.split('^(\d+)(\d{2})',record['vitimas'])
@@ -243,10 +332,11 @@ for filename in glob.glob("SAT/incidentes.csv"):
                     if v['tipo_veiculo'] in TIPOS_VEICULO_RESUMIDO:
                         tv_res=TIPOS_VEICULO_RESUMIDO[v['tipo_veiculo']]
                     veiculo = {
-                        'Placa': v['placa'],
                         'Tipo de Veículo':tv_res,
                         'Veículo':TIPOS_VEICULO[v['tipo_veiculo']]
                     }
+                    if 'placa' in v:
+                        veiculo['Placa']= v['placa']
                     _add_local_id(veiculo)
                     if re.match("\\d+",v['id_veiculo']):
                         veiculos_ids[str(int(v['id_veiculo']))]=veiculo
@@ -270,16 +360,50 @@ for filename in glob.glob("SAT/incidentes.csv"):
                     if v['tipo_vitima'] == 'PD':
                         tipo_vitima = 'Pedestre'
                     sexo="Sem Informação"
-                    if v['sexo']=="F":
-                        sexo="Feminino"
-                    if v["sexo"]=="M":
-                        sexo="Masculino"
+                    if v['sexo'] == "F":
+                        sexo = "Feminino"
+                    if v["sexo"] == "M":
+                        sexo = "Masculino"
+                    if v['sexo'] == "Feminino":
+                        sexo = "Feminino"
+                    if v["sexo"] == "Masculino":
+                        sexo = "Masculino"
 
+                    faixa="Sem Informação"
+                    if v['idade'].isnumeric():
+                        idade=int(v["idade"])
+                        if idade >=60:
+                            faixa = "60 ou mais"
+                        else:
+                            if idade >=30:
+                                faixa = "30 a 59"
+                            else:
+                                if idade >=25:
+                                    faixa = "25 a 29"
+                                else:
+                                    if idade >=20:
+                                        faixa = "20 a 24"
+                                    else:
+                                        if idade >=18:
+                                            faixa = "18 a 19"
+                                        else:
+                                            if idade >=15:
+                                                faixa = "15 a 17"
+                                            else:
+                                                if idade >=11:
+                                                    faixa = "11 a 14"
+                                                else:
+                                                    if idade >=6:
+                                                        faixa="6 a 10"
+                                                    else:
+                                                        if idade >=0:
+                                                            faixa="5 ou menos"
                     vitima={
                         'Idade':v['idade'],
                         'Gênero':sexo,
                         'Condição':condicao,
-                        'Tipo de Vítima':tipo_vitima
+                        'Tipo de Vítima':tipo_vitima,
+                        'Faixa':faixa,
                     }
                     if re.match("\\d+",v['id_veiculo']):
                         if str(int(v['id_veiculo'])) in veiculos_ids:
@@ -311,33 +435,42 @@ for filename in glob.glob("SAT/incidentes.csv"):
                         "Mortos": casualties["mortos"],
                         "Feridos":casualties["feridos"]
                     },
-                    'driverVíTima': vit,
-                    'driverVeíCulo': vei
+                    'driverVitima': vit,
+                    'driverVeiculo': vei
                 },
                 'schema': str(r.json()['uuid']),
                 'occurred_from': occurred_date.isoformat(),
                 'occurred_to': occurred_date.isoformat(),
             }
             try:
-                obj["geom"]="SRID=4326;POINT(%s %s)" % (float(record['x']), float(record['y']),)
+                if 'longitude' in record:
+                    record['x']=record['longitude']
+                    record['y']=record['latitude']
+                if 'x' in record:
+                    obj["geom"]="SRID=4326;POINT(%s %s)" % (float(record['x']), float(record['y']),)
                 cur = conn.cursor()
                 print(cur.mogrify(
                     "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
                     ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",)))
+
                 cur.execute(
                     "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
                     ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",))
                 fu = cur.fetchone()
-                obj['data']['driverIncidenteDetails']["Endereço"] = fu[0]
+                if fu[0] is not None:
+                    obj['data']['driverIncidenteDetails']["Endereço"] = fu[0]
+                
                 print(fu)
                 cur.close()
-            except:
-                print("sem geometria")
+
+            except Exception as e:
+                print(format(e))
                 obj["geom"]="SRID=4326;POINT(%s %s)" % ("0", "0",)
             _add_local_id(obj['data']['driverIncidenteDetails'])
             print(obj)
 
-            if int(ano) > 2014:
+            if int(ano) > 2014 and casualties['mortos']+casualties['feridos'] > 0:
+                
                 response = client.post(URL + '/api/records/',
                                        json=obj,
                                        headers={'Content-type': 'application/json', "X-CSRFToken": csrf,
@@ -351,4 +484,6 @@ for filename in glob.glob("SAT/incidentes.csv"):
                     fu = open('maps/written', "a")
                     fu.write(record['id_acident'] + "\n")
                     fu.close()
-
+                else:
+                    print(response.content)
+                    exit()

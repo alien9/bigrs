@@ -2,8 +2,6 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$USER_HOME$/DRIVER/.idea/DRIVER.iml" filepath="$USER_HOME$/DRIVER/.idea/DRIVER.iml" />
-      <module fileurl="file://$USER_HOME$/DW_SAT/.idea/DW_SAT.iml" filepath="$USER_HOME$/DW_SAT/.idea/DW_SAT.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/bigrs.iml" filepath="$PROJECT_DIR$/.idea/bigrs.iml" />
     </modules>
   </component>
