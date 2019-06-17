@@ -16,7 +16,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 import carrega_csv
-carrega_csv.directory = 'SAT'
+carrega_csv.directory = 'SAT2018'
 
 veiculos=carrega_csv.loadveiculos()
 vitimas=carrega_csv.loadvitimas()
@@ -201,8 +201,8 @@ CLASSIFICACAO={
     "Morta": "Fatal",
 }
 #url=input("URL:[https://motorista.alien9.net]")
-#url="http://localhost:3001"
-url="https://vidasegura.prefeitura.sp.gov.br"
+url="http://localhost:7000"
+#url="https://vidasegura.prefeitura.sp.gov.br"
 #if url=="":
 #url="https://motorista.alien9.net"
 #username=input("Usuário:")
@@ -347,7 +347,7 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                 for v in vitimas[record['id_acident']]:
                     print(v)
                     condicao='Ferido'
-                    if v['classificacao']=='M':
+                    if v['classificacao'] == 'M' or v['classificacao'] == 'Morta' or v['classificacao'] == 'Morto':
                         condicao='Morto'
                         casualties["mortos"]+=1
                     else:
@@ -448,28 +448,31 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                     record['y']=record['latitude']
                 if 'x' in record:
                     obj["geom"]="SRID=4326;POINT(%s %s)" % (float(record['x']), float(record['y']),)
-                cur = conn.cursor()
-                print(cur.mogrify(
-                    "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
-                    ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",)))
+                    if record['x']!='0' and record['x']!='':
+                        cur = conn.cursor()
+                        print(cur.mogrify(
+                            "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
+                            ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",)))
 
-                cur.execute(
-                    "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
-                    ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",))
-                fu = cur.fetchone()
-                if fu[0] is not None:
-                    obj['data']['driverIncidenteDetails']["Endereço"] = fu[0]
-                
-                print(fu)
-                cur.close()
+                        cur.execute(
+                            "select get_logradouro_nome((select gid from sirgas_shp_logradouro order by geom <-> st_transform(geomfromewkt(%s), 31983) limit 1))",
+                            ("SRID=4326; POINT(" + record['x'] + " " + record['y'] + ")",))
+                        fu = cur.fetchone()
+                        if fu[0] is not None:
+                            obj['data']['driverIncidenteDetails']["Endereço"] = fu[0]
+
+                        print(fu)
+                        cur.close()
+                    else:
+                        print("PONTO NAO ECSIST")
+
 
             except Exception as e:
                 print(format(e))
-                obj["geom"]="SRID=4326;POINT(%s %s)" % ("0", "0",)
             _add_local_id(obj['data']['driverIncidenteDetails'])
             print(obj)
 
-            if int(ano) > 2014 and casualties['mortos']+casualties['feridos'] > 0:
+            if int(ano) > 2014 and casualties['mortos']+casualties['feridos'] > 0 and 'geom' in obj:
                 
                 response = client.post(URL + '/api/records/',
                                        json=obj,

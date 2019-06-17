@@ -10,14 +10,15 @@ import pytz #,ogr
 
 #url=input("URL:[https://motorista.alien9.net]")
 #url="http://192.168.0.100:3001" #
-#url="https://vidasegura.prefeitura.sp.gov.br"
-url = 'http://localhost:3001'
+url="https://vidasegura.prefeitura.sp.gov.br"
+#url = 'http://localhost:3001'
 #if url=="":
 #url="https://motorista.alien9.net"
 #username=input("Usuário:")
 #password=getpass.getpass("Senha:")
 username="admin"
-password="admin"
+password=getpass.getpass("Senha:")
+
 
 def extract(csv_path, delimiter=',', quotechar='"'):
     """Simply pulls rows into a DictReader"""
