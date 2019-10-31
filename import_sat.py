@@ -16,7 +16,7 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 import carrega_csv
-carrega_csv.directory = 'SAT2018'
+carrega_csv.directory = 'SAT2019'
 
 veiculos=carrega_csv.loadveiculos()
 vitimas=carrega_csv.loadvitimas()
@@ -134,7 +134,7 @@ TIPOS_VEICULO={
     "micro-ônibus":"Microônibus",
     "ônibus urbano":"Ônibus Urbano",
     "carreta":"Outros",
-
+    "carroça": "Carroça",
 }
 TIPOS_VEICULO_RESUMIDO={
     "AU":"Automóvel",
@@ -166,6 +166,7 @@ TIPOS_VEICULO_RESUMIDO={
     "micro-ônibus": "Ônibus",
     "ônibus urbano": "Ônibus",
     "carreta": "Outros",
+    "carroça": "Carroça",
 }
 TIPOS_VITIMA={
     "CD":"Condutor",
@@ -202,7 +203,7 @@ CLASSIFICACAO={
 }
 #url=input("URL:[https://motorista.alien9.net]")
 url="http://localhost:7000"
-#url="https://vidasegura.prefeitura.sp.gov.br"
+#url="https://vidasegura.cetsp.com.br"
 #if url=="":
 #url="https://motorista.alien9.net"
 #username=input("Usuário:")
@@ -245,12 +246,14 @@ j=r.json()
 n=0
 
 for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
-    for record in extract(filename,'\t'):
+    for record in extract(filename,','):
         print(record)
         ano=1984
         n+=1
-        if record['id_acident'] in existent:
-            print("ja tem %s"%(record['id_acident'],))
+        if 'id_acidente' not in record:
+            record['id_acidente'] = record['id_acident']
+        if record['id_acidente'] in existent:
+            print("ja tem %s"%(record['id_acidente'],))
 
         else:
             #if n>20:
@@ -283,7 +286,10 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
             tipo_resumido = 'Sem informações'
 
             if not 'tipo_acide' in record:
-                record['tipo_acide']=record['tipo_acidente']
+                if 'TipoAcidente' in record:
+                    record['tipo_acide'] = record['TipoAcidente']
+                else:
+                    record['tipo_acide']=record['tipo_acidente']
             if record['tipo_acide'] in TIPOS_COLISAO:
                 tipo=TIPOS_COLISAO[record['tipo_acide']]
             if tipo is None:
@@ -324,11 +330,13 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                 "mortos":0,
                 "feridos":0
             }
-            if record['id_acident'] in veiculos:
-                for v in veiculos[record['id_acident']]:
+            if record['id_acidente'] in veiculos:
+                for v in veiculos[record['id_acidente']]:
                     print("veiculo")
                     print(v)
                     tv_res=None
+                    if not 'tipo_veiculo' in v:
+                        v['tipo_veiculo'] = v['TipoVeiculo']
                     if v['tipo_veiculo'] in TIPOS_VEICULO_RESUMIDO:
                         tv_res=TIPOS_VEICULO_RESUMIDO[v['tipo_veiculo']]
                     veiculo = {
@@ -343,8 +351,8 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                     vei.append(veiculo)
                     num_veiculos+=1
             vit=[]
-            if record['id_acident'] in vitimas:
-                for v in vitimas[record['id_acident']]:
+            if record['id_acidente'] in vitimas:
+                for v in vitimas[record['id_acidente']]:
                     print(v)
                     condicao='Ferido'
                     if v['classificacao'] == 'M' or v['classificacao'] == 'Morta' or v['classificacao'] == 'Morto':
@@ -352,13 +360,18 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                         casualties["mortos"]+=1
                     else:
                         casualties["feridos"]+=1
-                    tipo_vitima='Condutor'
+                    if not 'tipo_vitima' in v:
+                        v['tipo_vitima']=v['TipoVitima']
+                    tipo_vitima=v['tipo_vitima']
                     if v['tipo_vitima'] == 'CD':
                         tipo_vitima = 'Condutor'
                     if v['tipo_vitima'] == 'PS':
                         tipo_vitima = 'Passageiro'
                     if v['tipo_vitima'] == 'PD':
                         tipo_vitima = 'Pedestre'
+                    if v['tipo_vitima'] == 'Outros':
+                        tipo_vitima = 'Sem Informação'
+
                     sexo="Sem Informação"
                     if v['sexo'] == "F":
                         sexo = "Feminino"
@@ -428,7 +441,7 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                     'driverIncidenteDetails': {
                         "Acidente":tipo,
                         "Tipo de Acidente":tipo_resumido,
-                        "acidente_id":record['id_acident'],
+                        "acidente_id":record['id_acidente'],
                         "Severidade": severidade,
                         "Veículos": num_veiculos,
                         "Vítimas": casualties['mortos']+casualties['feridos'],
@@ -485,7 +498,7 @@ for filename in glob.glob("%s/incidentes.csv" % (carrega_csv.directory)):
                 print(response.status_code)
                 if response.status_code == 201:
                     fu = open('maps/written', "a")
-                    fu.write(record['id_acident'] + "\n")
+                    fu.write(record['id_acidente'] + "\n")
                     fu.close()
                 else:
                     print(response.content)
