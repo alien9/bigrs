@@ -5,7 +5,7 @@ Django==1.11.2
 ExifRead==2.1.2
 ffmpy==0.2.2
 idna==2.5
-numpy==1.13.0
+numpy==1.22.0
 oauthlib==2.0.2
 pkg-resources==0.0.0
 psycopg2==2.7.1
